@@ -45,7 +45,7 @@ mode="remote" @on-page-change="onPageChange" @on-column-filter="onColumnFilter" 
                     </template>
 
                     <template v-slot:emptystate>
-<div >
+<div>
                         <no-data-table></no-data-table>
                     </div>
 </template>
