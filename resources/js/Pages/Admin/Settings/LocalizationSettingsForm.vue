@@ -76,11 +76,31 @@ import { useForm } from '@inertiajs/vue3'
 const props = defineProps({
     settings: Object,
     errors: Object,
+    languages: {
+        type: Array,
+        default: () => []
+    },
+    directions: {
+        type: Array,
+        default: () => [
+            { id: 'ltr', name: 'Left to Right (LTR)' },
+            { id: 'rtl', name: 'Right to Left (RTL)' }
+        ]
+    },
+    timezones: {
+        type: Array,
+        default: () => []
+    }
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
+
+// Reactive data
+const languages = computed(() => props.languages)
+const directions = computed(() => props.directions)
+const timezones = computed(() => props.timezones)
 
 // Computed
 const title = computed(() => {
@@ -89,11 +109,20 @@ const title = computed(() => {
 
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    default_locale: props.settings?.default_locale || '',
+    default_direction: props.settings?.default_direction || 'ltr',
+    default_timezone: props.settings?.default_timezone || ''
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.localization.update'), {
+        onSuccess: () => {
+            // Handle success
+        },
+        onError: () => {
+            // Handle error
+        }
+    })
 }
 </script>

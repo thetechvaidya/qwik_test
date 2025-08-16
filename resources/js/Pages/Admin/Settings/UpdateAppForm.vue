@@ -38,6 +38,9 @@ const props = defineProps({
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Reactive variables
+const loading = ref(false)
+
 // Computed
 const title = computed(() => {
     return __('Settings/ Update App Form') + ' - ' + pageProps.general.app_name
@@ -49,6 +52,21 @@ const form = useForm({
 })
 
 // Methods
+const clearCache = () => {
+    loading.value = true
+    
+    form.post(route('admin.settings.clear-cache'), {
+        onSuccess: () => {
+            loading.value = false
+            // Show success message
+        },
+        onError: () => {
+            loading.value = false
+            // Show error message
+        }
+    })
+}
+
 const updateSettings = () => {
     // Add form submission logic
 }

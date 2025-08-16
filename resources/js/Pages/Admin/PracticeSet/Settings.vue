@@ -166,18 +166,42 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import SelectButton from 'primevue/selectbutton'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper'
+import PopInfo from '@/Components/PopInfo'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    practiceSet: {
+        type: Object,
+        default: () => ({})
+    },
+    editFlag: {
+        type: Boolean,
+        default: false
+    },
+    steps: {
+        type: Array,
+        default: () => []
+    }
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Reactive variables
+const editFlag = computed(() => props.editFlag)
+const practiceSet = computed(() => props.practiceSet)
+const steps = computed(() => props.steps)
+
 // Computed
 const title = computed(() => {
     return __('Practice Set/ Settings') + ' - ' + pageProps.general.app_name
 })
+
+// Form handling
+const submitForm = () => {
+    // Add form submission logic
+}
 </script>

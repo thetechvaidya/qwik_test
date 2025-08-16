@@ -36,6 +36,10 @@ const props = defineProps({
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Reactive variables
+const appVersion = ref(pageProps.general?.app_version || '1.0.0')
+const debugMode = ref(pageProps.settings?.debug_mode || false)
+
 // Computed
 const title = computed(() => {
     return __('Settings/ Maintenance Settings') + ' - ' + pageProps.general.app_name

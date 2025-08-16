@@ -90,6 +90,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import Button from 'primevue/button'
 
 // Props
 const props = defineProps({
