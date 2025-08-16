@@ -9,4 +9,9 @@
                 <slot name="description"></slot>
             </p>
         </div>
-    </template>
+    </div>
+</template>
+
+<script setup>
+// This component doesn't need any script logic
+</script>
