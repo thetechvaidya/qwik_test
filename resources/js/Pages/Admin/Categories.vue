@@ -50,10 +50,7 @@
                                     <template #actions>
                                         <button
                                             class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
+                                            @click="editForm = true; currentId = props.row.id"
                                             >{{ __('Edit') }}</button
                                         >
                                         <button class="action-item" @click="deleteCategory(props.row.id)">{{
