@@ -1,3 +1,7 @@
+<template>
+    <canvas></canvas>
+</template>
+
 <script>
 import Chart from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
