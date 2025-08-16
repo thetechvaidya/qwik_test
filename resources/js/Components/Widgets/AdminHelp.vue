@@ -12,3 +12,9 @@
         </div>
     </div>
 </template>
+
+<script setup>
+import { useTranslate } from '@/composables/useTranslate'
+
+const { __ } = useTranslate()
+</script>

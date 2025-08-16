@@ -7,3 +7,7 @@
         />
     </a>
 </template>
+
+<script setup>
+// This component doesn't need any script logic
+</script>

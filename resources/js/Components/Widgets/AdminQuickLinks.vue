@@ -53,3 +53,10 @@
         </div>
     </div>
 </template>
+
+<script setup>
+import { Link } from '@inertiajs/vue3'
+import { useTranslate } from '@/composables/useTranslate'
+
+const { __ } = useTranslate()
+</script>

@@ -36,28 +36,53 @@ import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 // Props
 const props = defineProps({
     settings: Object,
     errors: Object,
+    debugMode: {
+        type: Boolean,
+        default: false
+    }
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Reactive variables
+const mode = ref(props.debugMode)
+const loading = ref(false)
+
 // Computed
 const title = computed(() => {
     return __('Settings/ Debug Mode Form') + ' - ' + pageProps.general.app_name
 })
 
+const debugMode = computed(() => props.debugMode)
+
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    debug_mode: props.debugMode
 })
 
 // Methods
+const updateMode = () => {
+    loading.value = true
+    form.debug_mode = mode.value
+    
+    form.post(route('admin.settings.debug-mode.update'), {
+        onSuccess: () => {
+            loading.value = false
+        },
+        onError: () => {
+            loading.value = false
+        }
+    })
+}
+
 const updateSettings = () => {
     // Add form submission logic
 }
