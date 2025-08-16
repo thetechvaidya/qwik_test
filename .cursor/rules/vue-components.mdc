@@ -1,0 +1,61 @@
+---
+globs: *.vue,*.js
+description: Vue.js component development standards
+---
+
+# Vue.js Component Development
+
+## Component Structure
+Follow the established patterns in the codebase:
+
+### Component Organization
+- **Cards**: Reusable UI cards in [resources/js/Components/Cards/](mdc:resources/js/Components/Cards/)
+- **Forms**: Form components in [resources/js/Components/Forms/](mdc:resources/js/Components/Forms/)
+- **Questions**: Question-related components in [resources/js/Components/Questions/](mdc:resources/js/Components/Questions/)
+- **Buttons**: Button variations in [resources/js/Components/Buttons/](mdc:resources/js/Components/Buttons/)
+
+### Naming Conventions
+- Use PascalCase for component names: `ExamCard.vue`, `QuestionForm.vue`
+- Use descriptive, specific names that indicate component purpose
+- Group related components in subdirectories
+
+### Component Structure
+```vue
+<template>
+  <!-- Use semantic HTML -->
+  <!-- Apply consistent styling classes -->
+</template>
+
+<script>
+// Import dependencies at top
+// Use composition API when beneficial
+// Keep computed properties and methods organized
+</script>
+
+<style scoped>
+/* Use scoped styles */
+/* Follow existing CSS conventions */
+</style>
+```
+
+### State Management
+- Use Vuex store in [resources/js/Store/](mdc:resources/js/Store/) for global state
+- Keep component-specific state local
+- Use props and events for parent-child communication
+
+### Layout Components
+- Main layouts in [resources/js/Layouts/](mdc:resources/js/Layouts/)
+- Use [AdminLayout.vue](mdc:resources/js/Layouts/AdminLayout.vue) for admin pages
+- Use [AppLayout.vue](mdc:resources/js/Layouts/AppLayout.vue) for user pages
+
+### Page Components
+- Admin pages in [resources/js/Pages/Admin/](mdc:resources/js/Pages/Admin/)
+- User pages in [resources/js/Pages/User/](mdc:resources/js/Pages/User/)
+- Auth pages in [resources/js/Pages/Auth/](mdc:resources/js/Pages/Auth/)
+
+### Best Practices
+- Use props validation with types
+- Emit events for parent communication
+- Use slots for flexible content insertion
+- Keep components focused and reusable
+- Follow established patterns for loading states and error handling

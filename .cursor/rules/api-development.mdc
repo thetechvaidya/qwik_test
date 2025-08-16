@@ -1,0 +1,77 @@
+---
+globs: *.php
+description: API development standards and patterns
+---
+
+# API Development Standards
+
+## API Structure
+The application uses API routes defined in [routes/api.php](mdc:routes/api.php) with controllers in [app/Http/Controllers/Api/](mdc:app/Http/Controllers/Api/).
+
+## Response Formatting
+### Use Transformers
+- Transform data using dedicated classes: [app/Transformers/Platform/](mdc:app/Transformers/Platform/)
+- Admin transformers: [app/Transformers/Admin/](mdc:app/Transformers/Admin/)
+- User transformers: [app/Transformers/User/](mdc:app/Transformers/User/)
+
+Example transformer usage:
+```php
+// In controller
+use App\Transformers\Platform\ExamCardTransformer;
+
+return ExamCardTransformer::transform($exam);
+```
+
+### Consistent Response Structure
+```php
+// Success responses
+return response()->json([
+    'success' => true,
+    'data' => $transformedData,
+    'message' => 'Operation completed successfully'
+], 200);
+
+// Error responses
+return response()->json([
+    'success' => false,
+    'message' => 'Error description',
+    'errors' => $validationErrors // if applicable
+], 400);
+```
+
+## Authentication & Authorization
+- Use Laravel Sanctum for API authentication
+- Implement middleware for role-based access: [app/Http/Middleware/](mdc:app/Http/Middleware/)
+- Check user permissions in controllers or middleware
+
+## Validation
+- Use Form Request classes for API validation: [app/Http/Requests/](mdc:app/Http/Requests/)
+- Create separate request classes for different endpoints
+- Return validation errors in consistent format
+
+## Filtering & Pagination
+- Use Filter classes for complex queries: [app/Filters/](mdc:app/Filters/)
+- Implement consistent pagination
+- Support sorting and filtering parameters
+
+Example filter usage:
+```php
+// In controller
+use App\Filters\ExamFilters;
+
+$exams = Exam::filter(new ExamFilters(request()))
+    ->with('category')
+    ->paginate(15);
+```
+
+## Error Handling
+- Use appropriate HTTP status codes
+- Provide meaningful error messages
+- Log errors for debugging
+- Handle exceptions gracefully in [app/Exceptions/Handler.php](mdc:app/Exceptions/Handler.php)
+
+## Performance Considerations
+- Use eager loading to prevent N+1 queries
+- Implement caching for frequently accessed data
+- Use database indexing for filtered columns
+- Consider API rate limiting for public endpoints

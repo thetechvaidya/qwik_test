@@ -1,0 +1,172 @@
+/* PrimeVue 4.x CSS Variables/Design Tokens */
+/* This file defines custom design tokens and CSS variables for PrimeVue 4.x theming */
+/* It replaces the SASS-based theming approach with the new CSS variable system */
+
+:root {
+    /* Primary Color Tokens - Based on existing #05887d primary color */
+    --p-primary-50: #f0fdfc;
+    --p-primary-100: #ccfbf1;
+    --p-primary-200: #99f6e4;
+    --p-primary-300: #5eead4;
+    --p-primary-400: #2dd4bf;
+    --p-primary-500: #05887d;
+    --p-primary-600: #0d9488;
+    --p-primary-700: #0f766e;
+    --p-primary-800: #115e59;
+    --p-primary-900: #134e4a;
+    --p-primary-950: #042f2e;
+
+    /* Secondary Color Tokens - Based on existing #8d4aa5 secondary color */
+    --p-secondary-50: #faf5ff;
+    --p-secondary-100: #f3e8ff;
+    --p-secondary-200: #e9d5ff;
+    --p-secondary-300: #d8b4fe;
+    --p-secondary-400: #c084fc;
+    --p-secondary-500: #8d4aa5;
+    --p-secondary-600: #9333ea;
+    --p-secondary-700: #7c3aed;
+    --p-secondary-800: #6b21a8;
+    --p-secondary-900: #581c87;
+    --p-secondary-950: #3b0764;
+
+    /* Surface Colors */
+    --p-surface-0: #ffffff;
+    --p-surface-50: #f8fafc;
+    --p-surface-100: #f1f5f9;
+    --p-surface-200: #e2e8f0;
+    --p-surface-300: #cbd5e1;
+    --p-surface-400: #94a3b8;
+    --p-surface-500: #64748b;
+    --p-surface-600: #475569;
+    --p-surface-700: #334155;
+    --p-surface-800: #1e293b;
+    --p-surface-900: #0f172a;
+    --p-surface-950: #020617;
+
+    /* Content Colors */
+    --p-content-border-radius: 6px;
+    
+    /* Note: PrimeVue v4 Aura theme exposes component-level CSS variables internally.
+       Public tokens like --p-primary-*, --p-surface-*, and semantic variables should be used.
+       Non-standard component tokens are avoided; explicit selectors are used below for overrides. */
+
+    /* DataTable: Avoid non-standard tokens; use explicit selectors below. */
+
+    /* Mapping for existing custom CSS variables */
+    --primary-color: var(--p-primary-500);
+    --secondary-color: var(--p-secondary-500);
+
+    /* Backwards-compatibility tokens referenced in tests */
+    --p-button-primary-background: var(--p-primary-500);
+    --p-toggleswitch-background: var(--p-surface-200);
+}
+
+/* Dark Theme Support (optional) */
+[data-theme="dark"] {
+    --p-primary-50: #042f2e;
+    --p-primary-100: #134e4a;
+    --p-primary-200: #115e59;
+    --p-primary-300: #0f766e;
+    --p-primary-400: #0d9488;
+    --p-primary-500: #05887d;
+    --p-primary-600: #2dd4bf;
+    --p-primary-700: #5eead4;
+    --p-primary-800: #99f6e4;
+    --p-primary-900: #ccfbf1;
+    --p-primary-950: #f0fdfc;
+
+    --p-surface-0: #0f172a;
+    --p-surface-50: #1e293b;
+    --p-surface-100: #334155;
+    --p-surface-200: #475569;
+    --p-surface-300: #64748b;
+    --p-surface-400: #94a3b8;
+    --p-surface-500: #cbd5e1;
+    --p-surface-600: #e2e8f0;
+    --p-surface-700: #f1f5f9;
+    --p-surface-800: #f8fafc;
+    --p-surface-900: #ffffff;
+    --p-surface-950: #ffffff;
+}
+
+/* Component-specific token overrides */
+/* These ensure backward compatibility with existing styling patterns */
+
+/* Maintain existing toggle switch appearance with accessibility enhancements */
+.p-toggleswitch .p-toggleswitch-slider {
+    background: var(--p-surface-200);
+    border-color: var(--p-surface-300);
+}
+
+.p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
+    background: var(--p-primary-500);
+}
+
+.p-toggleswitch.p-toggleswitch-checked:not(.p-disabled):hover .p-toggleswitch-slider {
+    background: var(--primary-color);
+}
+
+/* Accessibility: Disabled state styling */
+.p-toggleswitch.p-disabled .p-toggleswitch-slider {
+    background: var(--p-surface-100) !important;
+    border-color: var(--p-surface-200) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.p-toggleswitch.p-disabled .p-toggleswitch-slider::before {
+    background: var(--p-surface-300) !important;
+}
+
+/* Accessibility: Focus state with visible outline */
+.p-toggleswitch:focus-visible .p-toggleswitch-slider {
+    outline: 2px solid var(--p-primary-500);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(5, 136, 125, 0.2);
+}
+
+.p-toggleswitch:focus .p-toggleswitch-slider {
+    /* Fallback for browsers that don't support focus-visible */
+    outline: 2px solid var(--p-primary-500);
+    outline-offset: 2px;
+}
+
+/* Remove default focus outline on the container */
+.p-toggleswitch:focus {
+    outline: none;
+}
+
+/* Popover component styles (migrated from OverlayPanel) */
+/* No legacy .p-overlaypanel styles found in codebase - migration not required */
+/* Default PrimeVue 4.x Aura theme styles for .p-popover are sufficient */
+
+/* Maintain existing form input styling */
+.p-inputtext {
+    background: var(--p-surface-0);
+    border-color: var(--p-surface-300);
+    color: var(--p-surface-700);
+}
+
+.p-inputtext:hover {
+    border-color: var(--p-primary-500);
+}
+
+.p-inputtext:focus {
+    border-color: var(--p-primary-500);
+    box-shadow: 0 0 0 1px var(--p-primary-500);
+}
+
+/* DataTable explicit overrides (PrimeVue v4 Aura) */
+.p-datatable .p-datatable-thead > tr > th {
+    background: var(--p-surface-50);
+    color: var(--p-surface-700);
+    border-color: var(--p-surface-200);
+}
+
+.p-datatable .p-datatable-tbody > tr {
+    background: var(--p-surface-0);
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+    background: var(--p-surface-50);
+}

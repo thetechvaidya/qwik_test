@@ -1,0 +1,104 @@
+---
+globs: *Test.php,*.test.js
+description: Testing patterns and conventions
+---
+
+# Testing Patterns & Conventions
+
+## Test Organization
+Follow Laravel testing conventions with the existing structure in [tests/](mdc:tests/):
+
+### Directory Structure
+- **Feature Tests**: Integration tests for complete features
+- **Unit Tests**: Isolated component testing like [ExampleTest.php](mdc:tests/Unit/ExampleTest.php)
+- **Browser Tests**: For frontend testing if needed
+
+### Test Naming
+- Use descriptive test method names: `test_user_can_create_exam()`
+- Group related tests in test classes: `ExamTest`, `CategoryTest`
+- Use `TestCase` base class: [TestCase.php](mdc:tests/TestCase.php)
+
+## Testing Patterns
+
+### Feature Tests
+Test complete user workflows:
+```php
+class ExamManagementTest extends TestCase
+{
+    use RefreshDatabase;
+    
+    public function test_admin_can_create_exam()
+    {
+        // Arrange
+        $admin = User::factory()->admin()->create();
+        $category = Category::factory()->create();
+        
+        // Act
+        $response = $this->actingAs($admin)
+            ->post('/admin/exams', [
+                'title' => 'Test Exam',
+                'category_id' => $category->id,
+                // ... other fields
+            ]);
+        
+        // Assert
+        $response->assertRedirect();
+        $this->assertDatabaseHas('exams', ['title' => 'Test Exam']);
+    }
+}
+```
+
+### Unit Tests
+Test individual components:
+```php
+class CategoryTest extends TestCase
+{
+    public function test_category_has_many_exams()
+    {
+        $category = Category::factory()->create();
+        $exam = Exam::factory()->create(['category_id' => $category->id]);
+        
+        $this->assertTrue($category->exams->contains($exam));
+    }
+}
+```
+
+### API Testing
+Test API endpoints thoroughly:
+```php
+public function test_api_returns_exam_data()
+{
+    $exam = Exam::factory()->create();
+    
+    $response = $this->getJson("/api/exams/{$exam->id}");
+    
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'success',
+            'data' => [
+                'id',
+                'title',
+                'description',
+                // ... expected fields
+            ]
+        ]);
+}
+```
+
+## Database Testing
+- Use `RefreshDatabase` trait for clean test state
+- Create factories for models: [UserFactory.php](mdc:database/factories/UserFactory.php)
+- Use `assertDatabaseHas()` and `assertDatabaseMissing()` for verification
+
+## Authentication Testing
+- Test different user roles (Admin, Instructor, User)
+- Verify permission restrictions
+- Test authentication flows
+
+## Best Practices
+- Keep tests focused and independent
+- Use descriptive test names
+- Follow AAA pattern: Arrange, Act, Assert
+- Test both happy path and edge cases
+- Mock external dependencies when appropriate
+- Use factories for test data creation

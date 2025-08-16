@@ -1,0 +1,153 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run PrimeVue Regression Test",
+			"type": "shell",
+			"command": "php artisan test tests/Feature/PrimeVue3ComponentRegressionTest.php --verbose",
+			"group": "test"
+		},
+		{
+			"label": "Run PrimeVue Regression Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Feature/PrimeVue3ComponentRegressionTest.php --verbose",
+			"group": "test"
+		},
+		{
+			"label": "Check PHP Version",
+			"type": "shell",
+			"command": "php --version",
+			"group": "test"
+		},
+		{
+			"label": "Run PrimeVue Regression Test with PHPUnit",
+			"type": "shell",
+			"command": "vendor/bin/phpunit tests/Feature/PrimeVue3ComponentRegressionTest.php --verbose",
+			"group": "test"
+		},
+		{
+			"label": "Run PrimeVue Regression Test",
+			"type": "shell",
+			"command": "vendor/bin/phpunit tests/Feature/PrimeVue3ComponentRegressionTest.php",
+			"group": "test"
+		},
+		{
+			"label": "PHPUnit Test",
+			"type": "shell",
+			"command": "vendor\\bin\\phpunit tests\\Feature\\PrimeVue3ComponentRegressionTest.php",
+			"group": "test"
+		},
+		{
+			"label": "PHPUnit Regression Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Feature/PrimeVue3ComponentRegressionTest.php",
+			"group": "test"
+		},
+		{
+			"label": "Run Enhanced Regression Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Feature/PrimeVue3ComponentRegressionTest.php",
+			"group": "test"
+		},
+		{
+			"label": "Run Hex Validation Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php",
+			"group": "test"
+		},
+		{
+			"label": "Test Invalid Hex Strings",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_invalid_hex_strings",
+			"group": "test"
+		},
+		{
+			"label": "Debug Test Invalid Hex",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_invalid_hex_strings -v",
+			"group": "test"
+		},
+		{
+			"label": "Debug Hex Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_debug_specific_case",
+			"group": "test"
+		},
+		{
+			"label": "Debug Fallback Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_fallback_handling",
+			"group": "test"
+		},
+		{
+			"label": "Debug Edge Cases",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_debug_edge_cases",
+			"group": "test"
+		},
+		{
+			"label": "Test Edge Cases Fix",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php --filter test_debug_edge_cases",
+			"group": "test"
+		},
+		{
+			"label": "Run Full Hex Test Suite",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php",
+			"group": "test"
+		},
+		{
+			"label": "Final Hex Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/HexValidationTest.php",
+			"group": "test"
+		},
+		{
+			"label": "Run Color Normalization Tests",
+			"type": "shell",
+			"command": "vendor/bin/phpunit tests/Unit/ColorNormalizationTest.php --testdox",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run PrimeVue Config Test",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Migration/PrimeVue4xMigrationTest.php --filter test_primevue_config_updated",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run PrimeVue Migration Tests",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Migration/PrimeVue4xMigrationTest.php",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run All Unit Tests",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Unit/",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run All Feature Tests",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit tests/Feature/ --testdox",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Run Unit and Feature Tests",
+			"type": "shell",
+			"command": "./vendor/bin/phpunit --testsuite Unit,Feature --testdox",
+			"isBackground": false,
+			"group": "test"
+		}
+	]
+}

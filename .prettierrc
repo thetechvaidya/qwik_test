@@ -1,0 +1,13 @@
+# Prettier Configuration for Vue 3 Template Formatting
+semi: false
+singleQuote: true
+trailingComma: es5
+tabWidth: 4
+useTabs: false
+printWidth: 120
+bracketSpacing: true
+bracketSameLine: false
+arrowParens: avoid
+vueIndentScriptAndStyle: false
+htmlWhitespaceSensitivity: strict
+endOfLine: lf

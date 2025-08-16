@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+description: Laravel coding patterns and conventions for the quiz system
+---
+
+# Laravel Development Patterns
+
+## Project Structure
+This is a Laravel-based quiz/exam management system with the following key areas:
+- **Quiz/Exam Management**: Categories, questions, sessions, schedules
+- **User Management**: Admin, Instructor, and User roles with different permissions
+- **Payment System**: Subscriptions, billing, checkout functionality
+- **Content Management**: Lessons, videos, comprehension passages
+- **Reporting**: Export functionality for sessions and analytics
+
+## Coding Standards
+
+### Controllers
+- Use Resource Controllers when possible: `php artisan make:controller ExamController --resource`
+- Separate Admin, User, and API controllers into respective namespaces
+- Follow pattern: [ExamController.php](mdc:app/Http/Controllers/Admin/ExamController.php)
+- Use Request classes for validation: [ExamRequest.php](mdc:app/Http/Requests/Admin/ExamRequest.php)
+- Keep controller methods thin - delegate to repositories or services
+
+### Models
+- Use proper relationships and eager loading to prevent N+1 queries
+- Implement model transformers for API responses: [ExamCardTransformer.php](mdc:app/Transformers/Platform/ExamCardTransformer.php)
+- Use traits for shared functionality: [HasImage.php](mdc:app/Traits/HasImage.php), [SecureDeletes.php](mdc:app/Traits/SecureDeletes.php)
+- Follow naming: [Category.php](mdc:app/Models/Category.php), [ExamSession.php](mdc:app/Models/ExamSession.php)
+
+### Repositories
+- Use repository pattern for complex queries: [ExamRepository.php](mdc:app/Repositories/ExamRepository.php)
+- Keep repositories focused on data access logic
+- Use dependency injection in controllers
+
+### Settings
+- Use dedicated Settings classes for configuration: [CategorySettings.php](mdc:app/Settings/CategorySettings.php)
+- Store user preferences and system configurations separately
+
+### Validation
+- Create dedicated Request classes for each form/API endpoint
+- Use custom validation rules when needed
+- Group related validation in [PasswordValidationRules.php](mdc:app/Actions/Fortify/PasswordValidationRules.php)
+
+### File Organization
+- Follow Laravel conventions strictly
+- Group related functionality in subdirectories (Admin/, User/, Platform/)
+- Use consistent naming patterns across similar components

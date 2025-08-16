@@ -1,0 +1,14 @@
+<template>
+    <div class="mb-6">
+        <Skeleton width="10rem" class="mb-2"></Skeleton>
+        <Skeleton height="2rem"></Skeleton>
+    </template>
+<script>
+    import Skeleton from 'primevue/skeleton';
+    export default {
+        name: "PracticeQuestionShimmer",
+        components: {
+            Skeleton
+        }
+    }
+</script>

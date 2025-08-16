@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         executionOrder="depends,defects"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true"
+         verbose="true"
+         timeoutForSmallTests="60"
+         timeoutForMediumTests="300"
+         timeoutForLargeTests="600">
+    
+    <testsuites>
+        <testsuite name="ComprehensiveBackend">
+            <file>tests/TestSuite.php</file>
+        </testsuite>
+        
+        <testsuite name="Database and Core Infrastructure">
+            <file>tests/Feature/DatabaseIntegrityTest.php</file>
+            <file>tests/Feature/HelperFunctionsTest.php</file>
+        </testsuite>
+        
+        <testsuite name="Authentication and Security">
+            <file>tests/Feature/AuthenticationTest.php</file>
+        </testsuite>
+        
+        <testsuite name="Core Business Logic">
+            <file>tests/Feature/ExamQuizSystemTest.php</file>
+            <file>tests/Feature/PaymentProcessingTest.php</file>
+        </testsuite>
+        
+        <testsuite name="Admin and Management">
+            <file>tests/Feature/AdminFunctionalityTest.php</file>
+            <file>tests/Feature/FileManagementTest.php</file>
+            <file>tests/Feature/DataExportImportTest.php</file>
+        </testsuite>
+        
+        <testsuite name="API and Integration">
+            <file>tests/Feature/ApiEndpointTest.php</file>
+        </testsuite>
+    </testsuites>
+    
+    <coverage>
+        <include>
+            <directory suffix=".php">./app</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">./app/Console/Commands</directory>
+            <file>./app/Exceptions/Handler.php</file>
+            <file>./app/Http/Middleware/Authenticate.php</file>
+            <file>./app/Http/Middleware/EncryptCookies.php</file>
+            <file>./app/Http/Middleware/PreventRequestsDuringMaintenance.php</file>
+            <file>./app/Http/Middleware/RedirectIfAuthenticated.php</file>
+            <file>./app/Http/Middleware/TrimStrings.php</file>
+            <file>./app/Http/Middleware/TrustHosts.php</file>
+            <file>./app/Http/Middleware/TrustProxies.php</file>
+            <file>./app/Http/Middleware/ValidateSignature.php</file>
+            <file>./app/Http/Middleware/VerifyCsrfToken.php</file>
+            <file>./app/Http/Kernel.php</file>
+            <file>./app/Providers/RouteServiceProvider.php</file>
+        </exclude>
+        <report>
+            <html outputDirectory="storage/app/test-coverage"/>
+            <text outputFile="storage/app/coverage.txt"/>
+            <clover outputFile="storage/app/coverage.xml"/>
+        </report>
+    </coverage>
+    
+    <logging>
+        <junit outputFile="storage/app/test-results.xml"/>
+        <teamcity outputFile="storage/app/teamcity.txt"/>
+        <testdoxHtml outputFile="storage/app/testdox.html"/>
+        <testdoxText outputFile="storage/app/testdox.txt"/>
+    </logging>
+    
+    <php>
+        <server name="APP_ENV" value="testing"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_DRIVER" value="array"/>
+        <server name="DB_CONNECTION" value="sqlite"/>
+        <server name="DB_DATABASE" value=":memory:"/>
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+        <server name="SANCTUM_STATEFUL_DOMAINS" value="localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1"/>
+        <env name="APP_KEY" value="base64:V1k1WkVqM1E2UzZPREFIaVpzZkJHUT09"/>
+    </php>
+    
+    <extensions>
+        <extension class="\Pest\Laravel\PestServiceProvider"/>
+    </extensions>
+</phpunit>
