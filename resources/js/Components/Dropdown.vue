@@ -16,17 +16,18 @@
             leave-class="transform opacity-100 scale-100"
             leave-to-class="transform opacity-0 scale-95">
             <div
-v-show="open"
-                    class="absolute z-50 mt-2 shadow rounded"
-                    :class="[widthClass, alignmentClasses]"
-                    style="display: none;"
-                    @click="open = false">
+                v-show="open"
+                class="absolute z-50 mt-2 shadow rounded"
+                :class="[widthClass, alignmentClasses]"
+                style="display: none;"
+                @click="open = false">
                 <div class="rounded-sm ring-1 ring-black ring-opacity-5" :class="contentClasses">
                     <slot name="content"></slot>
                 </div>
             </div>
         </transition>
-    </template>
+    </div>
+</template>
 
 <script>
     export default {
@@ -73,11 +74,18 @@ v-show="open"
                 }
             }
 
-            this.$once('hook:destroyed', () => {
-                document.removeEventListener('keydown', closeOnEscape)
-            })
-
             document.addEventListener('keydown', closeOnEscape)
+            
+            // Store cleanup function for beforeUnmount
+            this._closeOnEscapeCleanup = () => {
+                document.removeEventListener('keydown', closeOnEscape)
+            }
+        },
+
+        beforeUnmount() {
+            if (this._closeOnEscapeCleanup) {
+                this._closeOnEscapeCleanup()
+            }
         }
     }
 </script>

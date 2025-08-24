@@ -13,84 +13,129 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="options"
-                        :columns="columns"
-                        :total-rows="quizTypes.meta.pagination.total"
-                        :rows="quizTypes.data"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :rowsPerPageOptions="[10, 25, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        class="p-datatable-sm"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    icon="pi pi-copy"
-                                    class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="handleCopyClick(props.row.code)"
+                        <Column
+                            v-for="col in columns"
+                            :key="col.field"
+                            :field="col.field"
+                            :header="col.label"
+                            :sortable="col.sortable"
+                            :showFilterMenu="false"
+                        >
+                            <template #filter="{ filterModel, filterCallback }" v-if="col.filterOptions?.enabled">
+                                <InputText
+                                    v-if="!col.filterOptions.filterDropdownItems"
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
                                 />
-                            </div>
+                                <Select
+                                    v-else
+                                    v-model="filterModel.value"
+                                    :options="col.filterOptions.filterDropdownItems"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
+                            
+                            <template #body="slotProps">
+                                <!-- Code Column -->
+                                <div v-if="slotProps.field === 'code'">
+                                    <Tag
+                                        :value="slotProps.data.code"
+                                        icon="pi pi-copy"
+                                        class="w-full p-mr-2 text-sm cursor-pointer"
+                                        @click="handleCopyClick(slotProps.data.code)"
+                                    />
+                                </div>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
+                                <!-- Status Column -->
+                                <div v-else-if="slotProps.field === 'status'">
+                                    <span :class="[slotProps.data.status ? 'badge-success' : 'badge-danger', 'badge']">{{ 
+                                        slotProps.data.status ? __('Active') : __('In-active')
+                                    }}</span>
+                                </div>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                                currentRecord = props.row
-                                            "
-                                            >Edit</button
-                                        >
-                                        <button class="action-item" @click="deleteRecord(props.row.id)">Delete</button>
+                                <!-- Actions Column -->
+                                <div v-else-if="slotProps.field === 'actions'">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                                    editForm = true;
+                                                    currentId = slotProps.data.id;
+                                                    currentRecord = slotProps.data;
+                                                "
+                                            >
+                                                <i class="pi pi-pencil"></i>
+                                                {{ __('Edit') }}
+                                            </button>
+                                            <button class="action-item text-red-600" @click="deleteRecord(slotProps.data.id)">
+                                                <i class="pi pi-trash"></i>
+                                                {{ __('Delete') }}
+                                            </button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
+
+                                <!-- Default Column -->
+                                <span v-else>{{ slotProps.data[slotProps.field] }}</span>
+                            </template>
+                        </Column>
+
+                        <template #empty>
+                            <div class="text-center py-8">
+                                <NoDataTable>
+                                    <template #action>
+                                        <button class="qt-btn qt-btn-success" @click="createForm = true">
+                                            {{ __('New') }} {{ __('Quiz Type') }}
+                                        </button>
                                     </template>
-                                </ActionsDropdown>
+                                </NoDataTable>
                             </div>
-
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
                         </template>
-
-                        <template #emptystate>
-                            <NoDataTable>
-                                <template #action>
-                                    <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
-                                        {{ __('New') }} {{ __('Quiz Type') }}
-                                    </button>
-                                </template>
-                            </NoDataTable>
-                        </template>
-                    </vue-good-table>
-
-                    <!-- Sidebar Forms -->
-                    <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
-                        <create-form :title="__('Create') + ' ' + __('Quiz Type')" @close="createForm = false" />
-                    </Drawer>
-                    <Drawer v-model:visible="editForm" position="right" class="p-drawer-md">
-                        <edit-form
-                            :current-id="currentId"
-                            :initial-data="currentRecord"
-                            :title="__('Edit') + ' ' + __('Quiz Type')"
-                            @close="editForm = false"
-                        />
-                    </Drawer>
+                    </DataTable>
                 </div>
             </div>
         </div>
+
+        <!-- Create Form Drawer -->
+        <Drawer v-model:visible="createForm" :header="__('New Quiz Type')" position="right" class="!w-full md:!w-80">
+            <CreateForm @close="createForm = false" />
+        </Drawer>
+
+        <!-- Edit Form Drawer -->
+        <Drawer
+            v-model:visible="editForm"
+            :header="__('Edit Quiz Type')"
+            position="right"
+            class="!w-full md:!w-80"
+        >
+            <EditForm :quiz-type="currentRecord" @close="editForm = false" />
+        </Drawer>
     </AdminLayout>
 </template>
 
@@ -102,6 +147,11 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import { FilterMatchMode } from '@primevue/core/api'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
@@ -126,7 +176,60 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
-const { columns, options, onPageChange, onPerPageChange, onColumnFilter } = useServerTable()
+
+// Initialize filters for DataTable
+const filters = ref({
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
+// Server table configuration
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    resourceKeys: ['quizTypes'],
+    routeName: 'admin.quiz-types.index',
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            sortable: true,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Filter by code'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+        },
+        {
+            label: __('Name'),
+            field: 'name',
+            sortable: true,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Filter by name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: true,
+            filterOptions: {
+                enabled: true,
+                filterDropdownItems: [
+                    { value: true, text: __('Active') },
+                    { value: false, text: __('In-active') },
+                ],
+                placeholder: __('Filter by status'),
+                filterValue: null,
+            },
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+        },
+    ],
+})
 
 // Reactive data
 const createForm = ref(false)
@@ -138,47 +241,6 @@ const currentRecord = ref({})
 const title = computed(() => {
     return __('Quiz Types') + ' - ' + pageProps.general.app_name
 })
-
-// Table configuration
-columns.value = [
-    {
-        label: __('Code'),
-        field: 'code',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by code'),
-        },
-    },
-    {
-        label: __('Name'),
-        field: 'name',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by name'),
-        },
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            filterDropdownItems: [
-                { value: true, text: __('Active') },
-                { value: false, text: __('In-active') },
-            ],
-            placeholder: __('Filter by status'),
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-        width: '100px',
-    },
-]
 
 // Methods
 const handleCopyClick = code => {

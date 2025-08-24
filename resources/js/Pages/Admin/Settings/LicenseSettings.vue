@@ -16,14 +16,15 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import LicenseSettingsForm from '@/Pages/Admin/Settings/LicenseSettingsForm.vue'
 import { useTranslate } from '@/composables/useTranslate'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    licenseSettings: Object,
 })
 
 // Composables

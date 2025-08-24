@@ -1,29 +1,38 @@
 <template>
-    <div
-        class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
-    >
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
         <Head title="Register" />
+        
+        <!-- Modern Header -->
+        <ModernHeader :showSearch="false" />
+        
+        <!-- Register Content -->
+        <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
 
         <div class="max-w-lg w-full space-y-8">
-            <!-- Header -->
+            <!-- Enhanced Header -->
             <div class="text-center">
-                <div class="mx-auto h-12 w-auto flex items-center justify-center">
-                    <div
-                        class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center"
-                    >
-                        <i class="pi pi-user-plus text-white text-xl"></i>
+                <div class="mx-auto h-16 w-auto flex items-center justify-center mb-6">
+                    <div class="relative">
+                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+                            <i class="pi pi-user-plus text-white text-2xl"></i>
+                        </div>
+                        <!-- Glow effect -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl blur-lg opacity-30 -z-10"></div>
                     </div>
                 </div>
-                <h2 class="mt-6 text-3xl font-bold text-gray-900">
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
                     {{ __('Create Your Account') }}
                 </h2>
-                <p class="mt-2 text-sm text-gray-600">
+                <p class="text-lg text-gray-600 max-w-md mx-auto">
                     {{ __('Join thousands of learners and start your journey today') }}
                 </p>
             </div>
 
-            <!-- Form Card -->
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            <!-- Enhanced Form Card -->
+            <div class="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 hover:shadow-3xl transition-all duration-300">
+                <!-- Card background effects -->
+                <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-indigo-50/30 rounded-3xl"></div>
+                <div class="relative z-10">
                 <!-- Status Message -->
                 <div v-if="status" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div class="flex">
@@ -300,7 +309,8 @@
                             {{ __('Create Account') }}
                         </Button>
                     </div>
-                </form>
+                </form></div>
+                </div>
 
                 <!-- Login Link -->
                 <div class="mt-8">
@@ -330,12 +340,17 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Modern Footer -->
+        <ModernFooter />
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
+import ModernHeader from '@/Components/Layout/ModernHeader.vue'
+import ModernFooter from '@/Components/Layout/ModernFooter.vue'
 import {
     createRegistrationValidation,
     useFormValidation,
@@ -344,6 +359,7 @@ import {
     getPasswordStrength,
 } from '@/composables/useFormValidation'
 import { useToast } from '@/composables/useToast'
+import { useTranslate } from '@/composables/useTranslate'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
@@ -356,6 +372,7 @@ const props = defineProps({
 // Composables
 const { handleSubmit, isSubmitting } = useFormValidation()
 const { registrationSuccess, error: showError } = useToast()
+const { __ } = useTranslate()
 
 // Form data
 const formData = reactive({
@@ -389,10 +406,26 @@ const handleRegister = async () => {
                         resolve()
                     },
                     onError: errors => {
-                        const errorMessages = Object.values(errors).flat()
-                        if (errorMessages.length > 0) {
-                            showError(errorMessages[0])
+                        console.log('Registration errors:', errors)
+                        
+                        // Handle specific registration errors
+                        if (errors.email && errors.email.includes('already been taken')) {
+                            showError('This email address is already registered. Please use a different email or try logging in.')
+                        } else if (errors.user_name && errors.user_name.includes('already been taken')) {
+                            showError('This username is already taken. Please choose a different username.')
+                        } else if (errors.password) {
+                            const passwordErrors = Array.isArray(errors.password) ? errors.password : [errors.password]
+                            showError(`Password requirements not met: ${passwordErrors.join(', ')}`)
+                        } else {
+                            // Get the first error message
+                            const errorMessages = Object.values(errors).flat()
+                            if (errorMessages.length > 0) {
+                                showError(errorMessages[0])
+                            } else {
+                                showError('Registration failed. Please check your information and try again.')
+                            }
                         }
+                        
                         reject(new Error('Registration failed'))
                     },
                     onFinish: () => {

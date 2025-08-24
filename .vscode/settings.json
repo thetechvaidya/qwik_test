@@ -1,3 +1,4 @@
 {
-    "traycer.alwaysAllowPayToRun": true
+    "traycer.alwaysAllowPayToRun": true,
+    "traycer.enableAutoAnalysis": false
 }

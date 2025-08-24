@@ -16,36 +16,43 @@
                 </Link>
             </div>
         </div>
-    </template>
-<script>
-    export default {
-        name: 'SidebarDropdown',
-        props: {
-            title: String,
-            items: Array,
-        },
-        data() {
-            return {
-                open: false
-            }
-        },
-        computed: {
-            urls() {
-                let arr = [];
-                this.items.forEach(item => arr.push(item.url));
-                return arr;
-            }
-        },
-        created() {
-            this.open = this.isOpen();
-        },
-        methods: {
-            isActive(url) {
-                return window.location.href === url;
-            },
-            isOpen() {
-                return this.urls.includes(window.location.href);
-            }
-        }
-    }
+    </div>
+</template>
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { Link } from '@inertiajs/vue3'
+import { useTranslate } from '@/composables/useTranslate'
+
+// Props
+const props = defineProps({
+    title: String,
+    items: Array,
+})
+
+// Composables
+const { __ } = useTranslate()
+
+// Reactive data
+const open = ref(false)
+
+// Computed properties
+const urls = computed(() => {
+    const arr = []
+    props.items.forEach(item => arr.push(item.url))
+    return arr
+})
+
+// Methods
+const isActive = (url) => {
+    return window.location.href === url
+}
+
+const isOpen = () => {
+    return urls.value.includes(window.location.href)
+}
+
+// Lifecycle
+onMounted(() => {
+    open.value = isOpen()
+})
 </script>

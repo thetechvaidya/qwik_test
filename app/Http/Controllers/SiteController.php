@@ -30,11 +30,11 @@ class SiteController extends Controller
     public function index(HomePageSettings $homePageSettings, SiteSettings $siteSettings)
     {
         // Cache homepage data for better performance
-        $homepageData = Cache::tags(['homepage', 'settings'])->remember('homepage_data', 3600, function () use ($homePageSettings, $siteSettings) {
+        $homepageData = Cache::remember('homepage_data', 3600, function () use ($homePageSettings, $siteSettings) {
             return [
                 'site' => [
                     'name' => $siteSettings->app_name,
-                    'description' => $siteSettings->app_description,
+                    'description' => $siteSettings->seo_description,
                     'logo' => $siteSettings->logo_path,
                 ],
                 'sections' => [

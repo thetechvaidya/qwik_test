@@ -40,7 +40,8 @@
                 </div>
             </vue-plyr>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import InputText from 'primevue/inputtext';
     import SelectButton from 'primevue/selectbutton';

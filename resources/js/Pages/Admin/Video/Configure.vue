@@ -25,20 +25,18 @@
                             <label class="pb-2 text-sm font-semibold text-gray-800"
                                 >{{ __('Sub Category') }}<span class="ltr:ml-1 rtl:mr-1 text-red-400">*</span></label
                             >
-                            <v-select
+                            <Select
                                 id="sub_category"
                                 v-model="v$.form.sub_category.$model"
                                 :options="subCategories"
-                                :reduce="category => category.id"
-                                label="name"
-                                :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                @search="searchSubCategories"
-                            >
-                                <template #no-options="{ search, searching }">
-                                    <span v-if="searching">{{ __('No results were found for this search') }}.</span>
-                                    <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                </template>
-                            </v-select>
+                                :optionValue="category => category.id"
+                                optionLabel="name"
+                                :placeholder="__('Select Sub Category')"
+                                filter
+                                showClear
+                                class="w-full"
+                                @filter="searchSubCategories"
+                            />
                             <div class="form-control-errors">
                                 <p
                                     v-if="v$.form.sub_category.$error && !v$.form.sub_category.required"
@@ -52,20 +50,18 @@
                             <label for="skill" class="pb-2 text-sm font-semibold text-gray-800"
                                 >{{ __('Skill') }}<span class="ltr:ml-1 rtl:mr-1 text-red-400">*</span></label
                             >
-                            <v-select
+                            <Select
                                 id="skill"
                                 v-model="v$.form.skill.$model"
                                 :options="skills"
-                                :reduce="skill => skill.id"
-                                label="name"
-                                :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                @search="searchSkills"
-                            >
-                                <template #no-options="{ search, searching }">
-                                    <span v-if="searching">{{ __('No results were found for this search') }}.</span>
-                                    <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                </template>
-                            </v-select>
+                                :optionValue="skill => skill.id"
+                                optionLabel="name"
+                                :placeholder="__('Select Skill')"
+                                filter
+                                showClear
+                                class="w-full"
+                                @filter="searchSkills"
+                            />
                             <div class="form-control-errors">
                                 <p
                                     v-if="v$.form.skill.$error && !v$.form.skill.required"
@@ -86,21 +82,83 @@
 </template>
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { Head, Link, usePage, router, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
+import Select from 'primevue/select'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
+import { debounce } from 'lodash'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    steps: Array,
+    errors: Object,
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Form data
+const form = useForm({
+    sub_category: '',
+    skill: ''
+})
+
+// Local state
+const subCategories = ref([])
+const skills = ref([])
+
+// Validation rules
+const validationRules = computed(() => ({
+    form: {
+        sub_category: { required },
+        skill: { required }
+    }
+}))
+
+const v$ = useVuelidate(validationRules, { form })
+
 // Computed
 const title = computed(() => {
     return __('Video/ Configure') + ' - ' + pageProps.general.app_name
 })
+
+// Search functions
+const searchSubCategories = debounce((event) => {
+    const query = event.value || ''
+    if (query.length >= 2) {
+        axios.get(route('admin.search_sub_categories'), {
+            params: { search: query }
+        }).then(response => {
+            subCategories.value = response.data || []
+        }).catch(error => {
+            console.error('Error searching subcategories:', error)
+        })
+    }
+}, 300)
+
+const searchSkills = debounce((event) => {
+    const query = event.value || ''
+    if (query.length >= 2) {
+        axios.get(route('admin.search_skills'), {
+            params: { search: query }
+        }).then(response => {
+            skills.value = response.data || []
+        }).catch(error => {
+            console.error('Error searching skills:', error)
+        })
+    }
+}, 300)
+
+// Form submission
+const submitForm = () => {
+    v$.value.$touch()
+    if (!v$.value.$invalid) {
+        form.post(route('admin.videos.configure.store'))
+    }
+}
 </script>

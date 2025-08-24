@@ -1,7 +1,9 @@
 @if($homePageSettings->enable_footer)
     <footer class="bg-primary">
         <div tabindex="0" aria-label="footer" class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 focus:outline-none mx-auto container flex flex-col items-start sm:items-center justify-center">
-            <img class="h-10" src="{{ asset('storage/'.$siteSettings['white_logo_path']) }}" alt="{{ $siteSettings['app_name'] }}">
+            @if($siteSettings['white_logo_path'])
+                <img class="h-10" src="{{ asset('storage/'.$siteSettings['white_logo_path']) }}" alt="{{ $siteSettings['app_name'] }}">
+            @endif
             <div class="text-black flex flex-col md:items-center f-f-l pt-3">
                 <h1 tabindex="0" class="focus:outline-none text-lg text-secondary">{{ $siteSettings['tag_line'] }}</h1>
                 @if($footerSettings->enable_social_links)

@@ -2,13 +2,14 @@
 	<div ref="rootEl" class="q-inputs">
 		<div v-if="!solutionMode" class="font-mono px-2 py-1 inline-block bg-gray-100 text-gray-600 rounded text-sm mb-2">
 			{{ __('laq_hint') }}
-		</template>
+		</div>
 		<div :class="labelClass()">
 			<div class="i-id">
 				<label :for="question_id">A</label>
-			</template>
+			</div>
 			<textarea :id="question_id" v-model="answer" @change="selectAnswer" rows="5" class="w-full p-2 border rounded" :disabled="solutionMode" placeholder="Type your detailed answer"></textarea>
-		</template>
+		</div>
+	</div>
 </template>
 <script setup>
 	import { ref, watch, onMounted, nextTick, computed } from 'vue'

@@ -55,25 +55,23 @@
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
-                                    <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{
-                                        __('Skill')
-                                    }}</label>
-                                    <v-select
-                                        id="skill_id"
-                                        v-model="v$.form.skill_id.$model"
-                                        :options="skills"
-                                        :reduce="skill => skill.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchSkills"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                    <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Skill') }}</label>
+                                    <Select
+                            id="skill_id"
+                            v-model="v$.form.skill_id.$model"
+                            :options="skills"
+                            optionLabel="name"
+                            optionValue="id"
+                            :placeholder="__('Select a skill')"
+                            filter
+                            showClear
+                            class="w-full"
+                            @filter="searchSkills"
+                        >
+                            <template #empty>
+                                <span>{{ __('Start typing to search') }}</span>
+                            </template>
+                        </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.skill_id.$error && !v$.form.skill_id.required"
@@ -84,25 +82,23 @@
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
-                                    <label for="topic_id" class="pb-2 text-sm font-semibold text-gray-800">{{
-                                        __('Topic')
-                                    }}</label>
-                                    <v-select
-                                        id="topic_id"
-                                        v-model="v$.form.topic_id.$model"
-                                        :options="topics"
-                                        :reduce="topic => topic.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchTopics"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                    <label for="topic_id" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Topic') }}</label>
+                                    <Select
+                            id="topic_id"
+                            v-model="v$.form.topic_id.$model"
+                            :options="topics"
+                            optionLabel="name"
+                            optionValue="id"
+                            :placeholder="__('Select a topic')"
+                            filter
+                            showClear
+                            class="w-full"
+                            @filter="searchTopics"
+                        >
+                            <template #empty>
+                                <span>{{ __('Start typing to search') }}</span>
+                            </template>
+                        </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.topic_id.$error && !v$.form.topic_id.required"
@@ -237,6 +233,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Select from 'primevue/select'
 import axios from 'axios'
 
 const props = defineProps({
@@ -328,10 +325,9 @@ const update = () => {
     })
 }
 
-const searchSkills = (search, loading) => {
+const searchSkills = (event) => {
+    const search = event.value
     if (search !== '') {
-        loading(true)
-
         // Cancel previous request
         if (searchAbortController.value) {
             searchAbortController.value.abort()
@@ -352,24 +348,21 @@ const searchSkills = (search, loading) => {
                 })
                 .then(response => {
                     skills.value = response.data.skills
-                    loading(false)
                     searchAbortController.value = null
                 })
                 .catch(error => {
                     if (!axios.isCancel(error)) {
                         console.error('Search skills error:', error)
                     }
-                    loading(false)
                     searchAbortController.value = null
                 })
         }, 600)
     }
 }
 
-const searchTopics = (search, loading) => {
+const searchTopics = (event) => {
+    const search = event.value
     if (search !== '') {
-        loading(true)
-
         // Cancel previous request
         if (searchAbortController.value) {
             searchAbortController.value.abort()
@@ -390,14 +383,12 @@ const searchTopics = (search, loading) => {
                 })
                 .then(response => {
                     topics.value = response.data.topics
-                    loading(false)
                     searchAbortController.value = null
                 })
                 .catch(error => {
                     if (!axios.isCancel(error)) {
                         console.error('Search topics error:', error)
                     }
-                    loading(false)
                     searchAbortController.value = null
                 })
         }, 600)

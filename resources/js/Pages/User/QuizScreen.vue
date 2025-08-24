@@ -127,14 +127,12 @@
                             v-if="questionNavigation.navigation.viewMode !== 'chip'"
                             :question="question"
                             :sno="index + 1"
-                            :sno="index + 1"
                             :is-correct="question.is_correct"
                             :status="question.status"
                             :active="sessionManager.session.current_question === index"
                         ></light-question-card>
                         <exam-question-chip
                             v-if="questionNavigation.navigation.viewMode === 'chip'"
-                            :sno="index + 1"
                             :sno="index + 1"
                             :is-correct="question.is_correct"
                             :status="question.status"
@@ -426,6 +424,7 @@ import { Head } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 import { usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
+import { useLogger } from '@/composables/useLogger'
 import { useSessionManager } from '@/composables/useSessionManager'
 import { useQuestionNavigation } from '@/composables/useQuestionNavigation'
 import { useTimer } from '@/composables/useTimer'
@@ -473,6 +472,7 @@ const props = defineProps({
 
 // Composables
 const { __ } = useTranslate()
+const { logError } = useLogger()
 const { props: pageProps } = usePage()
 
 // Initialize session manager with quiz data
@@ -590,7 +590,7 @@ const submitAnswer = async payload => {
             onSuccess: () => {},
         })
     } catch (error) {
-        console.error('Failed to submit answer:', error)
+        logError('Failed to submit answer', { error: error.message, questionId: sessionManager.currentQuestion.value?.id })
     } finally {
         sessionManager.isLoading.value = false
     }
@@ -715,7 +715,7 @@ const fetchQuestions = async () => {
             startTimer()
         }
     } catch (error) {
-        console.error('Failed to fetch questions:', error)
+        logError('Failed to fetch questions', { error: error.message, quizId: props.quiz?.id })
     } finally {
         loading.value = false
     }

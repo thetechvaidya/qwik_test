@@ -22,18 +22,23 @@ export default {
                     copied = true
                 }
 
-                // Legacy fallback
+                // Legacy fallback using DOM safety utilities
                 if (!copied) {
-                    const el = document.createElement('textarea')
-                    el.value = text
-                    el.setAttribute('readonly', '')
-                    el.style.position = 'absolute'
-                    el.style.left = '-9999px'
-                    document.body.appendChild(el)
-                    el.select()
-                    document.execCommand('copy')
-                    document.body.removeChild(el)
-                    copied = true
+                    const { createTemporaryElement } = await import('@/utils/domSafety')
+                    const tempElement = createTemporaryElement('textarea', {
+                        properties: { value: text },
+                        attributes: { readonly: '' }
+                    })
+                    
+                    if (tempElement.append()) {
+                        try {
+                            tempElement.element.select()
+                            document.execCommand('copy')
+                            copied = true
+                        } finally {
+                            tempElement.remove()
+                        }
+                    }
                 }
 
                 if (copied && this.$toast) {

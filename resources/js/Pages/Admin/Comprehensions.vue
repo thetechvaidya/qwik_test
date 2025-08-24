@@ -13,64 +13,104 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="comprehensions.meta.pagination.total"
-                        :rows="comprehensions.data"
-                        :rtl="$page.props.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['code', 'title']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false" filterField="code">
+                            <template #body="{ data }">
                                 <Tag
-                                    :value="props.row.code"
+                                    :value="data.code"
                                     icon="pi pi-copy"
                                     class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                                    @click="copyCode(data.code)"
                                 />
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Code..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Body Column -->
-                            <div v-else-if="props.column.field === 'body'" v-html="props.row.body"> </div>
+                        <Column field="title" :header="__('Title')" :sortable="false" filterField="title">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Title..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
+                        <Column field="body" :header="__('Body')" :sortable="false">
+                            <template #body="{ data }">
+                                <div v-html="data.body"></div>
+                            </template>
+                        </Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false" filterField="status">
+                            <template #body="{ data }">
                                 <span
-                                    :class="[props.row.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
-                                    >{{ __(props.row.status) }}</span
+                                    :class="[data.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
+                                    >{{ __(data.status) }}</span
                                 >
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Status..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data }">
                                 <ActionsDropdown>
                                     <template #actions>
                                         <button
                                             class="action-item"
                                             @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
+                                editForm = true;
+                                currentId = data.id;
+                            "
                                             >{{ __('Edit') }}</button
                                         >
-                                        <button class="action-item" @click="deleteComprehension(props.row.id)">{{
+                                        <button class="action-item" @click="deleteComprehension(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <div v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </div>
+                        <template #empty>
+                            <NoDataTable />
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Drawer Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -101,14 +141,18 @@ import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import ComprehensionForm from '@/Components/Forms/ComprehensionForm'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
 import ActionsDropdown from '@/Components/ActionsDropdown'
+import NoDataTable from '@/Components/NoDataTable.vue'
 
 const props = defineProps({
-    comprehensions: Object,
     errors: Object,
 })
 
@@ -116,67 +160,72 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
+
 // State
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
 
-// Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, tableParams } = useServerTable({
-    page: props.comprehensions.meta.pagination.current_page,
-    perPage: props.comprehensions.meta.pagination.per_page,
+// Server table composable
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
     resourceKeys: ['comprehensions'],
+    routeName: 'comprehensions.index',
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Code'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+            width: '11rem',
+        },
+        {
+            label: __('Title'),
+            field: 'title',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Title'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Body'),
+            field: 'body',
+            sortable: false,
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Status'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Published') },
+                    { value: 0, text: __('Draft') },
+                ],
+            },
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+        },
+    ],
 })
-
-const columns = ref([
-    {
-        label: __('Code'),
-        field: 'code',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Code'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-        width: '11rem',
-    },
-    {
-        label: __('Title'),
-        field: 'title',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Title'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Body'),
-        field: 'body',
-        sortable: false,
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Published') },
-                { value: 0, text: __('Draft') },
-            ],
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-    },
-])
 
 const title = computed(() => {
     return __('Comprehensions') + ' - ' + pageProps.general.app_name

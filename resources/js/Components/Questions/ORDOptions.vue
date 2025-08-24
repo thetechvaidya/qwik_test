@@ -10,14 +10,14 @@
                     </div>
                     <p class="ltr:mr-2 rtl:ml-2 text-sm font-bold text-red-400">{{ __('Note') }}</p>
                 </div>
-                <div class="h-1 w-1 bg-gray-300 dark:bg-gray-700 rounded-full ltr:mr-2 rtl:ml-2 hidden xl:block">
+                <div class="h-1 w-1 bg-gray-300 dark:bg-gray-700 rounded-full ltr:mr-2 rtl:ml-2 hidden xl:block"></div>
                 <p class="text-sm text-gray-600 dark:text-gray-400 pt-2 lg:pt-0 pb-2 lg:pb-0 w-4/5 lg:w-auto">
                     {{ __('options_shuffle_note') }}
                 </p>
             </div>
         </div>
         <div v-for="(option, index) in options" :key="index" class="my-4">
-            <div class=" font-semibold mb-2">{{ __('Sequence Item') }} {{ index+1 }}
+            <div class=" font-semibold mb-2">{{ __('Sequence Item') }} {{ index+1 }}</div>
             <TiptapEditor 
                 v-model="options[index].option" 
                 :config="{ 
@@ -38,9 +38,10 @@
             </div>
         </div>
         <button
-type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400"
+            type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400"
                 @click="addOption">{{ __('Add Sequence Item') }}</button>
-    </template>
+    </div>
+</template>
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
     export default {

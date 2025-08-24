@@ -20,10 +20,12 @@
 
                 <div v-show="!logoPreview" class="p-4 bg-gray-500 rounded my-4">
                     <img
+                        v-if="settings.white_logo_path"
                         :src="$page.props.assetUrl + settings.white_logo_path"
                         :alt="settings.app_name"
                         class="h-10 object-cover"
                     />
+                    <p v-else class="text-white text-sm">No white logo uploaded</p>
                 </div>
 
                 <!-- New Logo Preview -->

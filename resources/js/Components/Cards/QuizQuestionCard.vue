@@ -5,7 +5,8 @@
             <span class="text-sm">|</span>
             <span class="text-sm text-gray-600 uppercase">{{ question.skill }}</span>
         </div>
-        <div class="question" v-html="question.question">
+        <div class="question" v-html="question.question"></div>
+    </div>
 </template>
 <script>
     export default {

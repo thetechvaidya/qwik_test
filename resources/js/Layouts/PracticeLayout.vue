@@ -47,6 +47,8 @@
         </div>
         <!-- Sidebar Backdrop -->
         <div v-show="!moved" class="fixed inset-0 z-30 w-screen h-screen bg-black bg-opacity-25 md:hidden" @click="sidebarHandler(false)">
+        </div>
+    </div>
 </template>
 
 <script>

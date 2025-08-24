@@ -6,7 +6,8 @@
                 <div class="leading-relaxed text-sm" v-html="question.question"></div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     import { ref, computed, nextTick, onMounted } from 'vue'
     const rootEl = ref(null)

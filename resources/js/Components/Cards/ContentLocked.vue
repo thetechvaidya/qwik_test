@@ -12,7 +12,8 @@
                 {{ __(buttonText) }}
             </a>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "ContentLocked",

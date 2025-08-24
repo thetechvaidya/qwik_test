@@ -10,7 +10,8 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import { Link } from '@inertiajs/vue3'
 
@@ -24,6 +25,12 @@
             getGradient(hex) {
                 return 'linear-gradient(180deg, '+this.hex2rgba(hex, 0.8)+' 0%, '+this.hex2rgba(hex)+' 100%)';
             },
+            hex2rgba(hex, alpha = 1) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
         },
     }
 </script>

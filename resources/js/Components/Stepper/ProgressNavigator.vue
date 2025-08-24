@@ -25,16 +25,19 @@
             </div>
         </div>
         <div class="sm:flex items-center hidden">
-            <Link v-for="step in steps" :key="step.key" :href="step.url">
-                <div v-if="step.active" class="flex items-center mr-8 group border-secondary border-b-4 pb-4">
-                    <p class="text-sm leading-none text-primary">{{ step.title }}</p>
-                </div>
-                <div v-else class="flex items-center mr-8 group border-transparent hover:border-secondary cursor-pointer border-b-4 pb-4">
-                    <p class="text-sm leading-none text-gray-500 group-hover:text-primary">{{ step.title }}</p>
-                </div>
-            </Link>
+            <div v-for="step in steps" :key="step.key">
+                <Link :href="step.url">
+                    <div v-if="step.active" class="flex items-center mr-8 group border-secondary border-b-4 pb-4">
+                        <p class="text-sm leading-none text-primary">{{ step.title }}</p>
+                    </div>
+                    <div v-else class="flex items-center mr-8 group border-transparent hover:border-secondary cursor-pointer border-b-4 pb-4">
+                        <p class="text-sm leading-none text-gray-500 group-hover:text-primary">{{ step.title }}</p>
+                    </div>
+                </Link>
+            </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import { Link } from "@inertiajs/vue3"
 

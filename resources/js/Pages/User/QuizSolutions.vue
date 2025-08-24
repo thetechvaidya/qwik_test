@@ -91,7 +91,6 @@
                                         <practice-question-card
                                             :key="question.card"
                                             :question="question"
-                                            :question="question"
                                             :sno="index + 1"
                                             :total-questions="quiz.total_questions"
                                         ></practice-question-card>
@@ -187,6 +186,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { usePage, Head } from '@inertiajs/vue3'
+import { useLogger } from '@/composables/useLogger'
 import axios from 'axios'
 import AppLayout from '@/Layouts/AppLayout.vue'
 import RewardsBadge from '@/Components/RewardsBadge.vue'
@@ -216,6 +216,7 @@ const props = defineProps({
 // Composables
 const { __ } = useTranslate()
 const page = usePage()
+const { logError, logWarn } = useLogger()
 
 // Reactive data
 const loading = ref(false)
@@ -246,11 +247,11 @@ const fetchQuestions = async () => {
         if (data && data.questions) {
             questions.value = data.questions
         } else {
-            console.warn('No questions data received from server')
+            logWarn('No questions data received from server', { quizId: props.quiz?.id })
             questions.value = []
         }
     } catch (error) {
-        console.error('Failed to fetch quiz solutions:', error)
+        logError('Failed to fetch quiz solutions', { error: error.message, quizId: props.quiz?.id })
         questions.value = []
 
         // Could emit an error event or show toast notification

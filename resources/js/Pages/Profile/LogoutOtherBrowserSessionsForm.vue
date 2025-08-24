@@ -63,7 +63,7 @@
             </div>
 
             <div class="flex items-center mt-5">
-                <arc-button @click.native="confirmLogout">
+                <arc-button @click="confirmLogout">
                     {{ __('Logout Other Browser Sessions') }}
                 </arc-button>
 
@@ -86,7 +86,7 @@
                             type="password"
                             class="mt-1 block w-3/4"
                             placeholder="Password"
-                            @keyup.enter.native="logoutOtherBrowserSessions"
+                            @keyup.enter="logoutOtherBrowserSessions"
                         />
 
                         <arc-input-error :message="form.errors.password" class="mt-2" />
@@ -94,7 +94,7 @@
                 </template>
 
                 <template #footer>
-                    <arc-secondary-button @click.native="closeModal">
+                    <arc-secondary-button @click="closeModal">
                         {{ __('Nevermind') }}
                     </arc-secondary-button>
 
@@ -102,7 +102,7 @@
                         class="ml-2"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
-                        @click.native="logoutOtherBrowserSessions"
+                        @click="logoutOtherBrowserSessions"
                     >
                         {{ __('Logout Other Browser Sessions') }}
                     </arc-button>
@@ -113,6 +113,7 @@
 </template>
 
 <script>
+import { useForm } from '@inertiajs/vue3'
 import ArcActionMessage from '@/Components/ActionMessage.vue'
 import ArcActionSection from '@/Components/ActionSection.vue'
 import ArcButton from '@/Components/Button.vue'
@@ -137,7 +138,7 @@ export default {
         return {
             confirmingLogout: false,
 
-            form: this.$inertia.form({
+            form: useForm({
                 password: '',
             }),
         }

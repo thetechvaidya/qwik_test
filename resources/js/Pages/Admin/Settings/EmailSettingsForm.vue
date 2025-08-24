@@ -58,7 +58,7 @@
         <template #actions>
             <arc-action-message :on="form.recentlySuccessful" class="mr-3"> {{ __('Saved') }}. </arc-action-message>
 
-            <arc-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        <arc-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 {{ __('Save') }}
             </arc-button>
         </template>
@@ -68,13 +68,13 @@
 import { useForm } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import ArcActionMessage from '@/Components/ActionMessage'
-import ArcButton from '@/Components/Button'
-import ArcFormSection from '@/Components/FormSection'
-import ArcInput from '@/Components/Input'
-import ArcInputError from '@/Components/InputError'
-import ArcLabel from '@/Components/Label'
-import ArcSecondaryButton from '@/Components/SecondaryButton'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
+import ArcSecondaryButton from '@/Components/SecondaryButton.vue'
 
 const props = defineProps({
     settings: Object,

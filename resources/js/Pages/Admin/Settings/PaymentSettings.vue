@@ -37,14 +37,26 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ArcSectionBorder from '@/Components/SectionBorder.vue'
+import PaymentSettingsForm from '@/Pages/Admin/Settings/PaymentSettingsForm.vue'
+import PaypalSettingsForm from '@/Pages/Admin/Settings/PaypalSettingsForm.vue'
+import StripeSettingsForm from '@/Pages/Admin/Settings/StripeSettingsForm.vue'
+import RazorpaySettingsForm from '@/Pages/Admin/Settings/RazorpaySettingsForm.vue'
+import BankSettingsForm from '@/Pages/Admin/Settings/BankSettingsForm.vue'
 import { useTranslate } from '@/composables/useTranslate'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    paymentSettings: Object,
+    paymentProcessors: Array,
+    currencies: Array,
+    paypalSettings: Object,
+    stripeSettings: Object,
+    razorpaySettings: Object,
+    bankSettings: Object,
 })
 
 // Composables

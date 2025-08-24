@@ -5,9 +5,10 @@
         </div>
         <div v-else class="card-body w-full flex flex-col justify-start items-start">
             <h4 class="text-lg font-semibold mb-4">{{ lesson.title }}</h4>
-            <div class="max-w-full prose" v-html="lesson.body">
+            <div class="max-w-full prose" v-html="lesson.body"></div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import ContentLocked from "@/Components/Cards/ContentLocked";
 

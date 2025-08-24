@@ -28,6 +28,7 @@
                 <slot name="sections"></slot>
             </div>
             <div class="hidden md:block md:w-96 h-4 ltr:ml-8 rtl:mr-8">
+            </div>
         </div>
         <!-- Section ends -->
         <div class="flex flex-no-wrap bg-white">
@@ -41,6 +42,7 @@
             <!-- Sidebar starts -->
             <div class="w-96 overflow-hidden absolute sm:relative md:h-full flex-col justify-between hidden border-l border-gray-100 sm:flex sm:flex-col transition duration-150 ease-in-out">
                 <div class="z-20 h-16 w-full mx-auto absolute top-0 right-0 flex items-center px-4 shadow">
+                </div>
                 <div class="z-20 h-16 w-full mx-auto absolute top-16 ltr:left-0 rtl:right-0 bg-white border-b border-l border-gray-200 flex ltr:flex-row rtl:flex-row-reverse justify-between items-center px-4 sm:px-6 lg:px-8">
                     <slot name="actions"></slot>
                 </div>
@@ -79,7 +81,8 @@
             </div>
             <!-- Sidebar ends -->
         </div>
-    </template>
+    </div>
+</template>
 
 <script>
     import { useOnline } from '@vueuse/core'

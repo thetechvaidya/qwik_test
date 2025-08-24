@@ -74,6 +74,13 @@ export default {
         }
     },
     methods: {
+        __(key, replace = {}) {
+            let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
+            Object.keys(replace).forEach(function (key) {
+                translation = translation.replace(':' + key, replace[key])
+            })
+            return translation
+        },
         addOption: function () {
             if(this.options.length > 4) {
                 // Note: These components (this.$confirm, this.$toast) would need to be properly imported

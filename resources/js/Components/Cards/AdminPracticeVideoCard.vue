@@ -18,7 +18,8 @@
             <h5 class="inline-block bg-gray-100 rounded-sm px-2 py-1 text-xs leading-3 text-gray-700">{{ video.code }}</h5>
             <slot name="action"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "AdminPracticeVideoCard",

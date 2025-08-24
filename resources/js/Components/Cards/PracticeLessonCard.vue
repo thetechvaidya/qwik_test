@@ -21,13 +21,14 @@
                 </p>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'PracticeLessonCard',
         props: {
             lesson: Object,
-            sno: Number|String,
+            sno: [Number, String],
             subscription: {
                 type: Boolean,
                 default: false,

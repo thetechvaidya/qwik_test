@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useClipboard } from '@vueuse/core'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import { createTemporaryElement } from '@/utils/domSafety'
 
 /**
  * Copy-to-clipboard composable for admin UI components.
@@ -67,18 +68,19 @@ export function useCopy({ t } = {}) {
                 return
             }
 
-            // Create a temporary textarea element
-            const textarea = document.createElement('textarea')
-            textarea.value = text
-            textarea.style.position = 'fixed'
-            textarea.style.opacity = '0'
-            textarea.style.left = '-9999px'
+            // Create a temporary textarea element using DOM safety utility
+            const tempElement = createTemporaryElement('textarea', {
+                properties: { value: text }
+            })
 
-            document.body.appendChild(textarea)
+            if (!tempElement.append()) {
+                reject(new Error('Failed to create temporary element'))
+                return
+            }
 
             try {
-                textarea.select()
-                textarea.setSelectionRange(0, 99999) // For mobile devices
+                tempElement.element.select()
+                tempElement.element.setSelectionRange(0, 99999) // For mobile devices
 
                 const successful = document.execCommand('copy')
                 if (successful) {
@@ -89,7 +91,7 @@ export function useCopy({ t } = {}) {
             } catch (error) {
                 reject(error)
             } finally {
-                document.body.removeChild(textarea)
+                tempElement.remove()
             }
         })
     }

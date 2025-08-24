@@ -137,18 +137,56 @@
 </template>
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { Head, Link, usePage, router, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import SelectButton from 'primevue/selectbutton'
+import RadioButton from 'primevue/radiobutton'
+import Button from 'primevue/button'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
+import ComprehensionOptions from '@/Components/Questions/ComprehensionOptions.vue'
+import AudioOptions from '@/Components/Questions/AudioOptions.vue'
+import VideoOptions from '@/Components/Questions/VideoOptions.vue'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    question: Object,
+    questionType: Object,
+    steps: Array,
+    editFlag: { type: Boolean, default: false },
+    questionId: Number,
+    errors: Object,
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
+
+// Form data
+const form = useForm({
+    has_attachment: props.editFlag ? props.question.has_attachment : false,
+    attachment_type: props.editFlag ? props.question.attachment_type : 'comprehension',
+    attachment: props.editFlag ? props.question.attachment : null,
+})
+
+// Data
+const choices = ref([
+    { name: __('Yes'), code: true },
+    { name: __('No'), code: false },
+])
+
+// Methods
+const submitForm = () => {
+    if (props.editFlag) {
+        form.patch(route('questions.attachment.update', { question: props.questionId }))
+    } else {
+        form.post(route('questions.attachment.store', { question: props.questionId }))
+    }
+}
+
+const updateComprehension = (value) => {
+    form.attachment = value
+}
 
 // Computed
 const title = computed(() => {

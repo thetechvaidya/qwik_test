@@ -28,7 +28,11 @@ use App\Transformers\Admin\QuestionPreviewTransformer;
 use App\Transformers\Admin\QuestionTransformer;
 use App\Transformers\Admin\SkillSearchTransformer;
 use App\Transformers\Admin\TopicSearchTransformer;
+use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class QuestionCrudController extends Controller
@@ -38,6 +42,9 @@ class QuestionCrudController extends Controller
     public function __construct(QuestionRepository $repository)
     {
         $this->middleware(['role:admin|instructor']);
+        $this->middleware('throttle:60,1')->only([
+            'store', 'update', 'destroy', 'updateSettings', 'updateSolution', 'updateAttachment'
+        ]);
         $this->repository = $repository;
     }
 
@@ -51,12 +58,17 @@ class QuestionCrudController extends Controller
     {
         return Inertia::render('Admin/Questions', [
             'questionTypes' => QuestionType::select(['id as value', 'code', 'name as text'])->active()->get(),
-            'questions' => function () use($filters) {
-                return fractal(Question::filter($filters)
-                    ->with(['questionType:id,name,code', 'section:sections.id,sections.name', 'skill:id,name', 'topic:id,name'])
-                    ->orderBy('id', 'desc')
-                    ->paginate(request()->perPage != null ? request()->perPage : 10),
-                    new QuestionTransformer())->toArray();
+            'questions' => function () use ($filters) {
+                $query = Question::filter($filters)
+                    ->with(['questionType:id,name,code', 'skill:id,name', 'topic:id,name', 'difficultyLevel:id,name'])
+                    ->orderBy('id', 'desc');
+
+                return fractal(
+                    Cache::remember('questions:'.md5(json_encode(request()->all())), 60, function () use ($query) {
+                        return $query->paginate(request('perPage', 10));
+                    }),
+                    new QuestionTransformer()
+                )->toArray();
             },
         ]);
     }
@@ -68,8 +80,10 @@ class QuestionCrudController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', Question::class);
+
         // Select MSA as default question type if no question type specified
-        if(request()->has('question_type')) {
+        if (request()->has('question_type')) {
             $questionType = QuestionType::select(['id', 'code', 'name'])
                 ->where('code', request()->get('question_type'))
                 ->firstOrFail();
@@ -94,16 +108,23 @@ class QuestionCrudController extends Controller
      */
     public function store(StoreQuestionRequest $request)
     {
-        $question = new Question();
-        $question->question = $request->question;
-        $question->question_type_id = $request->question_type_id;
-        $question->options = $request->options;
-        $question->correct_answer = $request->question_type_id == 7 ? getBlankItems($request->question) :  $request->correct_answer;
-        $question->skill_id = $request->skill_id;
-        $question->preferences = $request->preferences;
-        $question->save();
+        try {
+            $question = new Question();
+            $question->question = $request->question;
+            $question->question_type_id = $request->question_type_id;
+            $question->options = $request->options;
+            $question->correct_answer = $request->question_type_id == 7 ? getBlankItems($request->question) : $request->correct_answer;
+            $question->skill_id = $request->skill_id;
+            $question->preferences = $request->preferences;
+            $question->save();
 
-        return redirect()->route('question_settings', ['id' => $question->id])->with('successMessage', 'Details saved successfully!');
+            Log::info('Question created successfully', ['question_id' => $question->id]);
+
+            return redirect()->route('question_settings', ['id' => $question->id])->with('successMessage', 'Details saved successfully!');
+        } catch (Exception $e) {
+            Log::error('Error storing question', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'An error occurred while saving the question.');
+        }
     }
 
     /**
@@ -114,7 +135,8 @@ class QuestionCrudController extends Controller
      */
     public function show($id)
     {
-        $question= Question::with(['questionType:id,name,code', 'difficultyLevel:id,name,code', 'skill:id,name'])->find($id);
+        $question = Question::with(['questionType:id,name,code', 'difficultyLevel:id,name,code', 'skill:id,name'])->findOrFail($id);
+        Gate::authorize('view', $question);
         return response()->json(fractal($question, new QuestionPreviewTransformer())->toArray()['data'], 200);
     }
 
@@ -126,10 +148,11 @@ class QuestionCrudController extends Controller
      */
     public function edit($id)
     {
-        $question = Question::findOrFail($id);
+        $question = Question::with('questionType')->findOrFail($id);
+        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Details', [
             'steps' => $this->repository->getSteps($question->id, 'details'),
-            'questionType' => QuestionType::select(['id', 'code', 'name'])->find($question->question_type_id),
+            'questionType' => $question->questionType,
             'question' => $question,
             'editFlag' => true,
             'questionId' => $question->id,
@@ -145,15 +168,23 @@ class QuestionCrudController extends Controller
      */
     public function update(UpdateQuestionRequest $request, $id)
     {
-        $question = Question::findOrFail($id);
-        $question->question = $request->question;
-        $question->question_type_id = $request->question_type_id;
-        $question->options = $request->options;
-        $question->correct_answer = $request->question_type_id == 7 ? getBlankItems($request->question) :  $request->correct_answer;
-        $question->preferences = $request->preferences;
-        $question->update();
+        try {
+            $question = Question::findOrFail($id);
+            Gate::authorize('update', $question);
+            $question->question = $request->question;
+            $question->question_type_id = $request->question_type_id;
+            $question->options = $request->options;
+            $question->correct_answer = $request->question_type_id == 7 ? getBlankItems($request->question) : $request->correct_answer;
+            $question->preferences = $request->preferences;
+            $question->update();
 
-        return redirect()->route('question_settings', ['id' => $question->id])->with('successMessage', 'Details saved successfully!');
+            Log::info('Question updated successfully', ['question_id' => $question->id]);
+
+            return redirect()->route('question_settings', ['id' => $question->id])->with('successMessage', 'Details saved successfully!');
+        } catch (Exception $e) {
+            Log::error('Error updating question', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'An error occurred while updating the question.');
+        }
     }
 
     /**
@@ -164,26 +195,23 @@ class QuestionCrudController extends Controller
      */
     public function settings($id)
     {
-        $question = Question::with('tags')->findOrFail($id);
+        $question = Question::with(['tags', 'questionType', 'skill.section', 'topic.skill'])->findOrFail($id);
+        Gate::authorize('update', $question);
+
         return Inertia::render('Admin/Question/Settings', [
             'steps' => $this->repository->getSteps($question->id, 'settings'),
             'question' => $question,
-            'questionType' => QuestionType::select(['id', 'code', 'name'])->find($question->question_type_id),
+            'questionType' => $question->questionType,
             'editFlag' => true,
             'questionId' => $question->id,
-            'difficultyLevels' => DifficultyLevel::select(['name', 'id'])->get(),
-            'initialSkills' => fractal(Skill::select(['id', 'name', 'section_id'])
-                ->with('section:id,name')
-                ->where('id', $question->skill_id)
-                ->get(), new SkillSearchTransformer())
-                ->toArray()['data'],
-            'initialTopics' => fractal(Topic::select(['id', 'name', 'skill_id'])
-                ->with('skill:id,name')
-                ->where('skill_id', $question->skill_id)
-                ->get(), new TopicSearchTransformer())
-                ->toArray()['data'],
-            'initialTags' => Tag::select(['id', 'name'])
-                ->get(),
+            'difficultyLevels' => Cache::remember('difficulty_levels', 3600, function () {
+                return DifficultyLevel::select(['name', 'id'])->get();
+            }),
+            'initialSkills' => fractal(collect([$question->skill]), new SkillSearchTransformer())->toArray()['data'],
+            'initialTopics' => fractal(collect([$question->topic]), new TopicSearchTransformer())->toArray()['data'],
+            'initialTags' => Cache::remember('tags', 3600, function () {
+                return Tag::select(['id', 'name'])->get();
+            }),
         ]);
     }
 
@@ -197,21 +225,29 @@ class QuestionCrudController extends Controller
      */
     public function updateSettings(QuestionSettingsRequest $request, $id, TagRepository $tagRepository)
     {
-        $question = Question::findOrFail($id);
-        $question->skill_id = $request->skill_id;
-        $question->topic_id = $request->topic_id;
-        $question->difficulty_level_id = $request->difficulty_level_id;
-        $question->default_marks = $request->default_marks;
-        $question->default_time = $request->default_time;
-        $question->update();
+        try {
+            $question = Question::findOrFail($id);
+            Gate::authorize('update', $question);
+            $question->skill_id = $request->skill_id;
+            $question->topic_id = $request->topic_id;
+            $question->difficulty_level_id = $request->difficulty_level_id;
+            $question->default_marks = $request->default_marks;
+            $question->default_time = $request->default_time;
+            $question->update();
 
-        // Check if tags exists, otherwise create
-        $tagRepository->createIfNotExists($request->tags);
+            // Check if tags exists, otherwise create
+            $tagRepository->createIfNotExists($request->tags);
 
-        $tagData = Tag::whereIn('name', $request->tags)->pluck('id');
-        $question->tags()->sync($tagData);
+            $tagData = Tag::whereIn('name', $request->tags)->pluck('id');
+            $question->tags()->sync($tagData);
 
-        return redirect()->route('question_solution', ['id' => $question->id])->with('successMessage', 'Settings saved successfully!');
+            Log::info('Question settings updated successfully', ['question_id' => $question->id]);
+
+            return redirect()->route('question_solution', ['id' => $question->id])->with('successMessage', 'Settings saved successfully!');
+        } catch (Exception $e) {
+            Log::error('Error updating question settings', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'An error occurred while updating settings.');
+        }
     }
 
     /**
@@ -222,10 +258,11 @@ class QuestionCrudController extends Controller
      */
     public function solution($id)
     {
-        $question = Question::findOrFail($id);
+        $question = Question::with('questionType')->findOrFail($id);
+        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Solution', [
             'steps' => $this->repository->getSteps($question->id, 'solution'),
-            'questionType' => QuestionType::select(['id', 'code', 'name'])->find($question->question_type_id),
+            'questionType' => $question->questionType,
             'question' => $question,
             'editFlag' => true,
             'questionId' => $question->id,
@@ -241,13 +278,21 @@ class QuestionCrudController extends Controller
      */
     public function updateSolution(QuestionSolutionRequest $request, $id)
     {
-        $question = Question::findOrFail($id);
-        $question->hint = $request->hint;
-        $question->solution = $request->solution;
-        $question->solution_video = $request->solution_has_video ? $request->solution_video : null;
-        $question->update();
+        try {
+            $question = Question::findOrFail($id);
+            Gate::authorize('update', $question);
+            $question->hint = $request->hint;
+            $question->solution = $request->solution;
+            $question->solution_video = $request->solution_has_video ? $request->solution_video : null;
+            $question->update();
 
-        return redirect()->route('question_attachment', ['id' => $question->id])->with('successMessage', 'Solution updated successfully!');
+            Log::info('Question solution updated successfully', ['question_id' => $question->id]);
+
+            return redirect()->route('question_attachment', ['id' => $question->id])->with('successMessage', 'Solution updated successfully!');
+        } catch (Exception $e) {
+            Log::error('Error updating question solution', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'An error occurred while updating the solution.');
+        }
     }
 
     /**
@@ -258,10 +303,11 @@ class QuestionCrudController extends Controller
      */
     public function attachment($id)
     {
-        $question = Question::findOrFail($id);
+        $question = Question::with('questionType')->findOrFail($id);
+        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Attachment', [
             'steps' => $this->repository->getSteps($question->id, 'attachment'),
-            'questionType' => QuestionType::select(['id', 'code', 'name'])->find($question->question_type_id),
+            'questionType' => $question->questionType,
             'question' => $question,
             'editFlag' => true,
             'questionId' => $question->id,
@@ -278,14 +324,22 @@ class QuestionCrudController extends Controller
      */
     public function updateAttachment(QuestionAttachmentRequest $request, $id)
     {
-        $question = Question::findOrFail($id);
-        $question->has_attachment = $request->has_attachment;
-        $question->attachment_type = $request->attachment_type;
-        $question->comprehension_passage_id = $request->attachment_type == 'comprehension' ? $request->comprehension_id : null;
-        $question->attachment_options = $request->attachment_type == 'comprehension' ? null : $request->attachment_options;
-        $question->update();
+        try {
+            $question = Question::findOrFail($id);
+            Gate::authorize('update', $question);
+            $question->has_attachment = $request->has_attachment;
+            $question->attachment_type = $request->attachment_type;
+            $question->comprehension_passage_id = $request->attachment_type == 'comprehension' ? $request->comprehension_id : null;
+            $question->attachment_options = $request->attachment_type == 'comprehension' ? null : $request->attachment_options;
+            $question->update();
 
-        return redirect()->route('questions.index')->with('successMessage', 'Attachment successfully updated!');
+            Log::info('Question attachment updated successfully', ['question_id' => $question->id]);
+
+            return redirect()->route('questions.index')->with('successMessage', 'Attachment successfully updated!');
+        } catch (Exception $e) {
+            Log::error('Error updating question attachment', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'An error occurred while updating the attachment.');
+        }
     }
 
     /**
@@ -297,9 +351,10 @@ class QuestionCrudController extends Controller
     public function destroy($id)
     {
         try {
-            $question = Question::withCount(['practiceSets', 'quizzes', 'exams'])->find($id);
+            $question = Question::withCount(['practiceSets', 'quizzes', 'exams'])->findOrFail($id);
+            Gate::authorize('delete', $question);
 
-            if(!$question->canSecureDelete('practiceSets', 'quizzes', 'exams')) {
+            if (!$question->canSecureDelete('practiceSets', 'quizzes', 'exams')) {
                 $associations = implode(", ", array_filter([
                     $question->quizzes_count > 0 ? "{$question->quizzes_count} quizzes" : "",
                     $question->exams_count > 0 ? "{$question->exams_count} exams" : "",
@@ -314,9 +369,11 @@ class QuestionCrudController extends Controller
             DB::transaction(function () use ($question) {
                 $question->secureDelete('practiceSets', 'quizzes', 'exams', 'practiceSessions', 'quizSessions', 'examSessions');
             });
-        }
-        catch (\Illuminate\Database\QueryException $e){
-            return redirect()->back()->with('errorMessage', 'Unable to Delete Question . Remove all associations and Try again!');
+
+            Log::info('Question deleted successfully', ['question_id' => $id]);
+        } catch (Exception $e) {
+            Log::error('Error deleting question', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('errorMessage', 'Unable to Delete Question. Remove all associations and Try again!');
         }
         return redirect()->back()->with('successMessage', 'Question was successfully deleted!');
     }

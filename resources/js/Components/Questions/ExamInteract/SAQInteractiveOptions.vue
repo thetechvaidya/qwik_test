@@ -9,7 +9,8 @@
             </div>
             <input :id="question_id" v-model="answer" placeholder="Type your answer" @change="selectAnswer"/>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useMathRender } from '@/composables/useMathRender'

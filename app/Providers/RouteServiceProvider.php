@@ -72,6 +72,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
         });
 
+        // Web rate limiter for general web routes
+        RateLimiter::for('web', function (Request $request) {
+            return Limit::perMinute(120)->by(optional($request->user())->id ?: $request->ip());
+        });
+
         // Add named rate limiter for API user endpoint testing
         RateLimiter::for('api-user', function (Request $request) {
             return Limit::perMinute(5)->by(optional($request->user())->id ?: $request->ip());

@@ -56,7 +56,7 @@ id="total_duration" v-model="v$.form.total_duration.$model" placeholder="Enter D
                 <label for="correct_marks" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Marks for Correct Answer') }}<span class="ml-1 text-red-400">*</span></label>
                 <InputNumber
 id="correct_marks" v-model="v$.form.correct_marks.$model" placeholder="Enter Marks" mode="decimal"
-                             :min-fraction-digits="2" :max-fracion-digits="2" aria-describedby="correct_marks-help"/>
+                             :min-fraction-digits="2" :max-fraction-digits="2" aria-describedby="correct_marks-help"/>
                 <div class="form-control-errors">
                     <p v-if="v$.form.correct_marks.$error && !v$.form.correct_marks.required" role="alert" class="text-xs text-red-500 pt-2">{{ __('Marks for Correct Answer') }} {{ __('is required') }}</p>
                 </div>
@@ -75,7 +75,7 @@ id="correct_marks" v-model="v$.form.correct_marks.$model" placeholder="Enter Mar
                                     <span class="text-green-400 font-semibold">Percentage</span> - Percentage will be deduct from question marks
                                 </li>
                             </ul>
-                        </div>
+                        </template>
                     </pop-info>
                 </div>
                 <SelectButton
@@ -90,7 +90,7 @@ id="negative_marks" v-model="v$.form.negative_marks.$model" aria-describedby="ne
                              :placeholder="form.negative_marking_type === 'percentage' ? 'Enter Percentage' : 'Enter Number'"
                              :suffix="form.negative_marking_type === 'percentage' ? ' %' : ''" :max="100"
                              mode="decimal" :min-fraction-digits="form.negative_marking_type === 'fixed' ? 2 : null"
-                             :max-fracion-digits="form.negative_marking_type === 'fixed' ? 2 : null" />
+                             :max-fraction-digits="form.negative_marking_type === 'fixed' ? 2 : null" />
                 <div class="form-control-errors">
                     <p v-if="v$.form.negative_marks.$error && !v$.form.negative_marks.required" role="alert" class="text-xs text-red-500 pt-2">
                         {{ __('Negative Marks') }} {{ __('are required') }}
@@ -124,7 +124,8 @@ id="section_cutoff" v-model="v$.form.section_cutoff.$model" placeholder="Enter P
                 <Button type="submit" :label="editFlag ? __('Update') : __('Add')" />
             </div>
         </form>
-    </template>
+    </div>
+</template>
 <script>
     import InputText from 'primevue/inputtext';
     import Button from 'primevue/button';

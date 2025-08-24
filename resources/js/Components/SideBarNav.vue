@@ -135,14 +135,15 @@
         </Link>
     </nav>
 </template>
-<script>
+<script setup>
 import { Link } from '@inertiajs/vue3'
+import { useTranslate } from '@/composables/useTranslate'
 
-export default {
-    name: 'SideBarNav',
-    components: { Link },
-    props: {
-        isMobile: Boolean,
-    },
-}
+// Props
+defineProps({
+    isMobile: Boolean,
+})
+
+// Composables
+const { __ } = useTranslate()
 </script>

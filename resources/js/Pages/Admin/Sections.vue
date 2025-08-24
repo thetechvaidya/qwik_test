@@ -13,61 +13,96 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="sections.meta.pagination.total"
-                        :rows="sections.data"
-                        :rtl="$page.props.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :totalRecords="totalRecords"
+                        :loading="tableLoading"
+                        lazy
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['code', 'name', 'status']"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    icon="pi pi-copy"
-                                    class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                        <Column
+                            v-for="col in columns"
+                            :key="col.field"
+                            :field="col.field"
+                            :header="col.header"
+                            :sortable="col.sortable"
+                            :showFilterMenu="false"
+                        >
+                            <template #filter="{ filterModel, filterCallback }" v-if="col.filter">
+                                <InputText
+                                    v-if="col.filter.type === 'text'"
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="col.filter.placeholder"
+                                    class="p-column-filter"
                                 />
-                            </div>
-
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
-
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
-                                            >{{ __('Edit') }}</button
-                                        >
-                                        <button class="action-item" @click="deleteSection(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
-                                    </template>
-                                </ActionsDropdown>
-                            </div>
-
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-
-                        <template #emptystate>
+                                <Select
+                                    v-else-if="col.filter.type === 'dropdown'"
+                                    v-model="filterModel.value"
+                                    :options="col.filter.options"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    :placeholder="col.filter.placeholder"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
+                            
+                            <template #body="slotProps">
+                                <!-- Code Column -->
+                                <div v-if="col.field === 'code'">
+                                    <Tag
+                                        :value="slotProps.data.code"
+                                        icon="pi pi-copy"
+                                        class="w-full p-mr-2 text-sm cursor-pointer"
+                                        @click="copyCode(slotProps.data.code)"
+                                    />
+                                </div>
+                                
+                                <!-- Status Column -->
+                                <div v-else-if="col.field === 'status'">
+                                    <span :class="[slotProps.data.status ? 'badge-success' : 'badge-danger', 'badge']">
+                                        {{ slotProps.data.status ? __('Active') : __('In-active') }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Actions Column -->
+                                <div v-else-if="col.field === 'actions'">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                                    editForm = true;
+                                                    currentId = slotProps.data.id;
+                                                "
+                                                >{{ __('Edit') }}</button
+                                            >
+                                            <button class="action-item" @click="deleteSection(slotProps.data.id)">{{ __('Delete') }}</button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
+                                
+                                <!-- Default Column -->
+                                <span v-else>
+                                    {{ slotProps.data[col.field] }}
+                                </span>
+                            </template>
+                        </Column>
+                        
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -76,7 +111,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Sidebar Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -107,12 +142,17 @@ import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import SectionForm from '@/Components/Forms/SectionForm'
+import SectionForm from '@/Components/Forms/SectionForm.vue'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
-import NoDataTable from '@/Components/NoDataTable'
-import ActionsDropdown from '@/Components/ActionsDropdown'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import NoDataTable from '@/Components/NoDataTable.vue'
+import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 
 const props = defineProps({
     sections: Object,
@@ -123,62 +163,60 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
+
 // State
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
 
 // Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, tableParams } = useServerTable({
-    page: props.sections.meta.pagination.current_page,
-    perPage: props.sections.meta.pagination.per_page,
-    resourceKeys: ['sections'],
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    columns: [
+        {
+            field: 'code',
+            header: __('Code'),
+            sortable: false,
+            filter: {
+                type: 'text',
+                placeholder: __('Search') + ' ' + __('Code')
+            }
+        },
+        {
+            field: 'name',
+            header: __('Name'),
+            sortable: false,
+            filter: {
+                type: 'text',
+                placeholder: __('Search') + ' ' + __('Name')
+            }
+        },
+        {
+            field: 'status',
+            header: __('Status'),
+            sortable: false,
+            filter: {
+                type: 'dropdown',
+                options: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') }
+                ],
+                placeholder: __('Search') + ' ' + __('Status')
+            }
+        },
+        {
+            field: 'actions',
+            header: __('Actions'),
+            sortable: false
+        }
+    ],
+    data: props.sections
 })
-
-const columns = ref([
-    {
-        label: __('Code'),
-        field: 'code',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Code'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-        width: '11rem',
-    },
-    {
-        label: __('Name'),
-        field: 'name',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Name'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Active') },
-                { value: 0, text: __('In-active') },
-            ],
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-    },
-])
 
 const title = computed(() => {
     return __('Sections') + ' - ' + pageProps.general.app_name

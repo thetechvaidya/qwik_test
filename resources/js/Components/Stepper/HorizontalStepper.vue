@@ -49,7 +49,7 @@
                         :key="step.key"
                         class="cursor-pointer text-gray-600 text-sm leading-3 tracking-normal py-3 hover:bg-indigo-700 hover:text-white px-3 font-normal"
                     >
-                        <Link v-if="step.enable !== true" class="block" :href="step.url">
+                        <Link v-if="step.disabled !== true" class="block" :href="step.url">
                             {{ step.title }}
                         </Link>
                         <span v-else>{{ step.title }}</span>

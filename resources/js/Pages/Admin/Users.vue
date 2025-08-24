@@ -18,56 +18,52 @@
         <div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :search-options="tableParams.search"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="users.meta.pagination.total"
-                        :rows="users.data"
-                        @on-page-change="onPageChange"
-                        :rtl="$page.props.rtl"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
-                        @on-sort-change="onSortChange"
-                        @on-search="onSearch"
+                    <DataTable
+                        :value="data"
+                        dataKey="id"
+                        lazy
+                        paginator
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        :globalFilterFields="['code', 'full_name', 'user_name', 'email', 'role', 'status']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
+                        :class="{ 'rtl': $page.props.rtl }"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag class="w-full p-mr-2 cursor-pointer" @click="copyCode(props.row.code)">
+                        <!-- Define columns -->
+                        <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.label" :sortable="col.sortable !== false">
+                            <template #body="slotProps" v-if="col.field === 'code'">
+                                <Tag :key="slotProps.data.id || slotProps.index" class="w-full p-mr-2 cursor-pointer" @click="copyCode(slotProps.data.code)">
                                     <i class="pi pi-copy mr-2" />
-                                    {{ props.row.code }}
+                                    {{ slotProps.data.code }}
                                 </Tag>
-                            </div>
-
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
-
-                            <!-- Action Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
+                            </template>
+                            <template #body="slotProps" v-else-if="col.field === 'status'">
+                                <span :class="[slotProps.data.status ? 'badge-success' : 'badge-danger', 'badge']">
+                                    {{ slotProps.data.status ? __('Active') : __('In-active') }}
+                                </span>
+                            </template>
+                            <template #body="slotProps" v-else-if="col.field === 'actions'">
+                                <ActionsDropdown :key="slotProps.data.id || slotProps.index">
                                     <template #actions>
-                                        <button class="action-item" @click="openEditForm(props.row)">{{
-                                            __('Edit')
-                                        }}</button>
-                                        <button class="action-item" @click="deleteUserWithConfirmation(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
+                                        <button class="action-item" @click="openEditForm(slotProps.data)">{{ __('Edit') }}</button>
+                                        <button class="action-item" @click="deleteUserWithConfirmation(slotProps.data.id)">{{ __('Delete') }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
-
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }" v-if="col.filterKey">
+                                <InputText v-model="filterModel.value" @input="filterCallback()" :placeholder="col.placeholder || col.label" />
+                            </template>
+                        </Column>
+                        
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="openCreateForm()">
@@ -76,7 +72,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Sidebar Forms -->
                     <Drawer v-model:visible="showCreateDrawer" position="right" class="p-drawer-md">
@@ -153,6 +149,8 @@ const UserForm = defineAsyncComponent(() => import('@/Components/Forms/UserForm.
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import { useTranslate } from '@/composables/useTranslate'
@@ -164,7 +162,6 @@ import { codeColumn, statusColumn, textFilterColumn, dropdownFilterColumn } from
 
 // Props
 const props = defineProps({
-    users: Object,
     errors: Object,
     roles: Array,
     userGroups: Array,
@@ -233,80 +230,93 @@ const acceptTypedConfirm = () => {
     resolveDeleteConfirm = null
 }
 
-// Table columns configuration - moved up to pass to useServerTable
-const columns = reactive([
-    codeColumn(__, { width: '11rem', trigger: 'enter' }),
-    textFilterColumn(__, {
-        label: 'Name',
-        field: 'full_name',
-        placeholderLabel: 'Name',
-        trigger: 'enter',
-        sortable: false,
-        filterKey: 'name',
-    }),
-    textFilterColumn(__, {
-        label: 'User Name',
-        field: 'user_name',
-        placeholderLabel: 'User Name',
-        trigger: 'enter',
-        sortable: false,
-        filterKey: 'user_name',
-    }),
-    textFilterColumn(__, {
-        label: 'Email',
-        field: 'email',
-        placeholderLabel: 'Email',
-        trigger: 'enter',
-        sortable: false,
-    }),
-    dropdownFilterColumn(__, {
-        label: 'Role',
-        field: 'role',
-        items: props.roles.map(role => ({
-            // Handle both formats: { value, text } or { id, name } for API flexibility
-            value: role.value ?? role.id,
-            text: role.text ?? role.name,
-        })),
-        filterKey: 'role',
-        sortable: false,
-    }),
-    statusColumn(__, { width: '11rem' }),
-    { label: __('Actions'), field: 'actions', sortable: false, width: '12rem' },
-])
-
 // Server table composable
-const {
-    serverParams,
-    loading: tableLoading,
-    onPageChange,
-    onPerPageChange,
-    onColumnFilter,
-    onSortChange,
-    onSearch,
-    tableParams,
-    loadItems,
-} = useServerTable({
-    page: 1,
-    perPage: props.users.meta.pagination.per_page || 10,
-    columns: columns, // Pass columns configuration
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
     resourceKeys: ['users', 'roles', 'userGroups'],
     routeName: 'users.index',
-    labels: {
-        pagination: { firstLabel: __('First'), lastLabel: __('Last'), nextLabel: __('Next'), prevLabel: __('Prev') },
-        search: { placeholder: __('Search') + ' ' + __('records') + '...' },
-    },
-    searchDebounceMs: 0,
-    searchTrigger: 'enter',
-    paramMap: {
-        page: 'page',
-        perPage: 'per_page',
-        search: 'search',
-        sortBy: 'sortBy',
-        sortOrder: 'sortOrder',
-        filterPrefix: '',
-    },
-    onError: (_, message) =>
-        toast({ severity: 'error', summary: __('Error'), detail: message || __('Failed to load data'), life: 3000 }),
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Code'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+            width: '11rem',
+        },
+        {
+            label: __('Name'),
+            field: 'full_name',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+            filterKey: 'name',
+        },
+        {
+            label: __('User Name'),
+            field: 'user_name',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('User Name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Email'),
+            field: 'email',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Email'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Role'),
+            field: 'role',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Role'),
+                filterValue: null,
+                filterDropdownItems: props.roles.map(role => ({
+                    value: role.value ?? role.id,
+                    text: role.text ?? role.name,
+                })),
+            },
+            sortable: false,
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Status'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') },
+                ],
+            },
+            width: '11rem',
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+            width: '12rem',
+        },
+    ],
 })
 
 // Computed properties
@@ -320,7 +330,7 @@ const editingUserId = computed(() => {
 
 const deleteUserWithConfirmation = async id => {
     // Find the user object for useAdminForm deleteItem method
-    const user = props.users.data.find(u => u.id === id)
+    const user = data.value.find(u => u.id === id)
 
     if (!user) {
         console.error('User not found for deletion')
@@ -350,26 +360,9 @@ const deleteUserWithConfirmation = async id => {
     }
 
     // Use useAdminForm deleteItem with custom confirmation - it will use the configured deleteUrl
-    const prevPage = serverParams.page
     const result = await deleteItem(user, null, customConfirmation)
     if (!result) {
         return
     }
-    // After deletion, refresh table while preserving filters and pagination
-    // Note: loadItems(true) preserves UI state - use loadItems(false) if artifacts persist
-    await loadItems(true)
-    // If current page becomes empty after deletion, navigate to previous page using fresh inertia props
-    const freshUsers = usePage().props.users
-    const currentPageCount = freshUsers?.data?.length ?? 0
-    if (currentPageCount === 0 && prevPage > 1) {
-        serverParams.page = prevPage - 1
-        await loadItems(true)
-    }
 }
-
-// Expose loadItems for external table refreshing
-defineExpose({
-    loadItems,
-    refreshTable: loadItems, // Alias for clarity
-})
 </script>

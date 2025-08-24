@@ -40,9 +40,15 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
+import ArcTextArea from '@/Components/TextArea.vue'
 
 // Props
 const props = defineProps({
@@ -61,11 +67,16 @@ const title = computed(() => {
 
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    title: props.settings?.title || '',
+    subtitle: props.settings?.subtitle || '',
+    limit: props.settings?.limit || 6,
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.category.update'), {
+        errorBag: 'updateCategorySettings',
+        preserveScroll: true,
+    })
 }
 </script>

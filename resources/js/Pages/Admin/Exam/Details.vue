@@ -50,22 +50,18 @@
                                             >{{ __('Sub Category')
                                             }}<span class="ltr:ml-1 rtl:mr-1 text-red-400">*</span></label
                                         >
-                                        <v-select
-                                            id="sub_category_id"
-                                            v-model="v$.form.sub_category_id.$model"
-                                            :options="subCategories"
-                                            :reduce="sub => sub.id"
-                                            label="name"
-                                            :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                            @search="searchSubCategories"
-                                        >
-                                            <template #no-options="{ search, searching }">
-                                                <span v-if="searching"
-                                                    >{{ __('No results were found for this search') }}.</span
-                                                >
-                                                <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                            </template>
-                                        </v-select>
+                                        <Select
+                            id="sub_category_id"
+                            v-model="v$.form.sub_category_id.$model"
+                            :options="subCategories"
+                            optionValue="id"
+                            optionLabel="name"
+                            placeholder="Select a sub category"
+                            filter
+                            showClear
+                            class="w-full"
+                            @filter="searchSubCategories"
+                        />
                                         <div class="form-control-errors">
                                             <p
                                                 v-if="
@@ -82,21 +78,17 @@
                                         <label class="pb-2 text-sm font-semibold text-gray-800">{{
                                             __('Exam Type')
                                         }}</label>
-                                        <v-select
-                                            id="exam_type_id"
-                                            v-model="v$.form.exam_type_id.$model"
-                                            :options="examTypes"
-                                            :reduce="pattern => pattern.id"
-                                            label="name"
-                                            :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        >
-                                            <template #no-options="{ search, searching }">
-                                                <span v-if="searching"
-                                                    >{{ __('No results were found for this search') }}.</span
-                                                >
-                                                <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                            </template>
-                                        </v-select>
+                                        <Select
+                            id="exam_type_id"
+                            v-model="v$.form.exam_type_id.$model"
+                            :options="examTypes"
+                            optionValue="id"
+                            optionLabel="name"
+                            placeholder="Select an exam type"
+                            filter
+                            showClear
+                            class="w-full"
+                        />
                                         <div class="form-control-errors">
                                             <p
                                                 v-if="
@@ -278,7 +270,7 @@ import { useConfirmToast } from '@/composables/useConfirmToast'
 import axios from 'axios'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import InputText from 'primevue/inputtext'
-import vSelect from 'vue-select'
+import Select from 'primevue/select'
 import TiptapEditor from '@/Components/TiptapEditor'
 import HorizontalStepper from '@/Components/Stepper/HorizontalStepper'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -398,10 +390,9 @@ const update = () => {
     })
 }
 
-const searchSubCategories = (search, loading) => {
+const searchSubCategories = (event) => {
+    const search = event?.value || event?.target?.value || event?.filter || ''
     if (search !== '') {
-        loading(true)
-
         // Clear previous timeout
         clearTimeout(debounce.value)
 
@@ -423,7 +414,6 @@ const searchSubCategories = (search, loading) => {
                 })
                 .then(function (response) {
                     subCategories.value = response.data.subCategories
-                    loading(false)
                     searchAbortController.value = null
                 })
                 .catch(function (error) {
@@ -435,7 +425,6 @@ const searchSubCategories = (search, loading) => {
                     if (!aborted) {
                         console.error('Search subcategories error:', error)
                     }
-                    loading(false)
                     searchAbortController.value = null
                 })
         }, 600)

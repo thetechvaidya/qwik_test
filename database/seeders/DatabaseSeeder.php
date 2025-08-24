@@ -32,16 +32,62 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create user and assign admin role
-        $user = User::create([
+        $admin = User::create([
             'first_name' => 'QwikTest',
             'last_name' => 'Admin',
             'user_name' => 'admin',
             'email' => 'admin@qwiktest.com',
             'password' => Hash::make('password'),
-            'email_verified_at' => Carbon::now()->toDateTimeString()
+            'email_verified_at' => Carbon::now()->toDateTimeString(),
+            'is_active' => true
         ]);
+        $admin->assignRole('admin');
 
-        $user->assignRole('admin');
+        // Create additional demo users
+        $instructor = User::create([
+            'first_name' => 'John',
+            'last_name' => 'Instructor',
+            'user_name' => 'instructor',
+            'email' => 'instructor@qwiktest.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => Carbon::now()->toDateTimeString(),
+            'is_active' => true
+        ]);
+        $instructor->assignRole('instructor');
+
+        $student = User::create([
+            'first_name' => 'Jane',
+            'last_name' => 'Student',
+            'user_name' => 'student',
+            'email' => 'student@qwiktest.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => Carbon::now()->toDateTimeString(),
+            'is_active' => true
+        ]);
+        $student->assignRole('student');
+
+        $guest = User::create([
+            'first_name' => 'Guest',
+            'last_name' => 'User',
+            'user_name' => 'guest',
+            'email' => 'guest@qwiktest.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => Carbon::now()->toDateTimeString(),
+            'is_active' => true
+        ]);
+        $guest->assignRole('guest');
+
+        // Create admin with legacy password for backward compatibility
+        $adminLegacy = User::create([
+            'first_name' => 'Legacy',
+            'last_name' => 'Admin',
+            'user_name' => 'admin_legacy',
+            'email' => 'admin_legacy@qwiktest.com',
+            'password' => Hash::make('Admin123'),
+            'email_verified_at' => Carbon::now()->toDateTimeString(),
+            'is_active' => true
+        ]);
+        $adminLegacy->assignRole('admin');
 
         DB::table('question_types')->insert([
             ['name' => 'Multiple Choice Single Answer', 'code' => 'MSA', 'type' => 'objective', 'icon_path' => 'msa.png', 'short_description' => 'This question type is easy to set up and is the most frequent MCQ question in online exams. Users are allowed to pick just one answer from a list of given options.', 'is_active' => 1],

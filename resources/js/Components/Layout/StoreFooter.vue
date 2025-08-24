@@ -1,149 +1,533 @@
 <template>
-    <footer class="bg-primary">
-        <div
-            tabindex="0"
-            aria-label="footer"
-            class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 focus:outline-none mx-auto container flex flex-col items-start sm:items-center justify-center"
-        >
-            <img
-                class="h-10"
-                :src="$page.props.assetUrl + $page.props.general.white_logo_path"
-                :alt="$page.props.general.app_name"
-            />
-            <div class="text-black flex flex-col md:items-center f-f-l pt-3">
-                <h1 tabindex="0" class="focus:outline-none text-lg text-secondary">{{
-                    $page.props.general.tag_line
-                }}</h1>
+    <footer class="modern-footer relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-900 text-white">
+        <!-- Background Effects -->
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
+        
+        <!-- Main Footer Content -->
+        <div class="relative container-modern py-16 lg:py-20">
+            <!-- Top Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 lg:gap-8 mb-12">
+                <!-- Brand Column -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Logo and Brand -->
+                    <div class="flex items-center space-x-4 group">
+                        <div class="relative">
+                            <img
+                                class="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+                                :src="$page.props.assetUrl + $page.props.general.white_logo_path"
+                                :alt="$page.props.general.app_name"
+                            />
+                            <!-- Logo glow effect -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gradient">
+                                {{ $page.props.general.app_name }}
+                            </h3>
+                            <p class="text-gray-300 text-sm mt-1">
+                                {{ $page.props.general.tag_line }}
+                            </p>
+                        </div>
+                    </div>
 
-                <!--Footer Social Links-->
-                <div
-                    v-if="footerSettings.enable_social_links"
-                    class="flex items-center space-x-6 rtl:space-x-reverse mt-5 md:mt-10 text-base text-color f-f-l"
-                >
-                    <template v-for="(socialLink, key) in footerSettings.social_links">
-                        <a
-                            v-if="socialLink[1]"
-                            :href="socialLink[2]"
-                            target="_blank"
-                            class="text-white hover:opacity-90"
-                        >
-                            <span class="sr-only">{{ socialLink[0] }}</span>
-                            <svg
-                                v-if="key === 'facebook'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <title>Facebook</title>
-                                <path
-                                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+                    <!-- Description -->
+                    <p class="text-gray-300 text-lg leading-relaxed max-w-md">
+                        Transform your learning journey with our comprehensive quiz platform designed for modern learners. 
+                        Join thousands of successful students worldwide.
+                    </p>
+
+                    <!-- Newsletter Signup -->
+                    <div class="space-y-4">
+                        <h4 class="text-lg font-semibold text-white">Stay Updated</h4>
+                        <div class="flex flex-col sm:flex-row gap-3 max-w-md">
+                            <div class="flex-1">
+                                <input
+                                    v-model="newsletterEmail"
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    class="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all duration-200"
                                 />
-                            </svg>
-                            <svg
-                                v-if="key === 'twitter'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
+                            </div>
+                            <button
+                                @click="subscribeNewsletter"
+                                :disabled="isSubscribing"
+                                class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <title>Twitter</title>
-                                <path
-                                    d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"
-                                />
-                            </svg>
-                            <svg
-                                v-if="key === 'instagram'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <title>Instagram</title>
-                                <path
-                                    d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"
-                                />
-                            </svg>
-                            <svg
-                                v-if="key === 'youtube'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <title>YouTube</title>
-                                <path
-                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                                />
-                            </svg>
-                            <svg
-                                v-if="key === 'linkedin'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <title>LinkedIn</title>
-                                <path
-                                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                                />
-                            </svg>
-                            <svg
-                                v-if="key === 'github'"
-                                class="h-6 w-6"
-                                fill="currentColor"
-                                role="img"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <title>GitHub</title>
-                                <path
-                                    d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-                                />
-                            </svg>
-                        </a>
-                    </template>
+                                <span v-if="!isSubscribing">Subscribe</span>
+                                <i v-else class="pi pi-spin pi-spinner"></i>
+                            </button>
+                        </div>
+                        <p v-if="subscriptionMessage" class="text-sm" :class="subscriptionSuccess ? 'text-green-400' : 'text-red-400'">
+                            {{ subscriptionMessage }}
+                        </p>
+                    </div>
                 </div>
 
-                <!--Footer Links-->
-                <div v-if="footerSettings.enable_links" class="my-6 text-base text-color f-f-l">
-                    <ul class="md:flex md:gap-6 items-center">
-                        <template v-for="footerLink in footerSettings.footer_links">
-                            <li v-if="footerLink[2]" class="cursor-pointer pt-4 lg:py-0">
-                                <a
-                                    :href="footerLink[1]"
-                                    class="focus:outline-none focus:underline hover:underline text-base text-white opacity-80"
-                                    >{{ footerLink[0] }}</a
-                                >
-                            </li>
-                        </template>
+                <!-- Quick Links -->
+                <div class="space-y-6">
+                    <h4 class="text-lg font-semibold text-white flex items-center">
+                        <i class="pi pi-link mr-2 text-indigo-400"></i>
+                        Quick Links
+                    </h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <Link
+                                :href="route('welcome')"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-home mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Home</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
+                                :href="route('welcome') + '#explore'"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-compass mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Explore Courses</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </Link>
+                        </li>
+                        <li>
+                            <a
+                                href="#features"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-star mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Features</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="#pricing"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-tag mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Pricing</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
                     </ul>
                 </div>
+
+                <!-- Support Links -->
+                <div class="space-y-6">
+                    <h4 class="text-lg font-semibold text-white flex items-center">
+                        <i class="pi pi-question-circle mr-2 text-indigo-400"></i>
+                        Support
+                    </h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a
+                                href="/help"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-info-circle mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Help Center</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="/contact"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-envelope mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Contact Us</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="/privacy"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-shield mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Privacy Policy</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a
+                                href="/terms"
+                                class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                            >
+                                <i class="pi pi-file-text mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                <span>Terms of Service</span>
+                                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Custom Footer Links -->
+                    <template v-if="footerSettings.enable_links">
+                        <ul class="space-y-3 pt-4 border-t border-white/10">
+                            <li v-for="footerLink in footerSettings.footer_links" :key="footerLink[0]">
+                                <a
+                                    v-if="footerLink[2]"
+                                    :href="footerLink[1]"
+                                    class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
+                                >
+                                    <i class="pi pi-external-link mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                                    <span>{{ footerLink[0] }}</span>
+                                    <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </template>
+                </div>
             </div>
-            <!--Footer Copyright-->
-            <div class="w-full mt-12 border-t border-white border-opacity-50 pt-8">
-                <p class="text-base text-white opacity-80 xl:text-center">
-                    <span>©{{ new Date().getFullYear() }} {{ $page.props.general.app_name }}. </span>
-                    <span>{{ footerSettings.copyright_text }}</span>
-                </p>
+
+            <!-- Social Media Section -->
+            <div v-if="footerSettings.enable_social_links" class="mb-12">
+                <div class="text-center space-y-6">
+                    <h4 class="text-lg font-semibold text-white">Connect With Us</h4>
+                    <div class="flex justify-center space-x-6">
+                        <template v-for="(socialLink, key) in footerSettings.social_links" :key="key">
+                            <a
+                                v-if="socialLink[1]"
+                                :href="socialLink[2]"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="social-link group relative p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 transition-all duration-300 transform hover:scale-110 hover:shadow-glow focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                :aria-label="socialLink[0]"
+                            >
+                                <!-- Social Icons -->
+                                <i
+                                    v-if="key === 'facebook'"
+                                    class="pi pi-facebook text-2xl text-white group-hover:text-blue-400 transition-colors duration-300"
+                                ></i>
+                                <i
+                                    v-else-if="key === 'twitter'"
+                                    class="pi pi-twitter text-2xl text-white group-hover:text-blue-400 transition-colors duration-300"
+                                ></i>
+                                <i
+                                    v-else-if="key === 'instagram'"
+                                    class="pi pi-instagram text-2xl text-white group-hover:text-pink-400 transition-colors duration-300"
+                                ></i>
+                                <i
+                                    v-else-if="key === 'youtube'"
+                                    class="pi pi-youtube text-2xl text-white group-hover:text-red-400 transition-colors duration-300"
+                                ></i>
+                                <i
+                                    v-else-if="key === 'linkedin'"
+                                    class="pi pi-linkedin text-2xl text-white group-hover:text-blue-500 transition-colors duration-300"
+                                ></i>
+                                <i
+                                    v-else-if="key === 'github'"
+                                    class="pi pi-github text-2xl text-white group-hover:text-gray-300 transition-colors duration-300"
+                                ></i>
+                                
+                                <!-- Hover glow effect -->
+                                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-lg"></div>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="mb-12">
+                <div class="flex flex-wrap justify-center items-center gap-8 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                    <div class="flex items-center space-x-3 text-gray-300">
+                        <div class="p-2 bg-green-500/20 rounded-lg">
+                            <i class="pi pi-shield text-green-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Secure & Trusted</div>
+                            <div class="text-sm text-gray-400">SSL Encrypted</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 text-gray-300">
+                        <div class="p-2 bg-blue-500/20 rounded-lg">
+                            <i class="pi pi-verified text-blue-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Verified Platform</div>
+                            <div class="text-sm text-gray-400">ISO Certified</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 text-gray-300">
+                        <div class="p-2 bg-red-500/20 rounded-lg">
+                            <i class="pi pi-heart text-red-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">Loved by Users</div>
+                            <div class="text-sm text-gray-400">4.9/5 Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="pt-8 border-t border-white/10">
+                <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
+                    <!-- Copyright -->
+                    <div class="text-center lg:text-left">
+                        <p class="text-gray-300">
+                            <span class="font-medium">© {{ new Date().getFullYear() }} {{ $page.props.general.app_name }}.</span>
+                            <span class="ml-2">{{ footerSettings.copyright_text || 'All rights reserved.' }}</span>
+                        </p>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="flex items-center space-x-6 text-sm text-gray-400">
+                        <span class="flex items-center">
+                            <i class="pi pi-map-marker mr-2 text-indigo-400"></i>
+                            Made with ❤️ worldwide
+                        </span>
+                        <span class="flex items-center">
+                            <i class="pi pi-clock mr-2 text-indigo-400"></i>
+                            24/7 Support
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Scroll to Top Button -->
+        <Transition name="fade">
+            <button
+                v-if="showScrollTop"
+                @click="scrollToTop"
+                class="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-modern-lg hover:shadow-glow transform hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 z-50"
+                aria-label="Scroll to top"
+            >
+                <i class="pi pi-chevron-up text-lg"></i>
+            </button>
+        </Transition>
     </footer>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Link } from '@inertiajs/vue3'
 
-export default {
-    name: 'StoreFooter',
-    components: { Link },
-    props: {
-        footerSettings: Object,
+// Props
+defineProps({
+    footerSettings: {
+        type: Object,
+        default: () => ({
+            enable_social_links: true,
+            enable_links: true,
+            social_links: {},
+            footer_links: [],
+            copyright_text: 'All rights reserved.',
+        }),
     },
+})
+
+// Reactive state
+const newsletterEmail = ref('')
+const isSubscribing = ref(false)
+const subscriptionMessage = ref('')
+const subscriptionSuccess = ref(false)
+const showScrollTop = ref(false)
+
+// Methods
+const subscribeNewsletter = async () => {
+    if (!newsletterEmail.value || !isValidEmail(newsletterEmail.value)) {
+        subscriptionMessage.value = 'Please enter a valid email address.'
+        subscriptionSuccess.value = false
+        return
+    }
+
+    isSubscribing.value = true
+    subscriptionMessage.value = ''
+
+    try {
+        // Simulate API call - replace with actual implementation
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        subscriptionMessage.value = 'Thank you for subscribing! Check your email for confirmation.'
+        subscriptionSuccess.value = true
+        newsletterEmail.value = ''
+    } catch (error) {
+        subscriptionMessage.value = 'Something went wrong. Please try again later.'
+        subscriptionSuccess.value = false
+    } finally {
+        isSubscribing.value = false
+        
+        // Clear message after 5 seconds
+        setTimeout(() => {
+            subscriptionMessage.value = ''
+        }, 5000)
+    }
 }
+
+const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+}
+
+const scrollToTop = () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    })
+}
+
+const handleScroll = () => {
+    showScrollTop.value = window.scrollY > 500
+}
+
+// Lifecycle hooks
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll)
+})
 </script>
+
+<style scoped>
+/* Modern footer styling */
+.modern-footer {
+    position: relative;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 50%, #312e81 100%);
+}
+
+/* Footer link hover effects */
+.footer-link {
+    position: relative;
+    padding: 0.5rem 0;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Social link hover effects */
+.social-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 2px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.social-link:hover::before {
+    opacity: 1;
+}
+
+/* Newsletter input focus effects */
+.newsletter-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Gradient text effect */
+.text-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Transition animations */
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modern-footer {
+        padding: 3rem 1rem;
+    }
+    
+    .social-link {
+        padding: 0.75rem;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .footer-link,
+    .social-link,
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .footer-link:hover {
+        transform: none !important;
+    }
+    
+    .social-link:hover {
+        transform: none !important;
+    }
+}
+
+/* Focus styles for accessibility */
+.footer-link:focus,
+.social-link:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .modern-footer {
+        background: black;
+        color: white;
+        border-top: 2px solid white;
+    }
+    
+    .footer-link {
+        color: white;
+    }
+    
+    .footer-link:hover {
+        background: white;
+        color: black;
+    }
+    
+    .social-link {
+        border: 2px solid white;
+        background: black;
+    }
+    
+    .social-link:hover {
+        background: white;
+        color: black;
+    }
+}
+
+/* Print styles */
+@media print {
+    .modern-footer {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .social-link,
+    .newsletter-signup,
+    .scroll-to-top {
+        display: none;
+    }
+}
+</style>

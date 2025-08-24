@@ -13,58 +13,97 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="topics.meta.pagination.total"
-                        :rows="topics.data"
-                        :rtl="$page.props.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :totalRecords="totalRecords"
+                        :loading="tableLoading"
+                        lazy
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[10, 25, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
+                        filterDisplay="row"
+                        :globalFilterFields="['code', 'name', 'skill', 'status']"
+                        class="p-datatable-sm"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    icon="pi pi-copy"
-                                    class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                        <Column
+                            v-for="col in columns"
+                            :key="col.field"
+                            :field="col.field"
+                            :header="col.header"
+                            :sortable="col.sortable"
+                            :showFilterMenu="false"
+                        >
+                            <template #filter="{ filterModel, filterCallback }" v-if="col.filter">
+                                <InputText
+                                    v-if="col.filter.type === 'text'"
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="col.filter.placeholder"
+                                    class="p-column-filter"
                                 />
-                            </div>
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
-                            <!-- Action Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
-                                            >{{ __('Edit') }}</button
-                                        >
-                                        <button class="action-item" @click="deleteTopic(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
+                                <Select
+                                    v-else-if="col.filter.type === 'dropdown'"
+                                    v-model="filterModel.value"
+                                    :options="col.filter.options"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    :placeholder="col.filter.placeholder"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                >
+                                    <template #value="slotProps">
+                                        <span v-if="slotProps.value !== null && slotProps.value !== undefined">
+                                            {{ col.filter.options.find(option => option.value === slotProps.value)?.text }}
+                                        </span>
                                     </template>
-                                </ActionsDropdown>
-                            </div>
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-
-                        <template #emptystate>
+                                    <template #option="slotProps">
+                                        {{ slotProps.option.text }}
+                                    </template>
+                                </Select>
+                            </template>
+                            <template #body="slotProps" v-if="col.field === 'code'">
+                                <div class="flex items-center gap-2">
+                                    <span>{{ slotProps.data.code }}</span>
+                                    <button
+                                        class="qt-btn-xs qt-btn-light"
+                                        type="button"
+                                        @click="copyCode(slotProps.data.code)"
+                                    >
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            <template #body="slotProps" v-else-if="col.field === 'status'">
+                                <Tag
+                                    :value="slotProps.data.status ? __('Active') : __('In-active')"
+                                    :severity="slotProps.data.status ? 'success' : 'danger'"
+                                />
+                            </template>
+                            <template #body="slotProps" v-else-if="col.field === 'actions'">
+                                <div class="flex justify-center">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                    editForm = true;
+                                    currentId = slotProps.data.id;
+                                "
+                                            >{{ __('Edit') }}</button>
+                                            <button class="action-item" @click="deleteTopic(slotProps.data.id)">{{ __('Delete') }}</button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
+                            </template>
+                        </Column>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -73,7 +112,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!--Sidebar Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -106,11 +145,15 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import TopicForm from '@/Components/Forms/TopicForm'
+import TopicForm from '@/Components/Forms/TopicForm.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
-import NoDataTable from '@/Components/NoDataTable'
-import ActionsDropdown from '@/Components/ActionsDropdown'
+import NoDataTable from '@/Components/NoDataTable.vue'
+import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 
 const props = defineProps({
     topics: Object,
@@ -128,61 +171,52 @@ const editForm = ref(false)
 const currentId = ref(null)
 
 // Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, tableParams } = useServerTable({
-    page: props.topics.meta.pagination.current_page,
-    perPage: props.topics.meta.pagination.per_page,
-    resourceKeys: ['topics'],
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    columns: [
+        {
+            field: 'code',
+            header: __('Code'),
+            sortable: false,
+            filter: {
+                type: 'text',
+                placeholder: __('Search') + ' ' + __('Code')
+            }
+        },
+        {
+            field: 'name',
+            header: __('Name'),
+            sortable: false,
+            filter: {
+                type: 'text',
+                placeholder: __('Search') + ' ' + __('Name')
+            }
+        },
+        {
+            field: 'skill',
+            header: __('Skill'),
+            sortable: false
+        },
+        {
+            field: 'status',
+            header: __('Status'),
+            sortable: false,
+            filter: {
+                type: 'dropdown',
+                options: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') }
+                ],
+                placeholder: __('Search') + ' ' + __('Status')
+            }
+        },
+        {
+            field: 'actions',
+            header: __('Actions'),
+            sortable: false
+        }
+    ],
+    data: props.topics
 })
-
-const columns = ref([
-    {
-        label: __('Code'),
-        field: 'code',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Code'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-        width: '11rem',
-    },
-    {
-        label: __('Name'),
-        field: 'name',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Name'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Skill'),
-        field: 'skill',
-        sortable: false,
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Active') },
-                { value: 0, text: __('In-active') },
-            ],
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-    },
-])
 
 const title = computed(() => {
     return __('Topics') + ' - ' + pageProps.general.app_name

@@ -12,52 +12,66 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="options"
-                        :columns="columns"
-                        :total-rows="tags.meta.pagination.total"
-                        :rows="tags.data"
-                        :rtl="pageProps.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['name']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Status Column -->
-                            <div v-if="props.column.field === 'status'">
-                                <span
-                                    :class="[props.row.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
-                                    >{{ __(props.row.status) }}</span
-                                >
-                            </div>
+                        <Column field="name" :header="__('Name')" :sortable="false" filterField="name">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Name')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <span v-else-if="props.column.field === 'actions'">
+                        <Column field="status" :header="__('Status')" :sortable="false">
+                            <template #body="{ data }">
+                                <span
+                                    :class="[data.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
+                                    >{{ __(data.status) }}</span
+                                >
+                            </template>
+                        </Column>
+
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data }">
                                 <ActionsDropdown>
                                     <template #actions>
                                         <button
                                             class="action-item"
                                             @click="
-                                                editForm = true
-                                                currentId = props.row.id
+                                                editForm = true;
+                                                currentId = data.id;
                                             "
                                             >{{ __('Edit') }}</button
                                         >
-                                        <button class="action-item" @click="deleteTag(props.row.id)">{{
+                                        <button class="action-item" @click="deleteTag(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </span>
+                            </template>
+                        </Column>
 
-                            <!-- Other Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -66,7 +80,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
                         <TagForm :form-errors="errors" title="New Tag" @close="createForm = false" />
@@ -91,16 +105,19 @@ import { ref, computed, reactive } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Drawer from 'primevue/drawer'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import TagForm from '@/Components/Forms/TagForm.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import { FilterMatchMode } from '@primevue/core/api'
 
 // Props
 const props = defineProps({
-    tags: Object,
     errors: Object,
 })
 
@@ -109,60 +126,54 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { confirm, toast } = useConfirmToast()
 
+// Initialize filters for DataTable
+const filters = ref({
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
+
 // Reactive data
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
 
-// Table configuration
-const columns = [
-    {
-        label: __('Name'),
-        field: 'name',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Name'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Active') },
-                { value: 0, text: __('In-active') },
-            ],
-        },
-        width: '11rem',
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-        width: '12rem',
-    },
-]
-
-const options = reactive({
-    enabled: true,
-    mode: 'pages',
-    perPage: props.tags.meta.pagination.per_page,
-    setCurrentPage: props.tags.meta.pagination.current_page,
-    perPageDropdown: [10, 20, 50, 100],
-    dropdownAllowAll: false,
-})
-
 // Server table composable
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServerTable({
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
     resourceKeys: ['tags'],
     routeName: 'tags.index',
+    columns: [
+        {
+            label: __('Name'),
+            field: 'name',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Status'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') },
+                ],
+            },
+            width: '11rem',
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+            width: '12rem',
+        },
+    ],
 })
 
 // Computed

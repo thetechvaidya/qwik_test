@@ -13,60 +13,95 @@
         <div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="userGroups.meta.pagination.total"
-                        :rows="userGroups.data"
-                        :rtl="$page.props.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    icon="pi pi-copy"
-                                    class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                        <Column
+                            v-for="col in columns"
+                            :key="col.field"
+                            :field="col.field"
+                            :header="col.label"
+                            :sortable="col.sortable"
+                        >
+                            <template v-if="col.filterOptions?.enabled" #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-if="!col.filterOptions.filterDropdownItems"
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
                                 />
-                            </div>
+                                <Select
+                                    v-else
+                                    v-model="filterModel.value"
+                                    :options="col.filterOptions.filterDropdownItems"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
+                            <template #body="slotProps">
+                                <!-- Code Column -->
+                                <div v-if="slotProps.field === 'code'">
+                                    <Tag
+                                        :value="slotProps.data.code"
+                                        icon="pi pi-copy"
+                                        class="w-full p-mr-2 text-sm cursor-pointer"
+                                        @click="copyCode(slotProps.data.code)"
+                                    />
+                                </div>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
-                                            >{{ __('Edit') }}</button
-                                        >
-                                        <button class="action-item" @click="deleteUserGroup(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
-                                    </template>
-                                </ActionsDropdown>
-                            </div>
+                                <!-- Status Column -->
+                                <div v-else-if="slotProps.field === 'status'">
+                                    <span :class="[slotProps.data.status ? 'badge-success' : 'badge-danger', 'badge']">{{ 
+                                        slotProps.data.status ? __('Active') : __('In-active')
+                                    }}</span>
+                                </div>
 
-                            <!-- Remaining Column -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                                <!-- Actions Column -->
+                                <div v-else-if="slotProps.field === 'actions'">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                    editForm = true;
+                                    currentId = slotProps.data.id;
+                                "
+                                                >{{ __('Edit') }}</button
+                                            >
+                                            <button class="action-item" @click="deleteUserGroup(slotProps.data.id)">{{ 
+                                                __('Delete')
+                                            }}</button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
+
+                                <!-- Default Column -->
+                                <span v-else>{{ slotProps.data[slotProps.field] }}</span>
+                            </template>
+                        </Column>
+
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -75,21 +110,17 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
-                    <!-- Sidebar Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
-                        <UserGroupForm
-                            :form-errors="errors"
-                            :title="__('New') + ' ' + __('User Group')"
-                            @close="createForm = false"
-                        />
+                        <UserGroupForm :form-errors="errors" title="New User Group" @close="createForm = false" />
                     </Drawer>
                     <Drawer v-model:visible="editForm" position="right" class="p-drawer-md">
                         <UserGroupForm
+                            v-model:edit-flag="editForm"
                             :user-group-id="currentId"
                             :form-errors="errors"
-                            :title="__('Edit') + ' ' + __('User Group')"
+                            title="Edit User Group"
                             @close="editForm = false"
                         />
                     </Drawer>
@@ -105,15 +136,19 @@ import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import UserGroupForm from '@/Components/Forms/UserGroupForm'
+import UserGroupForm from '@/Components/Forms/UserGroupForm.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
-import NoDataTable from '@/Components/NoDataTable'
-import ActionsDropdown from '@/Components/ActionsDropdown'
+import NoDataTable from '@/Components/NoDataTable.vue'
+import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 
 const props = defineProps({
-    userGroups: Object,
     errors: Object,
 })
 
@@ -121,78 +156,80 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
+
 // State
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
 
 // Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, tableParams } = useServerTable({
-    page: props.userGroups.meta.pagination.current_page,
-    perPage: props.userGroups.meta.pagination.per_page,
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
     resourceKeys: ['userGroups'],
+    routeName: 'user-groups.index',
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Code'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Name'),
+            field: 'name',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Visibility'),
+            field: 'visibility',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Visibility'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Private') },
+                    { value: 0, text: __('Public') },
+                ],
+            },
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Status'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') },
+                ],
+            },
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+        },
+    ],
 })
-
-const columns = ref([
-    {
-        label: __('Code'),
-        field: 'code',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Code'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-        width: '12rem',
-    },
-    {
-        label: __('Name'),
-        field: 'name',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Name'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Visibility'),
-        field: 'visibility',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Visibility'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Private') },
-                { value: 0, text: __('Public') },
-            ],
-        },
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Active') },
-                { value: 0, text: __('In-active') },
-            ],
-        },
-        width: '11rem',
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-        width: '12rem',
-    },
-])
 
 const title = computed(() => {
     return __('User Groups') + ' - ' + pageProps.general.app_name

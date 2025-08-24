@@ -101,34 +101,17 @@ export function useServerTable(initialOptions = {}) {
             serverParams.sort = params
             validSortConstructed = true
         } else if (params && typeof params === 'object') {
-            // Handle vue-good-table sort format
-            if (params.sortType && typeof params.columnIndex !== 'undefined') {
-                // vue-good-table sends { sortType: 'asc'|'desc', columnIndex: number }
-                // Map columnIndex to field name using columns configuration
-                let fieldName = null
-                const columnsArray = unref(columns) // Unwrap ref if needed
-
-                if (params.field) {
-                    fieldName = params.field
-                } else if (columnsArray && columnsArray[params.columnIndex]) {
-                    fieldName = columnsArray[params.columnIndex].field
-                }
-
-                if (fieldName) {
-                    serverParams.sort = [
-                        {
-                            field: fieldName,
-                            type: params.sortType,
-                        },
-                    ]
-                    validSortConstructed = true
-                } else {
-                    // Unable to resolve field name; clear sort to avoid invalid backend params
-                    serverParams.sort = []
-                    if (import.meta?.env?.MODE !== 'production') {
-                        console.warn('[useServerTable] Unresolved sort field for columnIndex', params.columnIndex)
-                    }
-                }
+            // Handle PrimeVue DataTable sort format
+            if (params.sortField && params.sortOrder) {
+                // PrimeVue DataTable sends { sortField: 'fieldName', sortOrder: 1|-1 }
+                const sortType = params.sortOrder === 1 ? 'asc' : 'desc'
+                serverParams.sort = [
+                    {
+                        field: params.sortField,
+                        type: sortType,
+                    },
+                ]
+                validSortConstructed = true
             } else if (params.field && params.type) {
                 // Direct field/type format
                 serverParams.sort = [{ field: params.field, type: params.type }]
@@ -394,34 +377,17 @@ export function useServerTable(initialOptions = {}) {
         })
     }
 
-    // Computed properties for vue-good-table compatibility
+    // Computed properties for PrimeVue DataTable compatibility
     const tableParams = computed(() => ({
-        pagination: {
-            enabled: true,
-            mode: 'remote',
-            perPage: serverParams.perPage,
-            position: 'bottom',
-            perPageDropdown: [10, 25, 50, 100],
-            jumpFirstOrLast: true,
-            firstLabel: labels?.pagination?.firstLabel ?? 'First',
-            lastLabel: labels?.pagination?.lastLabel ?? 'Last',
-            nextLabel: labels?.pagination?.nextLabel ?? 'Next',
-            prevLabel: labels?.pagination?.prevLabel ?? 'Prev',
-        },
-        sort: {
-            enabled: true,
-            mode: 'remote',
-        },
-        columnFilters: {
-            enabled: true,
-            mode: 'remote',
-        },
-        search: {
-            enabled: true,
-            mode: 'remote',
-            placeholder: labels?.search?.placeholder ?? 'Search records...',
-            trigger: searchTrigger || 'enter',
-        },
+        lazy: true,
+        paginator: true,
+        rows: serverParams.perPage,
+        rowsPerPageOptions: [10, 25, 50, 100],
+        paginatorTemplate: 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown',
+        currentPageReportTemplate: 'Showing {first} to {last} of {totalRecords} entries',
+        sortMode: 'single',
+        filterDisplay: 'row',
+        globalFilterFields: ['name', 'email', 'code'], // Default fields, should be customized per component
     }))
 
     const reset = () => {
@@ -435,6 +401,43 @@ export function useServerTable(initialOptions = {}) {
         })
     }
 
+    // PrimeVue DataTable event handlers
+    const onPage = (event) => {
+        serverParams.page = event.page + 1 // PrimeVue uses 0-based indexing
+        serverParams.perPage = event.rows
+        loadItems()
+    }
+
+    const onSort = (event) => {
+        if (event.sortField && event.sortOrder) {
+            onSortChange({
+                sortField: event.sortField,
+                sortOrder: event.sortOrder
+            })
+        } else {
+            onSortChange({})
+        }
+    }
+
+    const onFilter = (event) => {
+        // Handle global filter
+        if (event.filters.global && event.filters.global.value !== undefined) {
+            onSearch(event.filters.global.value)
+        }
+        
+        // Handle column filters
+        const columnFilters = {}
+        Object.keys(event.filters).forEach(key => {
+            if (key !== 'global' && event.filters[key] && event.filters[key].value !== undefined) {
+                columnFilters[key] = event.filters[key].value
+            }
+        })
+        
+        if (Object.keys(columnFilters).length > 0) {
+            onColumnFilter(columnFilters)
+        }
+    }
+
     return {
         // State
         serverParams,
@@ -442,7 +445,7 @@ export function useServerTable(initialOptions = {}) {
         error,
         tableParams,
 
-        // Methods
+        // Legacy Methods (for backward compatibility)
         updateParams,
         onPageChange,
         onPerPageChange,
@@ -452,5 +455,10 @@ export function useServerTable(initialOptions = {}) {
         loadItems,
         getQueryParams,
         reset,
+
+        // PrimeVue DataTable Methods
+        onPage,
+        onSort,
+        onFilter,
     }
 }

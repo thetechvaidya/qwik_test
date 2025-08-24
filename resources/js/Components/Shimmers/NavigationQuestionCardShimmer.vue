@@ -10,7 +10,8 @@
                 </div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import Skeleton from "primevue/skeleton";
 

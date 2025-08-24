@@ -25,140 +25,106 @@
         </template>
 
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="card">
-                <div class="card-body">
-                    <div ref="tableRoot">
-                        <vue-good-table
-                            mode="remote"
-                            :search-options="tableParams.search"
-                            :pagination-options="tableParams.pagination"
-                            :columns="columns"
-                            :total-rows="questions.meta.pagination.total"
-                            :rows="questions.data"
-                            @on-page-change="onPageChange"
-                            :rtl="$page.props.rtl"
-                            @on-column-filter="onColumnFilter"
-                            @on-per-page-change="onPerPageChange"
-                            @on-sort-change="onSortChange"
-                            @on-search="onSearch"
+            <div class="card shadow-lg">
+                <div class="card-body p-6">
+                    <div ref="tableRoot" class="overflow-x-auto">
+                        <DataTable
+                            :value="questions.data"
+                            dataKey="id"
+                            :lazy="tableParams.lazy"
+                            :paginator="tableParams.paginator"
+                            :rows="tableParams.rows"
+                            :totalRecords="questions.meta.pagination.total"
+                            :rowsPerPageOptions="tableParams.rowsPerPageOptions"
+                            :paginatorTemplate="tableParams.paginatorTemplate"
+                            :currentPageReportTemplate="tableParams.currentPageReportTemplate"
+                            :sortMode="tableParams.sortMode"
+                            :filterDisplay="tableParams.filterDisplay"
+                            :globalFilterFields="tableParams.globalFilterFields"
+                            :loading="tableLoading"
+                            @page="onPage"
+                            @sort="onSort"
+                            @filter="onFilter"
+                            :class="{ 'rtl': $page.props.rtl }"
+                            class="p-datatable-sm shadow-sm border-0"
+                            responsiveLayout="scroll"
+                            :scrollable="true"
+                            scrollHeight="600px"
+                            :rowHover="true"
+                            stripedRows
                         >
-                            <template #table-row="props">
-                                <!-- Code Column -->
-                                <div v-if="props.column.field === 'code'">
-                                    <Tag class="w-full mr-2 text-sm cursor-pointer" @click="copyCode(props.row.code)">
-                                        <i class="pi pi-copy mr-2" />
-                                        {{ props.row.code }}
-                                    </Tag>
-                                </div>
+                            <Column v-for="column in columns" :key="column.field" :field="column.field" :header="column.label" :sortable="column.sortable" :filterField="column.filterKey || column.field" :style="column.width ? `width: ${column.width}` : ''" :class="column.headerClass || ''">
+                                <template #filter="{ filterModel, filterCallback }" v-if="column.filterOptions?.enabled">
+                                    <InputText
+                                        :model-value="filterModel ? filterModel.value : ''"
+                                        @update:model-value="val => { if (filterModel) filterModel.value = val }"
+                                        type="text"
+                                        @input="filterCallback()"
+                                        :placeholder="column.filterOptions?.placeholder || 'Search...'"
+                                        class="p-column-filter border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    />
+                                </template>
+                                <template #body="slotProps">
+                                    <!-- Code Column -->
+                                    <div v-if="column.field === 'code'" class="flex items-center">
+                                        <Tag :key="slotProps.data.id || slotProps.index" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-blue-200 transition-colors" @click="copyCode(slotProps.data.code)">
+                                            <i class="pi pi-copy mr-2" />
+                                            {{ slotProps.data.code }}
+                                        </Tag>
+                                    </div>
 
-                                <!-- Question Column - NOTE: DOMPurify configured for KaTeX compatibility and images -->
-                                <div v-else-if="props.column.field === 'question'">
-                                    <div
-                                        class="py-4"
-                                        v-html="
-                                            DOMPurify.sanitize(props.row.question, {
-                                                // KaTeX-compatible configuration to preserve math markup and allow images
-                                                ALLOWED_TAGS: [
-                                                    'span',
-                                                    'div',
-                                                    'p',
-                                                    'br',
-                                                    'strong',
-                                                    'em',
-                                                    'sup',
-                                                    'sub',
-                                                    'img',
-                                                    'mi',
-                                                    'mo',
-                                                    'mn',
-                                                    'mrow',
-                                                    'mfrac',
-                                                    'msup',
-                                                    'msub',
-                                                    'msubsup',
-                                                    'munderover',
-                                                    'munder',
-                                                    'mover',
-                                                    'mtext',
-                                                    'mspace',
-                                                    'ms',
-                                                    'mpadded',
-                                                    'mphantom',
-                                                    'mfenced',
-                                                    'menclose',
-                                                    'mlongdiv',
-                                                    'msqrt',
-                                                    'mroot',
-                                                    'maction',
-                                                    'mstyle',
-                                                    'semantics',
-                                                    'annotation',
-                                                    'annotation-xml',
-                                                ],
-                                                ALLOWED_ATTR: [
-                                                    'class',
-                                                    'style',
-                                                    'id',
-                                                    'title',
-                                                    'src',
-                                                    'alt',
-                                                    'width',
-                                                    'height',
-                                                    'mathvariant',
-                                                    'mathsize',
-                                                    'mathcolor',
-                                                    'mathbackground',
-                                                    'displaystyle',
-                                                    'scriptlevel',
-                                                ],
-                                                ALLOW_DATA_ATTR: true, // Enable data-* attributes properly
-                                                ALLOWED_URI_REGEXP:
-                                                    /^(?:https?:\/\/|data:image\/(png|jpg|jpeg|gif|svg\+xml);base64,)/,
-                                            })
-                                        "
-                                    ></div>
-                                </div>
+                                    <!-- Question Column - NOTE: DOMPurify configured for KaTeX compatibility and images -->
+                                    <div v-else-if="column.field === 'question'" class="max-w-md">
+                                        <div
+                                            class="py-2 px-3 bg-gray-50 rounded-lg border-l-4 border-blue-500 text-sm leading-relaxed"
+                                            v-html="sanitizedAndValidatedQuestion(slotProps.data.question)"
+                                        ></div>
+                                    </div>
 
-                                <!-- Status Column -->
-                                <div v-else-if="props.column.field === 'status'">
-                                    <span
-                                        :class="[props.row.status === 1 ? 'badge-success' : 'badge-danger', 'badge']"
-                                        >{{ props.row.status === 1 ? __('Active') : __('In-active') }}</span
-                                    >
-                                </div>
+                                    <!-- Status Column -->
+                                    <div v-else-if="column.field === 'status'" class="flex items-center">
+                                        <span
+                                            :class="[
+                                                slotProps.data.status === 1 
+                                                    ? 'bg-green-100 text-green-800 border-green-200' 
+                                                    : 'bg-red-100 text-red-800 border-red-200',
+                                                'px-3 py-1 rounded-full text-xs font-medium border'
+                                            ]"
+                                            >{{ slotProps.data.status === 1 ? __('Active') : __('In-active') }}</span
+                                        >
+                                    </div>
 
-                                <!-- Actions Column -->
-                                <div v-else-if="props.column.field === 'actions'">
-                                    <ActionsDropdown>
-                                        <template #actions>
-                                            <button
-                                                class="action-item"
-                                                @click="
-                                                    showPreview = true
-                                                    currentId = props.row.id
-                                                "
-                                                >{{ __('Preview') }}</button
-                                            >
-                                            <button class="action-item" @click="editQuestion(props.row.id)">{{
-                                                __('Edit')
-                                            }}</button>
-                                            <button class="action-item" @click="deleteQuestion(props.row.id)">{{
-                                                __('Delete')
-                                            }}</button>
-                                        </template>
-                                    </ActionsDropdown>
-                                </div>
+                                    <!-- Actions Column -->
+                                    <div v-else-if="column.field === 'actions'" class="flex items-center justify-center">
+                                        <ActionsDropdown :key="slotProps.data.id || slotProps.index">
+                                            <template #actions>
+                                                <button
+                                                    class="action-item flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+                                                    @click="
+                                                        showPreview = true;
+                                                        currentId = slotProps.data.id;
+                                                    "
+                                                    ><i class="pi pi-eye text-blue-500"></i>{{ __('Preview') }}</button
+                                                >
+                                                <button class="action-item flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors" @click="editQuestion(slotProps.data.id)"><i class="pi pi-pencil text-green-500"></i>{{ __('Edit') }}</button>
+                                                <button class="action-item flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors" @click="deleteQuestion(slotProps.data.id)"><i class="pi pi-trash text-red-500"></i>{{ __('Delete') }}</button>
+                                            </template>
+                                        </ActionsDropdown>
+                                    </div>
 
-                                <!-- Remaining Columns -->
-                                <span v-else>
-                                    {{ props.formattedRow[props.column.field] }}
-                                </span>
-                            </template>
+                                    <!-- Remaining Columns -->
+                                    <div v-else class="px-2 py-1">
+                                        <span class="text-sm text-gray-700 font-medium">
+                                            {{ slotProps.data[column.field] }}
+                                        </span>
+                                    </div>
+                                </template>
+                            </Column>
 
-                            <template #emptystate>
+                            <template #empty>
                                 <NoDataTable />
                             </template>
-                        </vue-good-table>
+                        </DataTable>
                     </div>
 
                     <!-- Drawer Forms -->
@@ -176,36 +142,40 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
-import ArcDropdown from '@/Components/Dropdown.vue'
-import ArcDropdownLink from '@/Components/DropdownLink.vue'
-import Tag from 'primevue/tag'
-import NoDataTable from '@/Components/NoDataTable.vue'
-import ActionsDropdown from '@/Components/ActionsDropdown.vue'
-import QuestionPreview from '@/Pages/Admin/Question/Preview.vue'
-import Drawer from 'primevue/drawer'
-import { useTranslate } from '@/composables/useTranslate'
-import { useServerTable } from '@/composables/useServerTable'
-import { useCopy } from '@/composables/useCopy'
-import { useMathRender } from '@/composables/useMathRender'
-import { useConfirmToast } from '@/composables/useConfirmToast'
-import DOMPurify from 'dompurify'
-import { codeColumn, statusColumn, textFilterColumn, dropdownFilterColumn } from '@/tables/columns'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue';
+import { Head, Link, usePage, router } from '@inertiajs/vue3';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import ArcDropdown from '@/Components/Dropdown.vue';
+import ArcDropdownLink from '@/Components/DropdownLink.vue';
+import Tag from 'primevue/tag';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import InputText from 'primevue/inputtext';
+import NoDataTable from '@/Components/NoDataTable.vue';
+import ActionsDropdown from '@/Components/ActionsDropdown.vue';
+import QuestionPreview from '@/Pages/Admin/Question/Preview.vue';
+import Drawer from 'primevue/drawer';
+import { useTranslate } from '@/composables/useTranslate';
+import { useServerTable } from '@/composables/useServerTable';
+import { useCopy } from '@/composables/useCopy';
+import { useMathRender } from '@/composables/useMathRender';
+import { useConfirmToast } from '@/composables/useConfirmToast';
+import { sanitizeHtml, validateContent } from '@/utils/security';
+import { codeColumn, statusColumn } from '@/tables/columns';
+import debounce from 'lodash/debounce';
 
 // Props
 const props = defineProps({
-    questionTypes: Array,
-    questions: Object,
-    sections: Array,
+    questionTypes: { type: Array, default: () => [] },
+    questions: { type: Object, default: () => ({ data: [], meta: { pagination: { per_page: 10 } } }) },
+    sections: { type: Array, default: () => [] },
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
-const { renderMathInTable, debouncedRenderMath } = useMathRender()
+const { renderMathInTable } = useMathRender()
 const { confirm, toast } = useConfirmToast()
 
 // Table columns configuration - Define columns first
@@ -231,7 +201,7 @@ const columns = reactive([
             enabled: true,
             placeholder: __('Search') + ' ' + __('Type'),
             filterValue: null,
-            filterDropdownItems: props.questionTypes.map(t => ({ value: t.code, text: t.text ?? t.name })),
+            filterDropdownItems: (props.questionTypes || []).map(t => ({ value: t.code, text: t.text ?? t.name })),
         },
     },
     {
@@ -280,17 +250,15 @@ const columns = reactive([
 // Server table composable - Use columns now that it's defined
 const {
     serverParams,
-    loading,
-    onPageChange,
-    onPerPageChange,
-    onColumnFilter,
-    onSortChange,
-    onSearch,
+    loading: tableLoading,
+    onPage,
+    onSort,
+    onFilter,
     tableParams,
     loadItems,
 } = useServerTable({
     page: 1,
-    perPage: props.questions.meta.pagination.per_page || 10,
+    perPage: props.questions?.meta?.pagination?.per_page || 10,
     resourceKeys: ['questions', 'questionTypes', 'sections'],
     routeName: 'questions.index',
     columns,
@@ -303,7 +271,7 @@ const {
         },
         search: { placeholder: __('Search') + ' ' + __('records') + '...' },
     },
-    searchDebounceMs: 0,
+    searchDebounceMs: 500, // Debounce search input
     searchTrigger: 'enter',
     paramMap: {
         page: 'page',
@@ -327,19 +295,54 @@ const currentId = ref(null)
 const tableRoot = ref(null)
 const title = computed(() => {
     return __('Questions') + ' - ' + pageProps.general.app_name
-})
+});
 
-// Initialize math rendering on mount
+// Enhanced Security and Content Handling
+const sanitizedAndValidatedQuestion = (question) => {
+    if (!validateContent(question)) {
+        // Log invalid content for audit
+        console.warn('Invalid content detected:', question);
+        return 'Invalid content';
+    }
+    return sanitizeHtml(question);
+};
+
+// Performance Optimization: Lazy load images
+const lazyLoadImages = () => {
+    const images = tableRoot.value.querySelectorAll('img[data-src]');
+    images.forEach(img => {
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+    });
+};
+
+// Audit Logging for Admin Actions
+const logAdminAction = (action, details) => {
+    // Replace with a more robust logging service
+    console.log(`Admin Action: ${action}`, details);
+};
+
+// Initialize math rendering and lazy loading on mount and after data loads
 onMounted(() => {
-    renderMathInTable(tableRoot.value)
-})
+    renderMathInTable(tableRoot.value);
+    lazyLoadImages();
+});
+
+watch(() => props.questions, () => {
+    nextTick(() => {
+        renderMathInTable(tableRoot.value);
+        lazyLoadImages();
+    });
+}, { deep: true });
 
 // Methods
 const editQuestion = id => {
-    router.get(route('questions.edit', { question: id }))
-}
+    logAdminAction('edit_question', { questionId: id });
+    router.get(route('questions.edit', { question: id }));
+};
 
 const deleteQuestion = async id => {
+    logAdminAction('delete_question', { questionId: id });
     const ok = await confirm({
         header: __('Confirm Delete'),
         message: __('Do you want to delete this record?'),
@@ -347,31 +350,28 @@ const deleteQuestion = async id => {
         acceptClass: 'p-button-danger',
         rejectLabel: __('Cancel'),
         acceptLabel: __('Delete'),
-    })
-    if (!ok) return
+    });
+    if (!ok) return;
 
-    const prevPage = serverParams.page
+    const prevPage = serverParams.page;
     router.delete(route('questions.destroy', { question: id }), {
         onSuccess: async () => {
-            toast({ severity: 'info', summary: __('Confirmed'), detail: __('Record deleted'), life: 3000 })
-            // Refresh table data after deletion and re-render math after DOM updates
-            // Note: loadItems() defaults to preserveState=true - use loadItems(false) if UI artifacts persist
-            await loadItems()
-            // If current page becomes empty after deletion, navigate to previous page
-            const freshQuestions = usePage().props.questions
-            const currentPageCount = freshQuestions?.data?.length ?? 0
+            toast({ severity: 'info', summary: __('Confirmed'), detail: __('Record deleted'), life: 3000 });
+            await loadItems();
+            const freshQuestions = usePage().props.questions;
+            const currentPageCount = freshQuestions?.data?.length ?? 0;
             if (currentPageCount === 0 && prevPage > 1) {
-                serverParams.page = prevPage - 1
-                await loadItems(true)
+                serverParams.page = prevPage - 1;
+                await loadItems(true);
             }
-            await nextTick()
-            await renderMathInTable(tableRoot.value)
+            await nextTick();
+            await renderMathInTable(tableRoot.value);
         },
         onError: () => {
-            toast({ severity: 'error', summary: __('Error'), detail: __('Failed to delete question'), life: 3000 })
+            toast({ severity: 'error', summary: __('Error'), detail: __('Failed to delete question'), life: 3000 });
         },
-    })
-}
+    });
+};
 
 // Expose loadItems for external table refreshing
 defineExpose({

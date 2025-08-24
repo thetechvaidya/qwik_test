@@ -13,69 +13,98 @@
         <div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="subCategories.meta.pagination.total"
-                        :rows="subCategories.data"
-                        :rtl="$page.props.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        :globalFilterFields="['name', 'code']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false" filterField="code">
+                            <template #body="{ data }">
                                 <Tag
-                                    :value="props.row.code"
+                                    :value="data.code"
                                     icon="pi pi-copy"
                                     class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                                    @click="copyCode(data.code)"
                                 />
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Code')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
+                        <Column field="name" :header="__('Name')" :sortable="false" filterField="name">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Name')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="category" :header="__('Category')" :sortable="false">
+                            <template #body="{ data }">
+                                {{ data.category ? data.category.name : '' }}
+                            </template>
+                        </Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false">
+                            <template #body="{ data }">
+                                <span :class="[data.status ? 'badge-success' : 'badge-danger', 'badge']">{{ 
+                                    data.status ? __('Active') : __('In-active')
                                 }}</span>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Action Column -->
-                            <div v-else-if="props.column.field === 'actions'">
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data }">
                                 <ActionsDropdown>
                                     <template #actions>
                                         <button
                                             class="action-item"
                                             @click="
-                                                mapForm = true
-                                                currentId = props.row.id
+                                                mapForm = true;
+                                                currentId = data.id;
                                             "
                                             >{{ __('Map Sections') }}</button
                                         >
                                         <button
                                             class="action-item"
                                             @click="
-                                                editForm = true
-                                                currentId = props.row.id
+                                                editForm = true;
+                                                currentId = data.id;
                                             "
                                             >{{ __('Edit') }}</button
                                         >
-                                        <button class="action-item" @click="deleteSubCategory(props.row.id)">{{
+                                        <button class="action-item" @click="deleteSubCategory(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <div v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </div>
-                        </template>
-
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -84,7 +113,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Create and Edit Sidebar Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -128,15 +157,17 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import SubCategoryForm from '@/Components/Forms/SubCategoryForm'
-import SectionMapForm from '@/Components/Forms/SectionMapForm'
+import SubCategoryForm from '@/Components/Forms/SubCategoryForm.vue'
+import SectionMapForm from '@/Components/Forms/SectionMapForm.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
-import NoDataTable from '@/Components/NoDataTable'
-import ActionsDropdown from '@/Components/ActionsDropdown'
+import NoDataTable from '@/Components/NoDataTable.vue'
+import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 
 const props = defineProps({
-    subCategories: Object,
     categories: Array,
     types: Array,
     errors: Object,
@@ -152,67 +183,65 @@ const editForm = ref(false)
 const mapForm = ref(false)
 const currentId = ref(null)
 
-// Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, tableParams } = useServerTable({
-    page: props.subCategories.meta.pagination.current_page,
-    perPage: props.subCategories.meta.pagination.per_page,
+// Server table composable
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
     resourceKeys: ['subCategories'],
+    routeName: 'sub-categories.index',
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Code'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+            width: '11rem',
+        },
+        {
+            label: __('Name'),
+            field: 'name',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Name'),
+                filterValue: null,
+                trigger: 'enter',
+            },
+            sortable: false,
+        },
+        {
+            label: __('Category'),
+            field: 'category',
+            sortable: false,
+        },
+        {
+            label: __('Type'),
+            field: 'type',
+            sortable: false,
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            sortable: false,
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Search') + ' ' + __('Status'),
+                filterValue: null,
+                filterDropdownItems: [
+                    { value: 1, text: __('Active') },
+                    { value: 0, text: __('In-active') },
+                ],
+            },
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            sortable: false,
+        },
+    ],
 })
-
-const columns = ref([
-    {
-        label: __('Code'),
-        field: 'code',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Code'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-        width: '11rem',
-    },
-    {
-        label: __('Name'),
-        field: 'name',
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Name'),
-            filterValue: null,
-            trigger: 'enter',
-        },
-        sortable: false,
-    },
-    {
-        label: __('Category'),
-        field: 'category',
-        sortable: false,
-    },
-    {
-        label: __('Type'),
-        field: 'type',
-        sortable: false,
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: false,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Search') + ' ' + __('Status'),
-            filterValue: null,
-            filterDropdownItems: [
-                { value: 1, text: __('Active') },
-                { value: 0, text: __('In-active') },
-            ],
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-    },
-])
 
 const title = computed(() => {
     return __('Sub Categories') + ' - ' + pageProps.general.app_name

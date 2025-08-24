@@ -13,61 +13,108 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="options"
-                        :columns="columns"
-                        :total-rows="lessons.meta.pagination.total"
-                        :rows="lessons.data"
-                        :rtl="pageProps.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        dataKey="id"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['code', 'title']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false" filterField="code">
+                            <template #body="{ data, index }">
                                 <Tag
-                                    :value="props.row.code"
+                                    :key="data.id || index"
+                                    :value="data.code"
                                     class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                                    @click="copyCode(data.code)"
                                 >
-                                    <i class="pi pi-copy mr-2" />{{ props.row.code }}
+                                    <i class="pi pi-copy mr-2" />{{ data.code }}
                                 </Tag>
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Code..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
+                        <Column field="title" :header="__('Title')" :sortable="false" filterField="title">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Title..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="category" :header="__('Category')" :sortable="false" filterField="category">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Category..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false" filterField="status">
+                            <template #body="{ data }">
                                 <span
-                                    :class="[props.row.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
-                                    >{{ __(props.row.status) }}</span
+                                    :class="[data.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
+                                    >{{ __(data.status) }}</span
                                 >
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Status..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data, index }">
+                                <ActionsDropdown :key="data.id || index">
                                     <template #actions>
-                                        <button class="action-item" @click="editLesson(props.row.id)">{{
+                                        <button class="action-item" @click="editLesson(data.id)">{{ 
                                             __('Edit')
                                         }}</button>
-                                        <button class="action-item" @click="deleteLesson(props.row.id)">{{
+                                        <button class="action-item" @click="deleteLesson(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable />
                         </template>
-                    </vue-good-table>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -78,24 +125,33 @@
 import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import { useConfirmToast } from '@/composables/useConfirmToast'
 import { useMathRender } from '@/composables/useMathRender'
 
 // Props
-const props = defineProps({
-    lessons: Object,
-})
+const props = defineProps({})
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
+
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
 const { confirm, toast } = useConfirmToast()
 const { renderMath } = useMathRender()
 
@@ -191,9 +247,55 @@ const options = reactive({
 })
 
 // Server table composable
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServerTable({
-    resourceKeys: ['lessons'],
-    routeName: 'lessons.index',
+const {
+    data,
+    columns: serverColumns,
+    totalRecords,
+    tableLoading,
+    onPage,
+    onSort,
+    onFilter,
+    deleteLesson: deleteServerLesson,
+} = useServerTable(route('lessons.index'), {
+    columns: [
+        {
+            label: 'Code',
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by code',
+            },
+        },
+        {
+            label: 'Title',
+            field: 'title',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by title',
+            },
+        },
+        {
+            label: 'Category',
+            field: 'category',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Status',
+            field: 'status',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Actions',
+            field: 'actions',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+    ],
     onSuccess: () => {
         renderMath()
     },

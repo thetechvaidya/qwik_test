@@ -13,26 +13,26 @@ return new class extends Migration
     {
         Schema::table('settings', function (Blueprint $table) {
             // Modern section toggles
-            $table->boolean('home_page.show_hero_section')->default(true);
-            $table->boolean('home_page.show_features_section')->default(true);
-            $table->boolean('home_page.show_stats_section')->default(true);
-            $table->boolean('home_page.show_pricing_section')->default(true);
-            $table->boolean('home_page.show_testimonials_section')->default(true);
-            $table->boolean('home_page.show_cta_section')->default(true);
+            $table->boolean('home_page_show_hero_section')->default(true);
+            $table->boolean('home_page_show_features_section')->default(true);
+            $table->boolean('home_page_show_stats_section')->default(true);
+            $table->boolean('home_page_show_pricing_section')->default(true);
+            $table->boolean('home_page_show_testimonials_section')->default(true);
+            $table->boolean('home_page_show_cta_section')->default(true);
 
             // Hero section content
-            $table->string('home_page.hero_title')->default('Transform Your Learning Journey');
-            $table->text('home_page.hero_subtitle')->default('Master new skills with our comprehensive quiz platform designed for modern learners');
-            $table->string('home_page.hero_cta_text')->default('Start Learning Today');
-            $table->string('home_page.hero_cta_link')->default('/register');
+            $table->string('home_page_hero_title')->default('Transform Your Learning Journey');
+            $table->text('home_page_hero_subtitle')->default('Master new skills with our comprehensive quiz platform designed for modern learners');
+            $table->string('home_page_hero_cta_text')->default('Start Learning Today');
+            $table->string('home_page_hero_cta_link')->default('/register');
 
             // Stats section content
-            $table->integer('home_page.stats_students_count')->default(10000);
-            $table->decimal('home_page.stats_success_rate', 5, 2)->default(95.5);
-            $table->integer('home_page.stats_tests_count')->default(500);
+            $table->integer('home_page_stats_students_count')->default(10000);
+            $table->decimal('home_page_stats_success_rate', 5, 2)->default(95.5);
+            $table->integer('home_page_stats_tests_count')->default(500);
 
             // Complex content fields (JSON)
-            $table->json('home_page.features_list')->default(json_encode([
+            $table->json('home_page_features_list')->default(json_encode([
                 [
                     'icon' => 'pi pi-chart-line',
                     'title' => 'Advanced Analytics',
@@ -55,7 +55,7 @@ return new class extends Migration
                 ]
             ]));
 
-            $table->json('home_page.pricing_plans')->default(json_encode([
+            $table->json('home_page_pricing_plans')->default(json_encode([
                 [
                     'name' => 'Basic',
                     'price' => 'Free',
@@ -99,7 +99,7 @@ return new class extends Migration
                 ]
             ]));
 
-            $table->json('home_page.testimonials')->default(json_encode([
+            $table->json('home_page_testimonials')->default(json_encode([
                 [
                     'name' => 'Sarah Johnson',
                     'role' => 'Software Developer',
@@ -132,22 +132,22 @@ return new class extends Migration
     {
         Schema::table('settings', function (Blueprint $table) {
             $table->dropColumn([
-                'home_page.show_hero_section',
-                'home_page.show_features_section',
-                'home_page.show_stats_section',
-                'home_page.show_pricing_section',
-                'home_page.show_testimonials_section',
-                'home_page.show_cta_section',
-                'home_page.hero_title',
-                'home_page.hero_subtitle',
-                'home_page.hero_cta_text',
-                'home_page.hero_cta_link',
-                'home_page.stats_students_count',
-                'home_page.stats_success_rate',
-                'home_page.stats_tests_count',
-                'home_page.features_list',
-                'home_page.pricing_plans',
-                'home_page.testimonials'
+                'home_page_show_hero_section',
+                'home_page_show_features_section',
+                'home_page_show_stats_section',
+                'home_page_show_pricing_section',
+                'home_page_show_testimonials_section',
+                'home_page_show_cta_section',
+                'home_page_hero_title',
+                'home_page_hero_subtitle',
+                'home_page_hero_cta_text',
+                'home_page_hero_cta_link',
+                'home_page_stats_students_count',
+                'home_page_stats_success_rate',
+                'home_page_stats_tests_count',
+                'home_page_features_list',
+                'home_page_pricing_plans',
+                'home_page_testimonials'
             ]);
         });
     }

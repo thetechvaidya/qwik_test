@@ -11,12 +11,16 @@
 
                 <arc-label for="icon" :value="__('Site Favicon')" />
 
-                <div v-show="!logoPreview" class="my-4">
+                <div v-show="!logoPreview && settings.favicon_path" class="my-4">
                     <img
                         :src="$page.props.assetUrl + settings.favicon_path"
                         :alt="settings.app_name"
                         class="h-10 object-cover"
                     />
+                </div>
+                
+                <div v-show="!logoPreview && !settings.favicon_path" class="my-4 text-gray-500">
+                    {{ __('No favicon uploaded') }}
                 </div>
 
                 <!-- New Logo Preview -->

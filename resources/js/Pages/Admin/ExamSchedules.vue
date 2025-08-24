@@ -26,65 +26,94 @@
                             {{ __('New') }} {{ __('Schedule') }}
                         </button>
                     </div>
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="options"
-                        :columns="columns"
-                        :total-rows="examSchedules.meta.pagination.total"
-                        :rows="examSchedules.data"
-                        :rtl="pageProps.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        :totalRecords="totalRecords"
+                        :loading="tableLoading"
+                        lazy
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[10, 25, 50, 100]"
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    icon="pi pi-copy"
-                                    class="w-full p-mr-2 text-sm cursor-pointer"
-                                    @click="handleCopyClick(props.row.code)"
+                        <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.label" :sortable="col.field !== 'actions'">
+                            <template #filter="{ filterModel, filterCallback }" v-if="col.filterOptions?.enabled">
+                                <InputText
+                                    v-if="!col.filterOptions.filterDropdownItems"
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
                                 />
-                            </div>
+                                <Select
+                                    v-else
+                                    v-model="filterModel.value"
+                                    :options="col.filterOptions.filterDropdownItems"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    :placeholder="col.filterOptions.placeholder"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
+                            <template #body="slotProps">
+                                <!-- Code Column -->
+                                <div v-if="slotProps.field === 'code'">
+                                    <Tag
+                                        :value="slotProps.data.code"
+                                        icon="pi pi-copy"
+                                        class="w-full p-mr-2 text-sm cursor-pointer"
+                                        @click="handleCopyClick(slotProps.data.code)"
+                                    />
+                                </div>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span
-                                    :class="[props.row.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
-                                    >{{ __(props.row.status) }}</span
-                                >
-                            </div>
+                                <!-- Status Column -->
+                                <div v-else-if="slotProps.field === 'status'">
+                                    <span
+                                        :class="[slotProps.data.status === 'Active' ? 'badge-success' : 'badge-danger', 'badge']"
+                                        >{{ __(slotProps.data.status) }}</span
+                                    >
+                                </div>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button class="action-item" @click="goToAnalytics(props.row.id)">{{
-                                            __('Analytics')
-                                        }}</button>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
-                                            >{{ __('Edit') }}</button
-                                        >
-                                        <button class="action-item" @click="deleteSchedule(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
-                                    </template>
-                                </ActionsDropdown>
-                            </div>
+                                <!-- Actions Column -->
+                                <div v-else-if="slotProps.field === 'actions'">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button class="action-item" @click="goToAnalytics(slotProps.data.id)">{{ 
+                                                __('Analytics')
+                                            }}</button>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                                        editForm = true;
+                                                        currentId = slotProps.data.id;
+                                                "
+                                                >{{ __('Edit') }}</button
+                                            >
+                                            <button class="action-item" @click="deleteSchedule(slotProps.data.id)">{{ 
+                                                __('Delete')
+                                            }}</button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
 
-                            <!-- Remaining Fields Column -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
+                                <!-- Default Column -->
+                                <span v-else>
+                                    {{ slotProps.data[slotProps.field] }}
+                                </span>
+                            </template>
+                        </Column>
 
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -93,7 +122,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Drawer Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -130,6 +159,11 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import { FilterMatchMode } from '@primevue/core/api'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import Drawer from 'primevue/drawer'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
@@ -170,84 +204,98 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
-const { columns, options, onPageChange, onPerPageChange, onColumnFilter } = useServerTable()
 
 // Reactive data
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
 
+// Filters
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    exam: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    type: { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
+
 // Computed
 const title = computed(() => {
     return __('Exam Schedules') + ' - ' + pageProps.general.app_name
 })
 
-// Table configuration
-columns.value = [
-    {
-        label: __('Code'),
-        field: 'code',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by code'),
+// Server table composable
+const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    resourceKeys: ['examSchedules'],
+    routeName: 'admin.exam-schedules.index',
+    columns: [
+        {
+            label: __('Code'),
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Filter by code'),
+            },
         },
-    },
-    {
-        label: __('Exam'),
-        field: 'exam',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by exam'),
+        {
+            label: __('Exam'),
+            field: 'exam',
+            filterOptions: {
+                enabled: true,
+                placeholder: __('Filter by exam'),
+            },
         },
-    },
-    {
-        label: __('Type'),
-        field: 'type',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            filterDropdownItems: [
-                { value: 'Fixed', text: __('Fixed') },
-                { value: 'Flexible', text: __('Flexible') },
-            ],
-            placeholder: __('Filter by type'),
+        {
+            label: __('Type'),
+            field: 'type',
+            filterOptions: {
+                enabled: true,
+                filterDropdownItems: [
+                    { value: 'Fixed', text: __('Fixed') },
+                    { value: 'Flexible', text: __('Flexible') },
+                ],
+                placeholder: __('Filter by type'),
+            },
         },
-    },
-    {
-        label: __('Starts At'),
-        field: 'starts_at',
-        sortable: true,
-        type: 'date',
-    },
-    {
-        label: __('Ends At'),
-        field: 'ends_at',
-        sortable: true,
-        type: 'date',
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            filterDropdownItems: [
-                { value: 'Active', text: __('Active') },
-                { value: 'Inactive', text: __('Inactive') },
-                { value: 'Expired', text: __('Expired') },
-            ],
-            placeholder: __('Filter by status'),
+        {
+            label: __('Starts At'),
+            field: 'starts_at',
+            filterOptions: {
+                enabled: false,
+            },
         },
+        {
+            label: __('Ends At'),
+            field: 'ends_at',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: __('Status'),
+            field: 'status',
+            filterOptions: {
+                enabled: true,
+                filterDropdownItems: [
+                    { value: 'Active', text: __('Active') },
+                    { value: 'Inactive', text: __('Inactive') },
+                    { value: 'Expired', text: __('Expired') },
+                ],
+                placeholder: __('Filter by status'),
+            },
+        },
+        {
+            label: __('Actions'),
+            field: 'actions',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+    ],
+    initialParams: {
+        page: 1,
+        perPage: props.examSchedules.meta.pagination.per_page || 10,
     },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-        width: '120px',
-    },
-]
+})
 
 // Methods
 const handleCopyClick = code => {

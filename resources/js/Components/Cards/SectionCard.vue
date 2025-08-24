@@ -6,7 +6,8 @@
         <div class="pt-4 text-center">
             <p class="text-base leading-none text-primary">{{ section.name }}</p>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'SectionCard',

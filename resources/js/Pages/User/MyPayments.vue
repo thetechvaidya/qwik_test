@@ -5,53 +5,65 @@
         </template>
         <div class="card mt-10">
             <div class="card-body">
-                <vue-good-table
-                    mode="remote"
-                    :pagination-options="options"
-                    :columns="columns"
-                    :total-rows="payments.meta.pagination.total"
-                    :rows="payments.data"
-                    :rtl="$page.props.rtl"
-                    @on-page-change="onPageChange"
-                    @on-column-filter="onColumnFilter"
-                    @on-per-page-change="onPerPageChange"
+                <DataTable
+                    :value="payments.data"
+                    :totalRecords="payments.meta.pagination.total"
+                    :loading="false"
+                    lazy
+                    paginator
+                    :rows="payments.meta.pagination.per_page"
+                    :first="(payments.meta.pagination.current_page - 1) * payments.meta.pagination.per_page"
+                    :rowsPerPageOptions="[10, 20, 50, 100]"
+                    paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                    currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    @page="onPageChange"
+                    @filter="onColumnFilter"
+                    filterDisplay="row"
                 >
-                    <template #table-row="props">
-                        <!-- Status Column -->
-                        <div v-if="props.column.field === 'status'">
+                    <Column field="payment_id" :header="__('Payment') + ' ' + __('ID')" :sortable="false"></Column>
+
+                    <Column field="plan" :header="__('Plan')" :sortable="false"></Column>
+
+                    <Column field="amount" :header="__('Amount')" :sortable="false"></Column>
+
+                    <Column field="date" :header="__('Date')" :sortable="false"></Column>
+
+                    <Column field="method" :header="__('Method')" :sortable="false"></Column>
+
+                    <Column field="status" :header="__('Status')" :sortable="false">
+                        <template #body="slotProps">
                             <span
                                 :class="[
-                                    props.row.status === 'success' ? 'badge-success' : 'badge-danger',
+                                    slotProps.data.status === 'success' ? 'badge-success' : 'badge-danger',
                                     'badge-sm uppercase text-xs',
                                 ]"
-                                >{{ __(props.row.status) }}</span
                             >
-                        </div>
+                                {{ __(slotProps.data.status) }}
+                            </span>
+                        </template>
+                    </Column>
 
-                        <!-- Actions Column -->
-                        <div v-else-if="props.column.field === 'actions'" class="py-2">
-                            <a
-                                v-if="enable_invoice"
-                                class="qt-btn qt-btn-sm qt-btn-success"
-                                target="_blank"
-                                :href="route('download_invoice', { id: props.row.payment_id })"
-                            >
-                                {{ __('Invoice') }}
-                            </a>
-                        </div>
+                    <Column field="actions" :header="__('Actions')" :sortable="false" style="width: 11rem">
+                        <template #body="slotProps">
+                            <div class="py-2">
+                                <a
+                                    v-if="enable_invoice"
+                                    class="qt-btn qt-btn-sm qt-btn-success"
+                                    target="_blank"
+                                    :href="route('download_invoice', { id: slotProps.data.payment_id })"
+                                >
+                                    {{ __('Invoice') }}
+                                </a>
+                            </div>
+                        </template>
+                    </Column>
 
-                        <!-- Remaining Columns -->
-                        <span v-else>
-                            {{ props.formattedRow[props.column.field] }}
-                        </span>
-                    </template>
-
-                    <template #emptystate>
+                    <template #empty>
                         <div>
                             <no-data-table></no-data-table>
                         </div>
                     </template>
-                </vue-good-table>
+                </DataTable>
             </div>
         </div>
     </app-layout>
@@ -61,12 +73,16 @@
 import AppLayout from '@/Layouts/AppLayout.vue'
 import EmptyStudentCard from '@/Components/Cards/EmptyStudentCard'
 import NoDataTable from '@/Components/NoDataTable'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 export default {
     components: {
         AppLayout,
         EmptyStudentCard,
         NoDataTable,
+        DataTable,
+        Column,
     },
     props: {
         payments: Object,
@@ -145,8 +161,8 @@ export default {
         updateParams(newProps) {
             this.serverParams = Object.assign({}, this.serverParams, newProps)
         },
-        onPageChange(params) {
-            this.updateParams({ page: params.currentPage })
+        onPageChange(event) {
+            this.updateParams({ page: Math.floor(event.first / event.rows) + 1 })
             this.loadItems()
         },
         onPerPageChange(params) {

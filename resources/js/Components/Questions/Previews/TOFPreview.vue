@@ -3,12 +3,13 @@
         <h5 class="inline-block bg-green-100 rounded-sm px-2 py-1 mb-4 text-xs leading-3 text-green-700">{{ question.skill }}</h5>
         <div class="q-data mb-4">
             <div class="text-sm" v-html="question.question">
+            </div>
         </div>
         <div v-show="!collapse" :id="question.code+'_options'">
             <ul v-for="(option, index) in question.options" class="q-option">
                 <li class="relative flex items-center mb-3 cursor-pointer p-3 rounded-sm border border-gray-200">
-                    <div class="h-6 w-6 flex rounded-full items-center justify-center bg-gray-100 text-sm">{{ index+1 }}
-                    <div class="font-normal text-sm ltr:ml-4 rtl:mr-4" v-html="option.option">
+                    <div class="h-6 w-6 flex rounded-full items-center justify-center bg-gray-100 text-sm">{{ index+1 }}</div>
+                    <div class="font-normal text-sm ltr:ml-4 rtl:mr-4" v-html="option.option"></div>
                     <div v-if="question.correct_answer === index+1" class="absolute ltr:right-2 rtl:left-2 text-green-500">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
@@ -38,7 +39,8 @@
             <h5 class="inline-block bg-gray-100 rounded-sm px-2 py-1 text-xs leading-3 text-gray-700">{{ question.code }}</h5>
             <slot name="action"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "TOFPreview",

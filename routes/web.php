@@ -42,3 +42,23 @@ Route::get('run-migrations', [AppInstallController::class, 'runMigrations'])->na
 Route::post('webhooks/razorpay', [WebHookController::class, 'razorpay'])->name('webhooks.razorpay');
 Route::post('webhooks/stripe', [WebHookController::class, 'stripe'])->name('webhooks.stripe');
 
+
+use App\Http\Controllers\TestRunnerController;
+use App\Http\Controllers\AuthDebugController;
+
+Route::get('/run-tests', [TestRunnerController::class, 'runTests']);
+
+/*
+|--------------------------------------------------------------------------
+| Auth Debug Routes (Demo Mode Only)
+|--------------------------------------------------------------------------
+*/
+if (config('qwiktest.demo_mode')) {
+    Route::prefix('auth-debug')->name('auth.debug.')->group(function () {
+        Route::get('/users', [AuthDebugController::class, 'listUsers'])->name('users');
+        Route::get('/check-credentials', [AuthDebugController::class, 'checkCredentials'])->name('credentials');
+        Route::get('/user-status/{email}', [AuthDebugController::class, 'checkUserStatus'])->name('status');
+        Route::post('/test-password', [AuthDebugController::class, 'testPassword'])->name('password');
+        Route::post('/reset-demo-passwords', [AuthDebugController::class, 'resetDemoPasswords'])->name('reset');
+    });
+}

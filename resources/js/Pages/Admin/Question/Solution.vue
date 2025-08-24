@@ -87,19 +87,55 @@
 </template>
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { Head, Link, usePage, router, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
+import TiptapEditor from '@/Components/TiptapEditor.vue'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
+import VideoOptions from '@/Components/Questions/VideoOptions.vue'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    question: Object,
+    questionType: Object,
+    steps: Array,
+    editFlag: { type: Boolean, default: false },
+    questionId: Number,
+    errors: Object,
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
+
+// Form data
+const form = useForm({
+    solution: props.editFlag ? props.question.solution : '',
+    solution_has_video: props.editFlag ? props.question.solution_has_video : false,
+    solution_video: props.editFlag ? props.question.solution_video : null,
+    hint: props.editFlag ? props.question.hint : '',
+})
+
+// Data
+const choices = ref([
+    { name: __('Yes'), code: true },
+    { name: __('No'), code: false },
+])
+
+// Methods
+const submitForm = () => {
+    if (props.editFlag) {
+        form.patch(route('questions.solution.update', { question: props.questionId }))
+    } else {
+        form.post(route('questions.solution.store', { question: props.questionId }))
+    }
+}
+
+const updateVideoOptions = (value) => {
+    form.solution_video = value
+}
 
 // Computed
 const title = computed(() => {

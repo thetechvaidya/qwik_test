@@ -7,7 +7,12 @@
 
         <title>{{ config('app.name', 'QwikTest') }}</title>
         <meta name="description" content="{{ app(\App\Settings\SiteSettings::class)->seo_description }}">
-        <link rel="icon" href="{{ url('storage/'.app(\App\Settings\SiteSettings::class)->favicon_path) }}">
+        @php
+            $faviconPath = app(\App\Settings\SiteSettings::class)->favicon_path;
+        @endphp
+        @if($faviconPath)
+            <link rel="icon" href="{{ url('storage/'.$faviconPath) }}">
+        @endif
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

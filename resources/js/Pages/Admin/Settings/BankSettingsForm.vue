@@ -73,7 +73,7 @@
         <template #actions>
             <arc-action-message :on="form.recentlySuccessful" class="mr-3"> {{ __('Saved') }}. </arc-action-message>
 
-            <arc-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        <arc-button :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                 {{ __('Save') }}
             </arc-button>
         </template>
@@ -82,9 +82,14 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
 
 // Props
 const props = defineProps({
@@ -103,11 +108,21 @@ const title = computed(() => {
 
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    enable_bank: props.settings?.enable_bank || false,
+    bank_name: props.settings?.bank_name || '',
+    account_owner: props.settings?.account_owner || '',
+    account_number: props.settings?.account_number || '',
+    iban: props.settings?.iban || '',
+    routing_number: props.settings?.routing_number || '',
+    bic_swift: props.settings?.bic_swift || '',
+    other_details: props.settings?.other_details || '',
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.bank.update'), {
+        errorBag: 'updateBankSettings',
+        preserveScroll: true,
+    })
 }
 </script>

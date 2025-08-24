@@ -13,59 +13,98 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="pagination"
-                        :columns="columns"
-                        :total-rows="practiceSets.meta.pagination.total"
-                        :rows="practiceSets.data"
-                        :rtl="pageProps.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="data"
+                        dataKey="id"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['code', 'title', 'category']"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false" filterField="code">
+                            <template #body="{ data, index }">
                                 <Tag
+                                    :key="data.id || index"
                                     severity="info"
-                                    :value="props.row.code"
+                                    :value="data.code"
                                     icon="pi pi-copy"
                                     class="w-full p-mr-2 mb-2 text-xs cursor-pointer"
-                                    @click="handleCopyClick(props.row.code)"
+                                    @click="handleCopyClick(data.code)"
                                 />
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Code')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">
-                                    {{ props.row.status ? __('Published') : __('Draft') }}
+                        <Column field="title" :header="__('Title')" :sortable="false" filterField="title">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Title')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="category" :header="__('Category')" :sortable="false" filterField="category">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @input="filterCallback()"
+                                    :placeholder="__('Search by Category')"
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false">
+                            <template #body="{ data }">
+                                <span :class="[data.status ? 'badge-success' : 'badge-danger', 'badge']">
+                                    {{ data.status ? __('Published') : __('Draft') }}
                                 </span>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data, index }">
+                                <ActionsDropdown :key="data.id || index">
                                     <template #actions>
-                                        <button class="action-item" @click="goToAnalytics(props.row.id)">{{
+                                        <button class="action-item" @click="goToAnalytics(data.id)">{{ 
                                             __('Analytics')
                                         }}</button>
-                                        <button class="action-item" @click="editPracticeSet(props.row.id)">{{
+                                        <button class="action-item" @click="editPracticeSet(data.id)">{{ 
                                             __('Edit')
                                         }}</button>
-                                        <button class="action-item" @click="deletePracticeSet(props.row.id)">{{
+                                        <button class="action-item" @click="deletePracticeSet(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <Link :href="route('admin.practice-sets.create')" class="qt-btn-sm qt-btn-primary">
@@ -74,7 +113,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -89,106 +128,85 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import { FilterMatchMode } from '@primevue/core/api'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import Tag from 'primevue/tag'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import NoDataTable from '@/Components/NoDataTable.vue'
 
-// Props
-const props = defineProps({
-    practiceSets: {
-        type: Object,
-        required: true,
-    },
-    errors: {
-        type: Object,
-        default: () => ({}),
-    },
-})
+
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
-const { columns, pagination, onPageChange, onPerPageChange, onColumnFilter } = useServerTable()
+
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    category: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
+// Server table configuration
+const {
+    data,
+    columns,
+    totalRecords,
+    tableLoading,
+    onPage,
+    onSort,
+    onFilter,
+} = useServerTable(route('admin.practice-sets.index'), {
+    columns: [
+        {
+            label: 'Code',
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by code',
+            },
+        },
+        {
+            label: 'Title',
+            field: 'title',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by title',
+            },
+        },
+        {
+            label: 'Category',
+            field: 'category',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by category',
+            },
+        },
+        {
+            label: 'Status',
+            field: 'status',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Actions',
+            field: 'actions',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+    ],
+})
 
 // Computed
 const title = computed(() => {
     return __('Practice Sets') + ' - ' + pageProps.general.app_name
 })
-
-// Table configuration
-columns.value = [
-    {
-        label: __('Code'),
-        field: 'code',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by code'),
-        },
-    },
-    {
-        label: __('Title'),
-        field: 'title',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by title'),
-        },
-    },
-    {
-        label: __('Slug'),
-        field: 'slug',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by slug'),
-        },
-    },
-    {
-        label: __('Questions'),
-        field: 'questions',
-        sortable: false,
-    },
-    {
-        label: __('Sub Category'),
-        field: 'subCategory',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by category'),
-        },
-    },
-    {
-        label: __('Skill'),
-        field: 'skill',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            placeholder: __('Filter by skill'),
-        },
-    },
-    {
-        label: __('Status'),
-        field: 'status',
-        sortable: true,
-        filterOptions: {
-            enabled: true,
-            filterDropdownItems: [
-                { value: true, text: __('Published') },
-                { value: false, text: __('Draft') },
-            ],
-            placeholder: __('Filter by status'),
-        },
-    },
-    {
-        label: __('Actions'),
-        field: 'actions',
-        sortable: false,
-        width: '120px',
-    },
-]
 
 // Methods
 const handleCopyClick = code => {

@@ -1,25 +1,38 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
     <Head title="Login" />
     
+    <!-- Modern Header -->
+    <ModernHeader :showSearch="false" />
+    
+    <!-- Login Content -->
+    <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    
     <div class="max-w-md w-full space-y-8">
-      <!-- Header -->
+      <!-- Enhanced Header -->
       <div class="text-center">
-        <div class="mx-auto h-12 w-auto flex items-center justify-center">
-          <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-            <i class="pi pi-user text-white text-xl"></i>
+        <div class="mx-auto h-16 w-auto flex items-center justify-center mb-6">
+          <div class="relative">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
+              <i class="pi pi-user text-white text-2xl"></i>
+            </div>
+            <!-- Glow effect -->
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl blur-lg opacity-30 -z-10"></div>
           </div>
         </div>
-        <h2 class="mt-6 text-3xl font-bold text-gray-900">
+        <h2 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
           {{ __('Welcome Back') }}
         </h2>
-        <p class="mt-2 text-sm text-gray-600">
-          {{ __('Sign in to your account to continue') }}
+        <p class="text-lg text-gray-600 max-w-md mx-auto">
+          {{ __('Sign in to your account and continue your learning journey') }}
         </p>
       </div>
 
-      <!-- Form Card -->
-      <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+      <!-- Enhanced Form Card -->
+      <div class="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 hover:shadow-3xl transition-all duration-300">
+        <!-- Card background effects -->
+        <div class="absolute inset-0 bg-gradient-to-br from-white/50 to-indigo-50/30 rounded-3xl"></div>
+        <div class="relative z-10">
         <!-- Status Message -->
         <div v-if="status" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <div class="flex">
@@ -126,7 +139,7 @@
             <Button
               type="submit"
               :loading="isSubmitting"
-              :disabled="!validator.$valid || isSubmitting"
+              :disabled="isSubmitting"
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               <i v-if="isSubmitting" class="pi pi-spinner pi-spin mr-2"></i>
@@ -137,7 +150,10 @@
 
         <!-- Demo Credentials -->
         <div v-if="$page.props.isDemo" class="mt-8 p-4 bg-gray-50 rounded-lg">
-          <div class="text-sm text-gray-600 mb-3">{{ __('Demo Login:') }}</div>
+          <div class="text-sm text-gray-600 mb-3">{{ __('Demo Login Credentials:') }}</div>
+          <div class="text-xs text-gray-500 mb-3">
+            {{ __('Use these credentials to test different user roles:') }}
+          </div>
           <div class="grid grid-cols-2 gap-2">
             <Button
               v-for="role in demoRoles"
@@ -149,6 +165,9 @@
             >
               {{ role.label }}
             </Button>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            {{ __('All demo accounts use password: "password"') }}
           </div>
         </div>
 
@@ -173,6 +192,7 @@
             </Link>
           </div>
         </div>
+        </div>
       </div>
 
       <!-- Footer -->
@@ -185,6 +205,10 @@
         </p>
       </div>
     </div>
+    </div>
+    
+    <!-- Modern Footer -->
+    <ModernFooter />
   </div>
 </template>
 
@@ -192,7 +216,11 @@
 import { ref, reactive } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { createLoginValidation, useFormValidation, hasError, getFirstError } from '@/composables/useFormValidation'
+import ModernHeader from '@/Components/Layout/ModernHeader.vue'
+import ModernFooter from '@/Components/Layout/ModernFooter.vue'
 import { useToast } from '@/composables/useToast'
+import { useTranslate } from '@/composables/useTranslate'
+import { useAuthDebug } from '@/composables/useAuthDebug'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
@@ -203,10 +231,6 @@ const props = defineProps({
   status: String
 })
 
-// Composables
-const { handleSubmit, isSubmitting } = useFormValidation()
-const { loginSuccess, error: showError } = useToast()
-
 // Form data
 const formData = reactive({
   email: '',
@@ -216,6 +240,12 @@ const formData = reactive({
 
 // Form validation
 const validator = createLoginValidation(formData)
+
+// Composables (don't pass validator for now to avoid errors)
+const { handleSubmit, isSubmitting } = useFormValidation()
+const { success: loginSuccess, error: showError } = useToast()
+const { __ } = useTranslate()
+const { testCredentials, validateFormData, isDemoMode } = useAuthDebug()
 
 // UI state
 const showPassword = ref(false)
@@ -230,6 +260,23 @@ const demoRoles = [
 
 // Methods
 const handleLogin = async () => {
+  // Basic validation before submission
+  if (!formData.email || !formData.password) {
+    showError('Please fill in both email/username and password.')
+    return
+  }
+
+  // Pre-validate credentials for better UX
+  if (isDemoMode.value) {
+    const validation = validateFormData(formData)
+    if (!validation.isValid) {
+      console.log('Form validation failed:', validation.errors)
+    }
+    if (validation.warnings.length > 0) {
+      console.log('Form validation warnings:', validation.warnings)
+    }
+  }
+
   await handleSubmit(
     () => {
       return new Promise((resolve, reject) => {
@@ -239,9 +286,37 @@ const handleLogin = async () => {
             resolve()
           },
           onError: (errors) => {
+            console.log('Login errors:', errors)
+            
+            // Handle specific authentication errors
             if (errors.email || errors.password) {
-              showError('Invalid credentials. Please check your email and password.')
+              if (errors.email && errors.email.includes('disabled')) {
+                showError('Your account has been disabled. Please contact administrator.')
+              } else if (errors.email && errors.email.includes('These credentials')) {
+                showError('Invalid credentials. Please check your email/username and password.')
+              } else {
+                showError('Login failed. Please verify your credentials and try again.')
+              }
+            } else if (Object.keys(errors).length > 0) {
+              const firstError = Object.values(errors)[0]
+              showError(Array.isArray(firstError) ? firstError[0] : firstError)
+            } else {
+              showError('Login failed. Please check your credentials and try again.')
             }
+            
+            // Add debug information for demo mode
+            if (props.settings?.demo_mode || isDemoMode.value) {
+              console.log('Demo mode login attempt:', {
+                email: formData.email,
+                availableCredentials: {
+                  admin: 'admin@qwiktest.com / password',
+                  instructor: 'instructor@qwiktest.com / password',
+                  student: 'student@qwiktest.com / password',
+                  guest: 'guest@qwiktest.com / password'
+                }
+              })
+            }
+            
             reject(new Error('Login failed'))
           },
           onFinish: () => {
@@ -259,15 +334,20 @@ const handleLogin = async () => {
 
 const fillCredentials = (role) => {
   const credentials = {
-    admin: { email: 'admin', password: 'Admin@123' },
-    instructor: { email: 'instructor', password: 'Instructor@123' },
-    student: { email: 'student', password: 'Student@123' },
-    guest: { email: 'guest', password: 'Guest@123' }
+    admin: { email: 'admin@qwiktest.com', password: 'password' },
+    instructor: { email: 'instructor@qwiktest.com', password: 'password' },
+    student: { email: 'student@qwiktest.com', password: 'password' },
+    guest: { email: 'guest@qwiktest.com', password: 'password' }
   }
   
   if (credentials[role]) {
     formData.email = credentials[role].email
     formData.password = credentials[role].password
+    
+    // Clear validation errors when filling demo credentials
+    if (validator && typeof validator.$reset === 'function') {
+      validator.$reset()
+    }
   }
 }
 </script>
@@ -303,65 +383,3 @@ button:active:not(:disabled) {
 }
 </style>
 
-<script>
-    import { useForm, Head } from '@inertiajs/vue3'
-    import AuthLayout from '@/Layouts/AuthLayout.vue';
-    import ArcCheckbox from '@/Components/Checkbox';
-    import ArcValidationErrors from '@/Components/ValidationErrors';
-    import ArcButton from "@/Components/Button";
-    export default {
-        components: {
-            AuthLayout,
-            ArcCheckbox,
-            ArcValidationErrors,
-            ArcButton,
-            Head,
-        },
-
-        props: {
-            settings: Object,
-            canResetPassword: Boolean,
-            status: String
-        },
-
-        setup(props) {
-            // Proper composable usage in setup() for Vue 3
-            const form = useForm({
-                email: '',
-                password: '',
-                remember: false
-            });
-
-            const submit = () => {
-                form.post('/login', {
-                    onFinish: () => form.reset('password'),
-                });
-            };
-
-            const fillCredentials = (role) => {
-                if(role === 'admin') {
-                    form.email = 'admin';
-                    form.password = 'Admin@123';
-                }
-                if(role === 'instructor') {
-                    form.email = 'instructor';
-                    form.password = 'Instructor@123';
-                }
-                if(role === 'student') {
-                    form.email = 'student';
-                    form.password = 'Student@123';
-                }
-                if(role === 'guest') {
-                    form.email = 'guest';
-                    form.password = 'Guest@123';
-                }
-            };
-
-            return {
-                form,
-                submit,
-                fillCredentials
-            };
-        }
-    }
-</script>

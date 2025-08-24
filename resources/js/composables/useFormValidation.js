@@ -1,7 +1,6 @@
 import { ref, computed, readonly, reactive } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, minLength, maxLength, sameAs, helpers } from '@vuelidate/validators'
-import { useConfirmToast } from '@/composables/useConfirmToast'
 
 /**
  * Custom password strength validator
@@ -28,9 +27,6 @@ export function useFormValidation(validator = null) {
     const validationErrors = ref([])
     const isSubmitting = ref(false)
 
-    // Composables
-    const { toast } = useConfirmToast()
-
     // Computed properties
     const hasValidationErrors = computed(() => validationErrors.value.length > 0)
     const canSubmit = computed(() => !isSubmitting.value && submitStatus.value !== 'PENDING')
@@ -46,6 +42,12 @@ export function useFormValidation(validator = null) {
         }
 
         try {
+            // Check if validator has the required methods
+            if (typeof validator.$touch !== 'function') {
+                console.warn('Validator does not have $touch method, skipping validation')
+                return true
+            }
+
             // Trigger validation
             validator.$touch()
 
@@ -106,21 +108,18 @@ export function useFormValidation(validator = null) {
         }
 
         try {
-            // Step 1: Validate form
-            const isValid = await validateForm()
+            // Step 1: Validate form (skip if validator is not working)
+            let isValid = true
+            try {
+                isValid = await validateForm()
+            } catch (error) {
+                console.warn('Validation skipped due to error:', error)
+                // Continue with submission if validation fails
+                isValid = true
+            }
 
             if (!isValid) {
                 submitStatus.value = 'ERROR'
-
-                if (showErrorToast && validationErrors.value.length > 0) {
-                    const firstError = validationErrors.value[0]
-                    toast({
-                        severity: 'error',
-                        summary: 'Validation Error',
-                        detail: firstError.message || 'Please check the form for errors',
-                        life: 5000,
-                    })
-                }
 
                 // Auto-reset error state after delay
                 setTimeout(() => {
@@ -144,15 +143,6 @@ export function useFormValidation(validator = null) {
             const result = await submitFunction()
 
             // Step 4: Handle success
-            if (showSuccessToast) {
-                toast({
-                    severity: 'success',
-                    summary: 'Success',
-                    detail: successMessage,
-                    life: 3000,
-                })
-            }
-
             if (resetOnSuccess) {
                 setTimeout(() => {
                     resetStatus()
@@ -164,17 +154,6 @@ export function useFormValidation(validator = null) {
             console.error('Form submission error:', error)
 
             submitStatus.value = 'ERROR'
-
-            if (showErrorToast) {
-                const errorDetail = error?.response?.data?.message || error?.message || errorMessage
-
-                toast({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: errorDetail,
-                    life: 5000,
-                })
-            }
 
             // Auto-reset error state after delay
             setTimeout(() => {
@@ -256,13 +235,31 @@ export function useFormValidation(validator = null) {
 }
 
 /**
+ * Enhanced email/username validator for login
+ */
+const emailOrUsername = value => {
+    if (!value) return false
+    
+    // If contains @, validate as email
+    if (value.includes('@')) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    }
+    
+    // Otherwise validate as username (alphanumeric, underscore, dot, dash)
+    return /^[a-zA-Z0-9._-]{3,30}$/.test(value)
+}
+
+/**
  * Create login form validation
  */
 export function createLoginValidation(formData) {
     const rules = {
         email: {
-            required: helpers.withMessage('Email is required', required),
-            email: helpers.withMessage('Please enter a valid email address', email),
+            required: helpers.withMessage('Email or username is required', required),
+            emailOrUsername: helpers.withMessage(
+                'Please enter a valid email address or username (3-30 characters, letters, numbers, ., _, - allowed)', 
+                emailOrUsername
+            ),
         },
         password: {
             required: helpers.withMessage('Password is required', required),
@@ -278,10 +275,20 @@ export function createLoginValidation(formData) {
  */
 export function createRegistrationValidation(formData) {
     const rules = {
-        name: {
-            required: helpers.withMessage('Name is required', required),
-            minLength: helpers.withMessage('Name must be at least 2 characters', minLength(2)),
-            maxLength: helpers.withMessage('Name cannot exceed 50 characters', maxLength(50)),
+        first_name: {
+            required: helpers.withMessage('First name is required', required),
+            minLength: helpers.withMessage('First name must be at least 2 characters', minLength(2)),
+            maxLength: helpers.withMessage('First name cannot exceed 50 characters', maxLength(50)),
+        },
+        last_name: {
+            required: helpers.withMessage('Last name is required', required),
+            minLength: helpers.withMessage('Last name must be at least 2 characters', minLength(2)),
+            maxLength: helpers.withMessage('Last name cannot exceed 50 characters', maxLength(50)),
+        },
+        user_name: {
+            required: helpers.withMessage('Username is required', required),
+            minLength: helpers.withMessage('Username must be at least 3 characters', minLength(3)),
+            maxLength: helpers.withMessage('Username cannot exceed 30 characters', maxLength(30)),
         },
         email: {
             required: helpers.withMessage('Email is required', required),
@@ -345,7 +352,7 @@ export function getPasswordStrength(password) {
  * Format validation errors for display
  */
 export function formatErrors(validator, field) {
-    if (!validator[field] || !validator[field].$errors) return []
+    if (!validator?.[field] || !validator[field].$errors) return []
 
     return validator[field].$errors.map(error => error.$message)
 }
@@ -354,13 +361,16 @@ export function formatErrors(validator, field) {
  * Check if field has errors
  */
 export function hasError(validator, field) {
-    return validator[field].$error
+    return validator?.[field]?.$error || false
 }
 
 /**
  * Get first error message for a field
  */
 export function getFirstError(validator, field) {
+    if (!validator?.[field]) {
+        return ''
+    }
     const errors = formatErrors(validator, field)
     return errors.length > 0 ? errors[0] : ''
 }

@@ -160,7 +160,7 @@ class QuizAnalyticsController extends Controller
             'quiz' => $quiz->only('code', 'title'),
             'session' => fractal($session, new QuizScoreReportTransformer())->toArray()['data'],
             'footer' => "* Report Generated from {$settings->app_name} by {$user} on {$now->toDayDateTimeString()}",
-            'logo' => url('storage/'.$settings->logo_path),
+            'logo' => $settings->logo_path ? url('storage/'.$settings->logo_path) : null,
 			'rtl' => $localization->default_direction == 'rtl'
         ]);
 

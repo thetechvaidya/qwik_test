@@ -4,14 +4,15 @@
             <p class="focus:outline-none text-sm font-medium leading-none text-center group-hover:text-white text-gray-800">{{ title }}</p>
             <p class="focus:outline-none text-base sm:text-lg md:text-xl font-bold leading-normal text-center group-hover:text-white text-green-800 mt-3">{{ count }}</p>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'AdminTestStatCard',
         props: {
             title: String,
             hint: String,
-            count: String|Number
+            count: [String, Number]
         }
     }
 </script>

@@ -12,6 +12,7 @@ use App\Filters\QueryFilter;
 use App\Traits\SecureDeletes;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -34,7 +35,21 @@ class Quiz extends Model
 
     protected $table = 'quizzes';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'title',
+        'slug',
+        'description',
+        'quiz_type_id',
+        'sub_category_id',
+        'difficulty_level_id',
+        'total_questions',
+        'total_duration',
+        'total_marks',
+        'pass_percentage',
+        'is_paid',
+        'is_active',
+        'settings'
+    ];
 
     protected $casts = [
         'is_paid' => 'boolean',
@@ -170,4 +185,62 @@ class Quiz extends Model
         $this->attributes['price'] = $value * 100;
     }
 
+    /**
+     * Check if the quiz is accessible to the user.
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function isAccessibleTo(User $user)
+    {
+        if ($this->is_private) {
+            return $user->hasQuizAccess($this);
+        }
+        return true;
+    }
+
+    /**
+     * Validate quiz settings.
+     *
+     * @return bool
+     */
+    public function validateSettings()
+    {
+        $settings = $this->settings;
+        if (!isset($settings['auto_duration']) || !isset($settings['auto_grading'])) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validate quiz schedules.
+     *
+     * @return bool
+     */
+    public function validateSchedules()
+    {
+        foreach ($this->quizSchedules as $schedule) {
+            if ($schedule->start_time >= $schedule->end_time) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($quiz) {
+            Log::info("Creating quiz: {$quiz->title}");
+        });
+
+        static::updating(function ($quiz) {
+            Log::info("Updating quiz: {$quiz->title}");
+        });
+    }
 }

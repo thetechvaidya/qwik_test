@@ -7,7 +7,8 @@
         <div class="w-full flex items-end justify-between mt-4">
             <slot name="action"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'PracticeSessionCard',

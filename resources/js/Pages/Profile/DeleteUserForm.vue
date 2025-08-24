@@ -11,7 +11,7 @@
             </div>
 
             <div class="mt-5">
-                <arc-danger-button @click.native="confirmUserDeletion"> Delete Account </arc-danger-button>
+                <arc-danger-button @click="confirmUserDeletion"> Delete Account </arc-danger-button>
             </div>
 
             <!-- Delete Account Confirmation Modal -->
@@ -30,7 +30,7 @@
                             type="password"
                             class="mt-1 block w-3/4"
                             placeholder="Password"
-                            @keyup.enter.native="deleteUser"
+                            @keyup.enter="deleteUser"
                         />
 
                         <arc-input-error :message="form.errors.password" class="mt-2" />
@@ -38,13 +38,13 @@
                 </template>
 
                 <template #footer>
-                    <arc-secondary-button @click.native="closeModal"> Nevermind </arc-secondary-button>
+                    <arc-secondary-button @click="closeModal"> Nevermind </arc-secondary-button>
 
                     <arc-danger-button
                         class="ml-2"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing"
-                        @click.native="deleteUser"
+                        @click="deleteUser"
                     >
                         Delete Account
                     </arc-danger-button>
@@ -55,6 +55,7 @@
 </template>
 
 <script>
+import { useForm } from '@inertiajs/vue3'
 import ArcActionSection from '@/Components/ActionSection.vue'
 import ArcDialogModal from '@/Components/DialogModal.vue'
 import ArcDangerButton from '@/Components/DangerButton.vue'
@@ -76,7 +77,7 @@ export default {
         return {
             confirmingUserDeletion: false,
 
-            form: this.$inertia.form({
+            form: useForm({
                 password: '',
             }),
         }

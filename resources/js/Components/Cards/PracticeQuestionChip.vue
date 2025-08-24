@@ -1,7 +1,8 @@
 <template>
     <div v-tooltip.top="questionStatus" class="w-full overflow-hidden rounded-sm cursor-pointer">
         <question-chip :sno="sno" :status="chipStatus" :is-active="active"></question-chip>
-    </template>
+    </div>
+</template>
 <script setup>
     import { computed } from 'vue'
     import QuestionChip from "@/Components/Buttons/QuestionChip"

@@ -14,7 +14,7 @@
                                     <span class="text-green-400 font-semibold">No</span> - If exam doesn't have any sections
                                 </li>
                             </ul>
-                        </div>
+                        </template>
                     </pop-info>
                 </div>
                 <div class="flex gap-4">
@@ -49,7 +49,8 @@ id="schedule_to" v-model="details.schedule_to" :manual-input="false" :min-date="
                 </div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import InputText from 'primevue/inputtext';
     import RadioButton from 'primevue/radiobutton';

@@ -9,7 +9,8 @@
                 <Skeleton width="5rem" height="2rem"></Skeleton>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import Skeleton from 'primevue/skeleton';
     export default {

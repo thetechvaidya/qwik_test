@@ -8,10 +8,15 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Traits\SanitizesContent;
+use App\Traits\ValidatesContent;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class UpdateQuestionRequest extends FormRequest
 {
+    use ValidatesContent, SanitizesContent;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -19,7 +24,7 @@ class UpdateQuestionRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return Gate::allows('update', $this->question);
     }
 
     /**
@@ -30,9 +35,36 @@ class UpdateQuestionRequest extends FormRequest
     public function rules()
     {
         return [
-            'question' => ['required'],
-            'options' => ['nullable'],
-            'correct_answer' => ['nullable'],
+            'question' => ['sometimes', 'required', 'string', 'max:65535', $this->validateContent()],
+            'question_type_id' => 'sometimes|required|exists:question_types,id',
+            'skill_id' => 'sometimes|required|exists:skills,id',
+            'is_active' => 'sometimes|required|boolean',
+            'options' => 'sometimes|required|array|min:2',
+            'options.*.option' => ['sometimes', 'required', 'string', 'max:65535', $this->validateContent()],
+            'options.*.is_correct' => 'sometimes|required|boolean',
+            'correct_answer' => 'sometimes|required',
         ];
+    }
+
+    /**
+     * Get the sanitized data from the request.
+     *
+     * @return array
+     */
+    public function sanitizedData()
+    {
+        $data = $this->validated();
+        $data['version'] = $this->question->version + 1;
+        return $this->sanitize($data);
+    }
+
+    /**
+     * Get the original data before the update.
+     *
+     * @return array
+     */
+    public function originalData()
+    {
+        return $this->question->only(array_keys($this->rules()));
     }
 }

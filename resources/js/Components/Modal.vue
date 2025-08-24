@@ -10,7 +10,7 @@ enter-active-class="ease-out duration-300"
                         leave-class="opacity-100"
                         leave-to-class="opacity-0">
                     <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
-                        <div class="absolute inset-0 bg-gray-500 opacity-75">
+                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                     </div>
                 </transition>
 
@@ -77,10 +77,17 @@ enter-active-class="ease-out duration-300"
             }
 
             document.addEventListener('keydown', closeOnEscape)
-
-            this.$once('hook:destroyed', () => {
+            
+            // Store cleanup function for beforeUnmount
+            this._closeOnEscapeCleanup = () => {
                 document.removeEventListener('keydown', closeOnEscape)
-            })
+            }
+        },
+
+        beforeUnmount() {
+            if (this._closeOnEscapeCleanup) {
+                this._closeOnEscapeCleanup()
+            }
         },
 
         methods: {

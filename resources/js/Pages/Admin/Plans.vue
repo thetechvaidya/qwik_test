@@ -11,61 +11,69 @@
         <div class="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :pagination-options="options"
-                        :columns="columns"
-                        :total-rows="plans.meta.pagination.total"
-                        :rows="plans.data"
-                        :rtl="pageProps.rtl"
-                        @on-page-change="onPageChange"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
+                    <DataTable
+                        :value="plans.data"
+                        :lazy="tableParams.lazy"
+                        :paginator="tableParams.paginator"
+                        :rows="tableParams.rows"
+                        :totalRecords="plans.meta.pagination.total"
+                        :rowsPerPageOptions="tableParams.rowsPerPageOptions"
+                        :paginatorTemplate="tableParams.paginatorTemplate"
+                        :currentPageReportTemplate="tableParams.currentPageReportTemplate"
+                        :sortMode="tableParams.sortMode"
+                        :filterDisplay="tableParams.filterDisplay"
+                        :globalFilterFields="tableParams.globalFilterFields"
+                        :loading="tableLoading"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
+                        :class="{ 'rtl': pageProps.rtl }"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
-                                <Tag
-                                    :value="props.row.code"
-                                    class="w-full p-mr-2 cursor-pointer"
-                                    @click="copyCode(props.row.code)"
-                                >
-                                    <i class="pi pi-copy mr-2" />{{ props.row.code }}
-                                </Tag>
-                            </div>
+                        <Column v-for="column in columns" :key="column.field" :field="column.field" :header="column.label" :sortable="column.sortable" :filterField="column.filterKey">
+                            <template #filter="{ filterModel, filterCallback }" v-if="column.filterKey">
+                                <InputText v-model="filterModel.value" @input="filterCallback()" placeholder="Search..." />
+                            </template>
+                            <template #body="slotProps">
+                                <!-- Code Column -->
+                                <div v-if="column.field === 'code'">
+                                    <Tag
+                                        :value="slotProps.data.code"
+                                        class="w-full p-mr-2 cursor-pointer"
+                                        @click="copyCode(slotProps.data.code)"
+                                    >
+                                        <i class="pi pi-copy mr-2" />{{ slotProps.data.code }}
+                                    </Tag>
+                                </div>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
-                                <span :class="[props.row.status ? 'badge-success' : 'badge-danger', 'badge']">{{
-                                    props.row.status ? __('Active') : __('In-active')
-                                }}</span>
-                            </div>
+                                <!-- Status Column -->
+                                <div v-else-if="column.field === 'status'">
+                                    <span :class="[slotProps.data.status ? 'badge-success' : 'badge-danger', 'badge']">{{ slotProps.data.status ? __('Active') : __('In-active') }}</span>
+                                </div>
 
-                            <!-- Action Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
-                                    <template #actions>
-                                        <button
-                                            class="action-item"
-                                            @click="
-                                                editForm = true
-                                                currentId = props.row.id
-                                            "
-                                            >{{ __('Edit') }}</button
-                                        >
-                                        <button class="action-item" @click="deletePlan(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
-                                    </template>
-                                </ActionsDropdown>
-                            </div>
+                                <!-- Action Column -->
+                                <div v-else-if="column.field === 'actions'">
+                                    <ActionsDropdown>
+                                        <template #actions>
+                                            <button
+                                                class="action-item"
+                                                @click="
+                                                    editForm = true;
+                                                    currentId = slotProps.data.id;
+                                                "
+                                                >{{ __('Edit') }}</button
+                                            >
+                                            <button class="action-item" @click="deletePlan(slotProps.data.id)">{{ __('Delete') }}</button>
+                                        </template>
+                                    </ActionsDropdown>
+                                </div>
 
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                                <!-- Remaining Columns -->
+                                <span v-else>
+                                    {{ slotProps.data[column.field] }}
+                                </span>
+                            </template>
+                        </Column>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <button class="qt-btn-sm qt-btn-primary" type="button" @click="createForm = true">
@@ -74,7 +82,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
 
                     <!-- Drawer Forms -->
                     <Drawer v-model:visible="createForm" position="right" class="p-drawer-md">
@@ -108,6 +116,9 @@ import { ref, computed, reactive } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Drawer from 'primevue/drawer'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import PlanForm from '@/Components/Forms/PlanForm.vue'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
@@ -220,7 +231,7 @@ const options = reactive({
 })
 
 // Server table composable
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServerTable({
+const { onPage, onSort, onFilter, tableLoading } = useServerTable({
     resourceKeys: ['plans', 'subCategories', 'features'],
     routeName: 'plans.index',
 })

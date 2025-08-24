@@ -114,7 +114,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="questionType in questionTypes">
+                                <tr v-for="questionType in questionTypes" :key="questionType.code || questionType.id">
                                     <td class="border border-emerald-500 px-4 py-2 text-emerald-600 text-sm">
                                         {{ questionType.name }}
                                     </td>
@@ -148,7 +148,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="difficultyLevel in difficultyLevels">
+                                <tr v-for="difficultyLevel in difficultyLevels" :key="difficultyLevel.code || difficultyLevel.id">
                                     <td class="border border-emerald-500 px-4 py-2 text-emerald-600 text-sm">
                                         {{ difficultyLevel.name }}
                                     </td>

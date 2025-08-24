@@ -61,11 +61,17 @@
     </arc-form-section>
 </template>
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { computed, ref } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
+import ArcTextArea from '@/Components/TextArea.vue'
 
 // Props
 const props = defineProps({
@@ -82,13 +88,28 @@ const title = computed(() => {
     return __('Settings/ Stat Settings Form') + ' - ' + pageProps.general.app_name
 })
 
+// Statistics
+const stats = ref([1, 2, 3, 4])
+
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    title: props.settings?.title || '',
+    subtitle: props.settings?.subtitle || '',
+    stat1_name: props.settings?.stat1_name || '',
+    stat1_count: props.settings?.stat1_count || '',
+    stat2_name: props.settings?.stat2_name || '',
+    stat2_count: props.settings?.stat2_count || '',
+    stat3_name: props.settings?.stat3_name || '',
+    stat3_count: props.settings?.stat3_count || '',
+    stat4_name: props.settings?.stat4_name || '',
+    stat4_count: props.settings?.stat4_count || '',
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.stats.update'), {
+        errorBag: 'updateStatSettings',
+        preserveScroll: true,
+    })
 }
 </script>

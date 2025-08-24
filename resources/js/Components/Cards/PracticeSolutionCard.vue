@@ -4,7 +4,8 @@
         <div v-if="question.solution_video">
             <video-attachment :reference="'player_'+question.code" :options="question.solution_video" :show-message="false"></video-attachment>
         </div>
-        <div v-html="question.solution">
+        <div v-html="question.solution"></div>
+    </div>
 </template>
 <script setup>
     import { ref, onMounted, nextTick } from 'vue'

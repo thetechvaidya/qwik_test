@@ -1,5 +1,6 @@
 <template>
     <Head :title="title" />
+    
     <arc-form-section @submitted="updateSettings">
         <template #title>
             {{ __('Localization Settings') }}
@@ -35,7 +36,7 @@
                     id="direction"
                     v-model="form.default_direction"
                     :options="directions"
-                    :reduce="lang => lang.id"
+                    :reduce="dir => dir.id"
                     label="name"
                     placeholder="Select a Direction"
                     :dir="pageProps.rtl ? 'rtl' : 'ltr'"
@@ -66,11 +67,15 @@
     </arc-form-section>
 </template>
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
 
 // Props
 const props = defineProps({

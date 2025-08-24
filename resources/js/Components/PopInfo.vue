@@ -4,11 +4,12 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         </a>
         <div
-v-if="showPopup" class="absolute w-96 shadow border border-green-200 bg-white p-2 rounded" transition="fade"
+            v-if="showPopup" class="absolute w-96 shadow border border-green-200 bg-white p-2 rounded" transition="fade"
              style="z-index: 999;" @mouseover="hoverInfo" @mouseout="hoverOutInfo">
             <slot name="message"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'PopInfo',

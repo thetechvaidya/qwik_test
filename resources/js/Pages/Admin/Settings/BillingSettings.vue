@@ -22,10 +22,15 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import ArcSectionBorder from '@/Components/SectionBorder.vue'
+import BillingSettingsForm from '@/Pages/Admin/Settings/BillingSettingsForm.vue'
+import TaxSettingsForm from '@/Pages/Admin/Settings/TaxSettingsForm.vue'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    billingSettings: Object,
+    taxSettings: Object,
+    countries: Array,
 })
 
 // Composables

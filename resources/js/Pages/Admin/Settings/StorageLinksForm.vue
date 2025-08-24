@@ -22,11 +22,12 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { ref, computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
-import { useForm } from '@inertiajs/vue3'
+import ArcActionSection from '@/Components/ActionSection.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcConfirmsPassword from '@/Components/ConfirmsPassword.vue'
 
 // Props
 const props = defineProps({
@@ -43,13 +44,21 @@ const title = computed(() => {
     return __('Settings/ Storage Links Form') + ' - ' + pageProps.general.app_name
 })
 
-// Form handling
-const form = useForm({
-    // Add form fields based on original file
-})
+// Reactive state
+const loading = ref(false)
 
 // Methods
-const updateSettings = () => {
-    // Add form submission logic
+const fixStorageLinks = () => {
+    loading.value = true
+    
+    axios.post(route('admin.settings.storage.fix'))
+        .then(() => {
+            // Handle success
+            loading.value = false
+        })
+        .catch(() => {
+            // Handle error
+            loading.value = false
+        })
 }
 </script>

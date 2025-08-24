@@ -25,14 +25,21 @@
             <!-- Tax Amount Type -->
             <div class="col-span-6 sm:col-span-4">
                 <arc-label for="tax_amount_type" :value="__('Tax Amount Type')" />
-                <v-select
+                <Select
                     id="tax_amount_type"
                     v-model="form.tax_amount_type"
                     :options="taxAmountTypes"
-                    :reduce="t => t.code"
-                    label="name"
-                    :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                />
+                    optionLabel="name"
+                    optionValue="code"
+                    :placeholder="__('Select Tax Amount Type')"
+                    filter
+                    showClear
+                    class="mt-1 block w-full"
+                >
+                    <template #empty>
+                        {{ __('No options available') }}
+                    </template>
+                </Select>
                 <arc-input-error :message="form.errors.tax_amount_type" class="mt-2" />
             </div>
 
@@ -46,14 +53,21 @@
             <!-- Tax Type -->
             <div class="col-span-6 sm:col-span-4">
                 <arc-label for="tax_type" :value="__('Tax Type')" />
-                <v-select
+                <Select
                     id="tax_type"
                     v-model="form.tax_type"
                     :options="taxTypes"
-                    :reduce="t => t.code"
-                    label="name"
-                    :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                />
+                    optionLabel="name"
+                    optionValue="code"
+                    :placeholder="__('Select Tax Type')"
+                    filter
+                    showClear
+                    class="mt-1 block w-full"
+                >
+                    <template #empty>
+                        {{ __('No options available') }}
+                    </template>
+                </Select>
                 <arc-input-error :message="form.errors.tax_type" class="mt-2" />
             </div>
 
@@ -81,14 +95,21 @@
             <!-- Additional Tax Amount Type -->
             <div class="col-span-6 sm:col-span-4">
                 <arc-label for="additional_tax_amount_type" :value="__('Additional Tax Amount Type')" />
-                <v-select
+                <Select
                     id="additional_tax_amount_type"
                     v-model="form.additional_tax_amount_type"
                     :options="taxAmountTypes"
-                    :reduce="t => t.code"
-                    label="name"
-                    :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                />
+                    optionLabel="name"
+                    optionValue="code"
+                    :placeholder="__('Select Additional Tax Amount Type')"
+                    filter
+                    showClear
+                    class="mt-1 block w-full"
+                >
+                    <template #empty>
+                        {{ __('No options available') }}
+                    </template>
+                </Select>
                 <arc-input-error :message="form.errors.additional_tax_amount_type" class="mt-2" />
             </div>
 
@@ -107,14 +128,21 @@
             <!-- Additional Tax Type -->
             <div class="col-span-6 sm:col-span-4">
                 <arc-label for="additional_tax_type" :value="__('Additional Tax Type')" />
-                <v-select
+                <Select
                     id="additional_tax_type"
                     v-model="form.additional_tax_type"
                     :options="taxTypes"
-                    :reduce="t => t.code"
-                    label="name"
-                    :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                />
+                    optionLabel="name"
+                    optionValue="code"
+                    :placeholder="__('Select Additional Tax Type')"
+                    filter
+                    showClear
+                    class="mt-1 block w-full"
+                >
+                    <template #empty>
+                        {{ __('No options available') }}
+                    </template>
+                </Select>
                 <arc-input-error :message="form.errors.additional_tax_type" class="mt-2" />
             </div>
         </template>
@@ -134,6 +162,8 @@ import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 // Props
 const props = defineProps({
@@ -150,13 +180,41 @@ const title = computed(() => {
     return __('Settings/ Tax Settings Form') + ' - ' + pageProps.general.app_name
 })
 
+// Local data
+const taxAmountTypes = ref([
+    { code: 'percentage', name: 'Percentage' },
+    { code: 'fixed', name: 'Fixed Amount' }
+])
+
+const taxTypes = ref([
+    { code: 'inclusive', name: 'Inclusive' },
+    { code: 'exclusive', name: 'Exclusive' }
+])
+
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    enable_tax: props.settings?.enable_tax || false,
+    tax_name: props.settings?.tax_name || '',
+    tax_amount_type: props.settings?.tax_amount_type || '',
+    tax_amount: props.settings?.tax_amount || '',
+    tax_type: props.settings?.tax_type || '',
+    enable_additional_tax: props.settings?.enable_additional_tax || false,
+    additional_tax_name: props.settings?.additional_tax_name || '',
+    additional_tax_amount_type: props.settings?.additional_tax_amount_type || '',
+    additional_tax_amount: props.settings?.additional_tax_amount || '',
+    additional_tax_type: props.settings?.additional_tax_type || ''
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.patch(route('admin.settings.tax.update'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Handle success
+        },
+        onError: () => {
+            // Handle error
+        }
+    })
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
     <div class="msa-options">
         <div v-for="(option, index) in options" :key="index" class="mb-4">
-            <div class=" font-semibold mb-2">{{ __('Option') }} {{ index+1 }}
+            <div class="font-semibold mb-2">{{ __('Option') }} {{ index+1 }}</div>
             <TiptapEditor 
                 v-model="options[index].option" 
                 :config="{ 
@@ -25,7 +25,8 @@
             </div>
 
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
     import InputNumber from 'primevue/inputnumber';
@@ -46,6 +47,13 @@
             }
         },
         methods: {
+            __(key, replace = {}) {
+                let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
+                Object.keys(replace).forEach(function (key) {
+                    translation = translation.replace(':' + key, replace[key])
+                })
+                return translation
+            },
             selectAnswer (event) {
                 this.options[this.correct_answer-1].partial_weightage = 0;
                 this.$emit('modifyAnswer', this.correct_answer)

@@ -2,13 +2,13 @@
     <div class="bg-white shadow px-4 py-5 border-b-4 border-gray-800 mb-6">
         <h5 class="inline-block bg-green-100 rounded-sm px-2 py-1 mb-4 text-xs leading-3 text-green-700">{{ question.skill }}</h5>
         <div class="q-data mb-4">
-            <div class="text-sm" v-html="question.question">
+            <div class="text-sm" v-html="question.question"></div>
         </div>
         <div v-show="!collapse" :id="question.code+'_options'">
             <ul v-for="(option, index) in question.options" class="q-option">
                 <li class="flex items-center mb-3 cursor-pointer p-3 rounded-sm border border-gray-200">
-                    <div class="text-sm h-6 w-6 flex rounded-full items-center justify-center bg-gray-100 ">{{ index+1 }}
-                    <div class="text-sm font-normal ltr:ml-4 rtl:mr-4" v-html="option.option">
+                    <div class="text-sm h-6 w-6 flex rounded-full items-center justify-center bg-gray-100">{{ index+1 }}</div>
+                    <div class="text-sm font-normal ltr:ml-4 rtl:mr-4" v-html="option.option"></div>
                 </li>
             </ul>
         </div>
@@ -35,7 +35,8 @@
             <h5 class="inline-block bg-gray-100 rounded-sm px-2 py-1 text-xs leading-3 text-gray-700">{{ question.code }}</h5>
             <slot name="action"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "SAQPreview",

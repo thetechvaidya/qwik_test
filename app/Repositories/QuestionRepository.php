@@ -207,4 +207,18 @@ class QuestionRepository
                 break;
         }
     }
+
+    /**
+     * Get questions with eager loading.
+     *
+     * @param \App\Filters\QuestionFilters $filters
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getQuestionsWithRelations(\App\Filters\QuestionFilters $filters)
+    {
+        return Question::filter($filters)
+            ->with(['questionType:id,name,code', 'skill:id,name', 'topic:id,name', 'difficultyLevel:id,name'])
+            ->orderBy('id', 'desc')
+            ->paginate(request()->perPage ?? 10);
+    }
 }

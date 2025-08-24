@@ -5,69 +5,76 @@
         </template>
         <div class="card mt-10">
             <div class="card-body">
-                <vue-good-table
-                    mode="remote"
-                    :pagination-options="options"
-                    :columns="columns"
-                    :total-rows="subscriptions.meta.pagination.total"
-                    :rows="subscriptions.data"
-                    :rtl="$page.props.rtl"
-                    @on-page-change="onPageChange"
-                    @on-column-filter="onColumnFilter"
-                    @on-per-page-change="onPerPageChange"
+                <DataTable
+                    :value="subscriptions.data"
+                    :totalRecords="subscriptions.meta.pagination.total"
+                    :loading="false"
+                    lazy
+                    paginator
+                    :rows="subscriptions.meta.pagination.per_page"
+                    :first="(subscriptions.meta.pagination.current_page - 1) * subscriptions.meta.pagination.per_page"
+                    :rowsPerPageOptions="[10, 20, 50, 100]"
+                    paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                    currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    @page="onPageChange"
+                    @filter="onColumnFilter"
+                    filterDisplay="row"
                 >
-                    <template #table-row="props">
-                        <!-- Status Column -->
-                        <div v-if="props.column.field === 'plan'">
-                            <span>{{ props.row.plan }}</span
-                            ><br />
-                            <span class="text-xs text-gray-400">{{ props.row.payment }}</span>
-                        </div>
+                    <Column field="plan" :header="__('Plan')" :sortable="false">
+                        <template #body="slotProps">
+                            <span>{{ slotProps.data.plan }}</span><br />
+                            <span class="text-xs text-gray-400">{{ slotProps.data.payment }}</span>
+                        </template>
+                    </Column>
 
-                        <!-- Features Column -->
-                        <div v-else-if="props.column.field === 'features'">
+                    <Column field="starts" :header="__('Starts')" :sortable="false"></Column>
+
+                    <Column field="ends" :header="__('Ends')" :sortable="false"></Column>
+
+                    <Column field="features" :header="__('Feature Access')" :sortable="false">
+                        <template #body="slotProps">
                             <ul>
-                                <li v-for="feature in props.row.features" :key="feature.code" class="text-sm"
-                                    >- {{ __(feature.name) }}</li
-                                >
+                                <li v-for="feature in slotProps.data.features" :key="feature.code" class="text-sm">
+                                    - {{ __(feature.name) }}
+                                </li>
                             </ul>
-                        </div>
+                        </template>
+                    </Column>
 
-                        <!-- Status Column -->
-                        <div v-else-if="props.column.field === 'status'">
+                    <Column field="status" :header="__('Status')" :sortable="false">
+                        <template #body="slotProps">
                             <span
                                 :class="[
-                                    props.row.status === 'active' ? 'badge-success' : 'badge-danger',
+                                    slotProps.data.status === 'active' ? 'badge-success' : 'badge-danger',
                                     'badge-sm uppercase text-xs',
                                 ]"
-                                >{{ __(props.row.status) }}</span
                             >
-                        </div>
+                                {{ __(slotProps.data.status) }}
+                            </span>
+                        </template>
+                    </Column>
 
-                        <!-- Actions Column -->
-                        <div v-else-if="props.column.field === 'actions'" class="py-2">
-                            <button
-                                v-if="props.row.canCancel"
-                                type="button"
-                                class="qt-btn qt-btn-sm qt-btn-danger"
-                                @click="cancelSubscription(props.row.id)"
-                            >
-                                {{ __('Cancel') }}
-                            </button>
-                        </div>
+                    <Column field="actions" :header="__('Actions')" :sortable="false" style="width: 12rem">
+                        <template #body="slotProps">
+                            <div class="py-2">
+                                <button
+                                    v-if="slotProps.data.canCancel"
+                                    type="button"
+                                    class="qt-btn qt-btn-sm qt-btn-danger"
+                                    @click="cancelSubscription(slotProps.data.id)"
+                                >
+                                    {{ __('Cancel') }}
+                                </button>
+                            </div>
+                        </template>
+                    </Column>
 
-                        <!-- Remaining Columns -->
-                        <span v-else>
-                            {{ props.formattedRow[props.column.field] }}
-                        </span>
-                    </template>
-
-                    <template #emptystate>
+                    <template #empty>
                         <div>
                             <no-data-table></no-data-table>
                         </div>
                     </template>
-                </vue-good-table>
+                </DataTable>
             </div>
         </div>
     </app-layout>
@@ -78,12 +85,16 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import EmptyStudentCard from '@/Components/Cards/EmptyStudentCard'
 import NoDataTable from '@/Components/NoDataTable'
 import Swal from 'sweetalert2'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 export default {
     components: {
         AppLayout,
         EmptyStudentCard,
         NoDataTable,
+        DataTable,
+        Column,
     },
     props: {
         subscriptions: Object,
@@ -153,8 +164,8 @@ export default {
         updateParams(newProps) {
             this.serverParams = Object.assign({}, this.serverParams, newProps)
         },
-        onPageChange(params) {
-            this.updateParams({ page: params.currentPage })
+        onPageChange(event) {
+            this.updateParams({ page: Math.floor(event.first / event.rows) + 1 })
             this.loadItems()
         },
         onPerPageChange(params) {

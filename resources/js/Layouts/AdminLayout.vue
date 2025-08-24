@@ -18,9 +18,10 @@
                 </Link>
                 <div ref="scroll" class="h-full overflow-y-auto overflow-x-hidden">
                     <nav class="text-sm font-medium pb-16 text-gray-400" aria-label="Main Navigation">
-                        <template v-for="item in navItems" :key="item.id || item.label">
+                        <template v-for="(item, index) in navItems" :key="item.id || item.label || `nav-${index}`">
                             <sidebar-dropdown
                                 v-if="item.active && item.item_type === 'dropdown'"
+                                :key="`dropdown-${item.label}-${index}`"
                                 :title="item.label"
                                 :items="item.items"
                             >
@@ -29,7 +30,8 @@
                                 </template>
                             </sidebar-dropdown>
                             <sidebar-link
-                                v-if="item.active === true && item.item_type === 'link'"
+                                v-else-if="item.active === true && item.item_type === 'link'"
+                                :key="`link-${item.label}-${index}`"
                                 :title="item.label"
                                 :url="item.url"
                             >
@@ -38,7 +40,8 @@
                                 </template>
                             </sidebar-link>
                             <div
-                                v-if="item.item_type === 'divider'"
+                                v-else-if="item.item_type === 'divider'"
+                                :key="`divider-${item.label}-${index}`"
                                 class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs"
                             >
                                 {{ item.label }}
@@ -208,6 +211,7 @@ import Message from 'primevue/message'
 import ToggleSwitch from 'primevue/toggleswitch'
 import SidebarDropdown from '@/Components/SidebarDropdown.vue'
 import SidebarLink from '@/Components/SidebarLink.vue'
+import translate from '@/Mixins/translate.js'
 export default {
     components: {
         ArcBanner,
@@ -220,6 +224,8 @@ export default {
         SidebarDropdown,
         SidebarLink,
     },
+
+    mixins: [translate],
 
     data() {
         return {
@@ -234,7 +240,7 @@ export default {
         navItems() {
             if (import.meta.env.DEV && typeof window.route !== 'function') return []
 
-            const userRole = this.$page.props.user.role_id
+            const userRole = this.$page.props.user?.role_id
             const isAdmin = userRole === 'admin'
             const isInstructor = userRole === 'instructor'
             const isAdminOrInstructor = isAdmin || isInstructor

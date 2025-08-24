@@ -38,7 +38,8 @@
                 </div>
             </div>
         </div>-->
-    </template>
+    </div>
+</template>
 <script>
     import ToggleSwitch from 'primevue/toggleswitch';
     export default {

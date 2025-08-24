@@ -10,10 +10,11 @@
                     <Link :href="route('learn_practice_section', {category: category.slug, section: section.slug})">
                         <section-card :section="section"></section-card>
                     </Link>
-                </div>
+                </template>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import { Link } from '@inertiajs/vue3'
     import SectionCard from "@/Components/Cards/SectionCard";

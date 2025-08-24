@@ -28,10 +28,11 @@
         </div>
         <div class="card-body">
             <h4 class="text-lg font-semibold mb-4">{{ video.title }}</h4>
-            <div v-if="video.description" class="max-w-full prose" v-html="video.description">
-            <div v-else class="text-sm text-gray-400">{{ __('No description found') }}
+            <div v-if="video.description" class="max-w-full prose" v-html="video.description"></div>
+            <div v-else class="text-sm text-gray-400">{{ __('No description found') }}</div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import VuePlyr from 'vue-plyr';
     import ContentLocked from "@/Components/Cards/ContentLocked";

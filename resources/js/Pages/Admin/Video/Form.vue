@@ -73,25 +73,24 @@
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
-                                    <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{
-                                        __('Skill')
-                                    }}</label>
-                                    <v-select
+                                    <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Skill') }}</label>
+                                    <Select
                                         id="skill_id"
                                         v-model="v$.form.skill_id.$model"
                                         :options="skills"
-                                        :reduce="skill => skill.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="handleSkillSearch"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        placeholder="Select a skill"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        :class="[v$.form.skill_id.$error ? 'p-invalid' : '']"
+                                        @filter="handleSkillSearch"
                                     >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                                        <template #empty>
+                                            <span>{{ __('No results were found for this search') }}</span>
                                         </template>
-                                    </v-select>
+                                    </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.skill_id.$error && v$.form.skill_id.required.$invalid"
@@ -102,25 +101,24 @@
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
-                                    <label for="topic_id" class="pb-2 text-sm font-semibold text-gray-800">{{
-                                        __('Topic')
-                                    }}</label>
-                                    <v-select
+                                    <label for="topic_id" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Topic') }}</label>
+                                    <Select
                                         id="topic_id"
                                         v-model="v$.form.topic_id.$model"
                                         :options="topics"
-                                        :reduce="topic => topic.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="handleTopicSearch"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        placeholder="Select a topic"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        :class="[v$.form.topic_id.$error ? 'p-invalid' : '']"
+                                        @filter="handleTopicSearch"
                                     >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                                        <template #empty>
+                                            <span>{{ __('No results were found for this search') }}</span>
                                         </template>
-                                    </v-select>
+                                    </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.topic_id.$error && v$.form.topic_id.required.$invalid"
@@ -275,12 +273,13 @@ import { useFormValidation } from '@/composables/useFormValidation'
 import { useCleanup, useSearchWithCleanup } from '@/composables/useCleanup'
 import { useConfirmToast } from '@/composables/useConfirmToast'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import TiptapEditor from '@/Components/TiptapEditor'
+import TiptapEditor from '@/Components/TiptapEditor.vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
-import VideoOptions from '@/Components/Videos/VideoOptions'
+import Select from 'primevue/select'
+import VideoOptions from '@/Components/Questions/VideoOptions.vue'
 import EnhancedSubmitButton from '@/Components/Buttons/EnhancedSubmitButton.vue'
 import axios from 'axios'
 

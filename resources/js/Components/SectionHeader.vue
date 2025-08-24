@@ -8,10 +8,16 @@
     </div>
 </template>
 <script>
+import { useTranslate } from '@/composables/useTranslate'
+
 export default {
     name: 'SectionHeader',
     props: {
         title: String,
+    },
+    setup() {
+        const { __ } = useTranslate()
+        return { __ }
     },
 }
 </script>

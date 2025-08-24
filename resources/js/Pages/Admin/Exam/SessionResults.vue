@@ -375,7 +375,6 @@
                                     >
                                         <practice-question-chip
                                             :sno="index + 1"
-                                            :sno="index + 1"
                                             :is_correct="question.is_correct"
                                             :status="question.status"
                                             :active="current_question === index"
@@ -419,7 +418,6 @@
                                             </div>
                                             <practice-question-card
                                                 :key="question.card"
-                                                :question="question"
                                                 :question="question"
                                                 :sno="index + 1"
                                                 :total-questions="exam.total_questions"

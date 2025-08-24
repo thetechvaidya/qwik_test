@@ -1,7 +1,7 @@
 <template>
     <div class="msa-options">
         <div v-for="(option, index) in options" :key="index" class="mb-4">
-            <div class="text-sm font-semibold mb-2">{{ __('Acceptable Answer') }} {{ index+1 }}
+            <div class="text-sm font-semibold mb-2">{{ __('Acceptable Answer') }} {{ index+1 }}</div>
             <InputText :id="'option_text_'+index" v-model="options[index].option" class="w-full" style="border-radius: 0 !important;"></InputText>
             <div class="flex bg-gray-50 border-b border-l border-r border-gray-300 justify-between items-center px-4 py-2">
                 <div class="flex gap-1 items-center">
@@ -22,7 +22,8 @@
 
         </div>
         <button type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400" @click="addOption">{{ __('Add Option') }}</button>
-    </template>
+    </div>
+</template>
 <script>
     import InputNumber from 'primevue/inputnumber';
     import InputText from 'primevue/inputtext';

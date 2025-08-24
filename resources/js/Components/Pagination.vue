@@ -80,6 +80,7 @@ export default {
             default: false,
         },
     },
+    emits: ['changePage'],
     data() {
         return {
             pager: {},
@@ -94,9 +95,6 @@ export default {
         },
     },
     created() {
-        if (!this.$listeners.changePage) {
-            throw 'Missing required event listener: "changePage"'
-        }
         // set default styles unless disabled
         if (!this.disableDefaultStyles) {
             this.ulStyles = defaultStyles.ul

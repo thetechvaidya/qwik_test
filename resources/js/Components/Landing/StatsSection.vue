@@ -1,79 +1,102 @@
 <template>
-    <section class="stats-section py-20 bg-gray-50">
-        <div class="container mx-auto px-6">
-            <div ref="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+    <section class="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="container-modern relative">
+            <!-- Section Header -->
+            <div class="text-center mb-16 animate-fadeInUp">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Trusted by <span class="text-gradient">Thousands</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Join a growing community of successful learners who have transformed their careers with our platform
+                </p>
+            </div>
+
+            <!-- Main Stats Grid -->
+            <div ref="statsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
                 <!-- Students Count -->
-                <div
-                    class="stat-card text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                    <div class="stat-icon mb-4">
-                        <div
-                            class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto"
-                        >
-                            <i class="pi pi-users text-white text-2xl"></i>
+                <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
+                    <div class="stat-icon mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
+                            <i class="pi pi-users text-white text-3xl"></i>
                         </div>
                     </div>
-                    <div class="stat-number text-4xl font-bold text-gray-900 mb-2">
+                    <div class="stats-number text-5xl font-bold mb-3 text-gradient">
                         {{ displayStudentsCount.toLocaleString() }}+
                     </div>
-                    <div class="stat-label text-gray-600 font-medium"> Active Students </div>
-                    <div class="stat-description text-sm text-gray-500 mt-2"> Learning and growing every day </div>
+                    <div class="text-lg font-semibold text-gray-900 mb-2">Active Students</div>
+                    <div class="text-gray-600">Learning and growing every day</div>
                 </div>
 
                 <!-- Success Rate -->
-                <div
-                    class="stat-card text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                    <div class="stat-icon mb-4">
-                        <div
-                            class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto"
-                        >
-                            <i class="pi pi-check-circle text-white text-2xl"></i>
+                <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
+                    <div class="stat-icon mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
+                            <i class="pi pi-check-circle text-white text-3xl"></i>
                         </div>
                     </div>
-                    <div class="stat-number text-4xl font-bold text-gray-900 mb-2">
+                    <div class="stats-number text-5xl font-bold mb-3 text-gradient">
                         {{ formatPercentage(displaySuccessRate) }}
                     </div>
-                    <div class="stat-label text-gray-600 font-medium"> Success Rate </div>
-                    <div class="stat-description text-sm text-gray-500 mt-2"> Average test completion rate </div>
+                    <div class="text-lg font-semibold text-gray-900 mb-2">Success Rate</div>
+                    <div class="text-gray-600">Average test completion rate</div>
                 </div>
 
                 <!-- Tests Count -->
-                <div
-                    class="stat-card text-center p-8 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                    <div class="stat-icon mb-4">
-                        <div
-                            class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto"
-                        >
-                            <i class="pi pi-book text-white text-2xl"></i>
+                <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
+                    <div class="stat-icon mb-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
+                            <i class="pi pi-book text-white text-3xl"></i>
                         </div>
                     </div>
-                    <div class="stat-number text-4xl font-bold text-gray-900 mb-2">
+                    <div class="stats-number text-5xl font-bold mb-3 text-gradient">
                         {{ displayTestsCount.toLocaleString() }}+
                     </div>
-                    <div class="stat-label text-gray-600 font-medium"> Available Tests </div>
-                    <div class="stat-description text-sm text-gray-500 mt-2"> Across multiple categories </div>
+                    <div class="text-lg font-semibold text-gray-900 mb-2">Available Tests</div>
+                    <div class="text-gray-600">Across multiple categories</div>
                 </div>
             </div>
 
             <!-- Additional Stats Row -->
-            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 mb-1">24/7</div>
-                    <div class="text-gray-600 text-sm">Support</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <div class="glass-card text-center hover-scale group">
+                    <div class="text-3xl font-bold text-gradient mb-2 group-hover:scale-110 transition-transform duration-300">24/7</div>
+                    <div class="text-gray-700 font-medium">Support</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 mb-1">50+</div>
-                    <div class="text-gray-600 text-sm">Categories</div>
+                <div class="glass-card text-center hover-scale group">
+                    <div class="text-3xl font-bold text-gradient mb-2 group-hover:scale-110 transition-transform duration-300">50+</div>
+                    <div class="text-gray-700 font-medium">Categories</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 mb-1">99.9%</div>
-                    <div class="text-gray-600 text-sm">Uptime</div>
+                <div class="glass-card text-center hover-scale group">
+                    <div class="text-3xl font-bold text-gradient mb-2 group-hover:scale-110 transition-transform duration-300">99.9%</div>
+                    <div class="text-gray-700 font-medium">Uptime</div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 mb-1">4.9/5</div>
-                    <div class="text-gray-600 text-sm">Rating</div>
+                <div class="glass-card text-center hover-scale group">
+                    <div class="text-3xl font-bold text-gradient mb-2 group-hover:scale-110 transition-transform duration-300">4.9/5</div>
+                    <div class="text-gray-700 font-medium">Rating</div>
+                </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="mt-16 text-center">
+                <div class="inline-flex items-center gap-8 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-white/30 shadow-modern">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-shield text-green-600 text-xl"></i>
+                        <span class="text-gray-700 font-medium">Secure & Trusted</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-verified text-blue-600 text-xl"></i>
+                        <span class="text-gray-700 font-medium">Verified Platform</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-heart text-red-500 text-xl"></i>
+                        <span class="text-gray-700 font-medium">Loved by Users</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,8 +105,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-
-import { useAnimations } from '@/composables/useAnimations'
 
 // Props
 const props = defineProps({
@@ -101,9 +122,6 @@ const props = defineProps({
     },
 })
 
-// Composables
-const { animateCounters, observeElement, formatPercentage } = useAnimations()
-
 // Refs
 const statsContainer = ref(null)
 const displayStudentsCount = ref(0)
@@ -114,40 +132,52 @@ const displayTestsCount = ref(0)
 const hasAnimated = ref(false)
 
 // Methods
+const formatPercentage = (value) => {
+    return `${Math.round(value)}%`
+}
+
+const easeOutCubic = (t) => {
+    return 1 - Math.pow(1 - t, 3)
+}
+
+const animateCounter = (start, end, duration, callback, easing = easeOutCubic) => {
+    const startTime = performance.now()
+    
+    const animate = (currentTime) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const easedProgress = easing(progress)
+        const currentValue = start + (end - start) * easedProgress
+        
+        callback(Math.round(currentValue))
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate)
+        }
+    }
+    
+    requestAnimationFrame(animate)
+}
+
 const startCounterAnimations = () => {
     if (hasAnimated.value) return
 
     hasAnimated.value = true
 
-    animateCounters([
-        {
-            start: 0,
-            end: props.studentsCount,
-            duration: 2500,
-            callback: value => {
-                displayStudentsCount.value = value
-            },
-            easing: 'easeOutCubic',
-        },
-        {
-            start: 0,
-            end: props.successRate,
-            duration: 2200,
-            callback: value => {
-                displaySuccessRate.value = value / 10 // Convert to proper decimal for percentage
-            },
-            easing: 'easeOutCubic',
-        },
-        {
-            start: 0,
-            end: props.testsCount,
-            duration: 2000,
-            callback: value => {
-                displayTestsCount.value = value
-            },
-            easing: 'easeOutCubic',
-        },
-    ])
+    // Animate students count
+    animateCounter(0, props.studentsCount, 2500, (value) => {
+        displayStudentsCount.value = value
+    })
+
+    // Animate success rate
+    animateCounter(0, props.successRate, 2200, (value) => {
+        displaySuccessRate.value = value
+    })
+
+    // Animate tests count
+    animateCounter(0, props.testsCount, 2000, (value) => {
+        displayTestsCount.value = value
+    })
 }
 
 // Lifecycle
@@ -155,8 +185,8 @@ onMounted(() => {
     if (statsContainer.value) {
         // Create intersection observer to trigger animations when in view
         const observer = new IntersectionObserver(
-            entries => {
-                entries.forEach(entry => {
+            (entries) => {
+                entries.forEach((entry) => {
                     if (entry.isIntersecting && !hasAnimated.value) {
                         startCounterAnimations()
                         observer.unobserve(entry.target)
@@ -174,56 +204,124 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.stat-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.8s ease;
-}
-
-.stat-card:hover::before {
-    left: 100%;
-}
-
-.stat-number {
+/* Custom animations for stats */
+.stats-number {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }
 
-@keyframes countUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+/* Enhanced card hover effects */
+.card-modern:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 }
 
-.animate-count-up {
-    animation: countUp 0.6s ease-out;
+/* Icon glow effect on hover */
+.stat-icon div:hover {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+}
+
+/* Staggered animation delays */
+.card-modern:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.card-modern:nth-child(2) {
+    animation-delay: 200ms;
+}
+
+.card-modern:nth-child(3) {
+    animation-delay: 400ms;
+}
+
+/* Glass card enhancements */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .stat-card {
+    .stats-number {
+        font-size: 3rem;
+    }
+    
+    .stat-icon div {
+        width: 4rem;
+        height: 4rem;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .card-modern {
         padding: 1.5rem;
     }
+    
+    .glass-card {
+        padding: 1rem;
+    }
+}
 
-    .stat-number {
-        font-size: 2.5rem;
+/* Loading animation for numbers */
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-number {
+    animation: countUp 0.6s ease-out;
+}
+
+/* Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .card-modern,
+    .glass-card,
+    .stat-icon div {
+        transition: none;
+        animation: none;
+    }
+    
+    .hover-lift:hover,
+    .hover-scale:hover {
+        transform: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .card-modern {
+        background: rgba(31, 41, 55, 0.8);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-card {
+        background: rgba(31, 41, 55, 0.7);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.1);
     }
 }
 </style>

@@ -72,7 +72,7 @@
                 <arc-secondary-button
                     class="mt-2 ltr:mr-2 rtl:ml-2"
                     type="button"
-                    @click.native.prevent="selectNewImage"
+                    @click.prevent="selectNewImage"
                 >
                     {{ __('Select A New Image') }}
                 </arc-secondary-button>

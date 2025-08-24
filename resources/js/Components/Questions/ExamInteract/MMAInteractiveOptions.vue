@@ -6,15 +6,20 @@
         <div class="q-options">
             <div v-for="(option, index) in options" :key="option" class="q-option">
                 <input
-:id="'q_'+question_id+'_option_'+index" v-model="answer" type="checkbox" :value="index+1" :disabled="answer.length >= 3 && answer.indexOf(index+1) === -1"
-                       @change="selectAnswer">
+                    :id="'q_'+question_id+'_option_'+index" 
+                    v-model="answer" 
+                    type="checkbox" 
+                    :value="index+1" 
+                    :disabled="answer.length >= 3 && answer.indexOf(index+1) === -1"
+                    @change="selectAnswer">
                 <label :class="labelClass(index)" class="cursor-pointer" :for="'q_'+question_id+'_option_'+index">
                     <span class="o-id squared"><strong>{{ index+1 }}</strong></span>
                     <span class="o-text" v-html="option"></span>
                 </label>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useMathRender } from '@/composables/useMathRender'

@@ -24,7 +24,7 @@ export default {
                 key = options[0]
             }
 
-            return tt(key, replace)
+            return this.__(key, replace)
         },
     },
 }

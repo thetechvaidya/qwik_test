@@ -17,18 +17,40 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL'),
+        env('APP_URL'),
+        env('CORS_ALLOWED_ORIGINS') ? explode(',', env('CORS_ALLOWED_ORIGINS')) : null,
+        // Development origins (only in non-production)
+        env('APP_ENV') !== 'production' ? 'http://localhost:3000' : null,
+        env('APP_ENV') !== 'production' ? 'http://localhost:8000' : null,
+        env('APP_ENV') !== 'production' ? 'https://localhost:8000' : null,
+        env('APP_ENV') !== 'production' ? 'http://127.0.0.1:8000' : null,
+    ]),
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Accept',
+        'Authorization',
+        'Content-Type',
+        'X-Requested-With',
+        'X-CSRF-TOKEN',
+        'X-Inertia',
+        'X-Inertia-Version',
+        'X-Inertia-Partial-Component',
+        'X-Inertia-Partial-Data',
+        'Cache-Control',
+    ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'X-Inertia-Location',
+    ],
 
-    'max_age' => 0,
+    'max_age' => env('CORS_MAX_AGE', 86400), // 24 hours
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

@@ -351,7 +351,6 @@
                                             <practice-question-card
                                                 :key="question.card"
                                                 :question="question"
-                                                :question="question"
                                                 :sno="index + 1"
                                                 :total-questions="practiceSet.total_questions"
                                             ></practice-question-card>

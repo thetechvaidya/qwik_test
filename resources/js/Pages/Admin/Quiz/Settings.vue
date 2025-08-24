@@ -227,7 +227,7 @@
                                                 :max="100"
                                                 mode="decimal"
                                                 :min-fraction-digits="form.negative_marking_type === 'fixed' ? 2 : null"
-                                                :max-fracion-digits="form.negative_marking_type === 'fixed' ? 2 : null"
+                                                :max-fraction-digits="form.negative_marking_type === 'fixed' ? 2 : null"
                                             />
                                             <div class="form-control-errors">
                                                 <p

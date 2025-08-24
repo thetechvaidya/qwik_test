@@ -2,12 +2,13 @@
     <div :class="[chipClasses, borderClasses]" class="q-chip relative text-sm flex flex-col items-center justify-between border border-b-0 rounded-sm">
         <span :class="[textClasses]" class="q-chip-sno flex justify-center items-center">{{ sno }}</span>
         <span :class="[statusClasses,borderClasses]" class="q-chip-status overflow-hidden text-white absolute bottom-0 h-3 rounded-bl-sm rounded-br-sm"></span>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "QuestionChip",
         props: {
-            sno: Number|String,
+            sno: [Number, String],
             status: {
                 type: String,
                 default: ''

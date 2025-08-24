@@ -42,6 +42,10 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
         RateLimiter::for('login', function (Request $request) {
+            // Bypass rate limiting in demo mode for testing
+            if (config('qwiktest.demo_mode')) {
+                return Limit::none();
+            }
             return Limit::perMinute(5)->by($request->email.$request->ip());
         });
 
@@ -52,10 +56,26 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (Request $request) {
             $user = User::where('email', $request->email)->orWhere('user_name', $request->email)->first();
 
+            // Add debug logging for demo mode
+            if (config('qwiktest.demo_mode')) {
+                \Log::info('Demo mode authentication attempt', [
+                    'email_or_username' => $request->email,
+                    'user_found' => $user ? true : false,
+                    'user_active' => $user ? $user->is_active : null,
+                    'available_users' => User::select('email', 'user_name', 'is_active')->get()->toArray()
+                ]);
+            }
+
             //Check whether user is active, if not throw error
             if($user && !$user->is_active) {
+                \Log::warning('Login attempt with inactive user', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'user_name' => $user->user_name
+                ]);
+                
                 throw ValidationException::withMessages([
-                    Fortify::username() => ['Your login has been disabled. Please contact administrator.'],
+                    Fortify::username() => ['Your account has been disabled. Please contact administrator for assistance.'],
                 ]);
             }
 
@@ -72,8 +92,31 @@ class FortifyServiceProvider extends ServiceProvider
                     }
                 }
 
+                \Log::info('Successful authentication', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'user_name' => $user->user_name,
+                    'demo_mode' => config('qwiktest.demo_mode')
+                ]);
+
                 return $user;
             }
+
+            // Log authentication failure details for debugging
+            if ($user) {
+                \Log::warning('Authentication failed: Password mismatch', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'user_name' => $user->user_name,
+                    'provided_email' => $request->email
+                ]);
+            } else {
+                \Log::warning('Authentication failed: User not found', [
+                    'provided_email' => $request->email,
+                    'demo_mode' => config('qwiktest.demo_mode')
+                ]);
+            }
+            
             return null;
         });
     }

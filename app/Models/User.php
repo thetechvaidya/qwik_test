@@ -25,6 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Filters\QueryFilter;
 use Spatie\SchemalessAttributes\SchemalessAttributesTrait;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements Wallet, MustVerifyEmail
 {
@@ -56,7 +57,11 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
         'password',
         'is_active',
         'preferences',
-        'email_verified_at'
+        'email_verified_at',
+        'role',
+        'is_admin',
+        'failed_login_attempts',
+        'last_failed_login_at',
     ];
 
     protected $hidden = [
@@ -76,7 +81,6 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
     protected $appends = [
         'profile_photo_url',
         'role_id',
-        // 'wallet_balance', // Temporarily disabled to fix infinite loop
     ];
 
     protected $schemalessAttributes = [
@@ -95,6 +99,11 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
     | RELATIONS
     |--------------------------------------------------------------------------
     */
+
+    public function passwordHistories()
+    {
+        return $this->hasMany(PasswordHistory::class);
+    }
 
     public function userGroups()
     {
@@ -161,23 +170,7 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
 
     public function getWalletBalanceAttribute()
     {
-        try {
-            if (!$this->exists) {
-                return 0;
-            }
-            
-            // Ensure we have a wallet first
-            $wallet = $this->wallet;
-            
-            if (!$wallet) {
-                return 0;
-            }
-            
-            return $wallet->balance ?? 0;
-        } catch (\Exception $e) {
-            \Log::warning('Error accessing wallet balance for user ' . $this->id . ': ' . $e->getMessage());
-            return 0;
-        }
+        return $this->wallet()->sum('balance');
     }
 
     public function getRoleIdAttribute()
@@ -191,4 +184,89 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
     |--------------------------------------------------------------------------
     */
 
+    public function setFirstNameAttribute($value)
+    {
+        $this->attributes['first_name'] = strip_tags($value);
+    }
+
+    public function setLastNameAttribute($value)
+    {
+        $this->attributes['last_name'] = strip_tags($value);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PERFORMANCE OPTIMIZATIONS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the user's active subscription with caching for performance.
+     * This method implements query result caching as recommended in the audit.
+     */
+    public function getActiveSubscriptionCached()
+    {
+        return \Cache::remember(
+            "user.{$this->id}.active_subscription",
+            3600, // 1 hour cache
+            fn() => $this->subscriptions()->where('status', 'active')->first()
+        );
+    }
+
+    /**
+     * Get user's exam sessions with eager loading optimization.
+     * This method demonstrates the recommended eager loading approach.
+     */
+    public function getExamSessionsOptimized()
+    {
+        return $this->examSessions()
+            ->with(['exam', 'examAnswers'])
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * Invalidate all of the user's sessions.
+     */
+    public function invalidateAllSessions()
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        \DB::table(config('session.table', 'sessions'))
+            ->where('user_id', $this->id)
+            ->delete();
+    }
+
+    /**
+     * Export user data for GDPR compliance.
+     *
+     * @return array
+     */
+    public function exportData(): array
+    {
+        return [
+            'profile' => $this->toArray(),
+            'subscriptions' => $this->subscriptions,
+            'payments' => $this->payments,
+            'exam_sessions' => $this->examSessions,
+        ];
+    }
+
+    /**
+     * Anonymize user data for GDPR compliance.
+     */
+    public function anonymize()
+    {
+        $this->update([
+            'first_name' => 'Anonymous',
+            'last_name' => 'User',
+            'user_name' => 'anonymous_' . $this->id,
+            'email' => 'anonymous_' . $this->id . '@example.com',
+            'mobile' => null,
+            'password' => \Hash::make(Str::random(32)),
+            'is_active' => false,
+        ]);
+    }
 }

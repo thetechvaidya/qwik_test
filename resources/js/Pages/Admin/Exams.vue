@@ -11,70 +11,78 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :search-options="tableParams.search"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="exams.meta.pagination.total"
-                        :rows="exams.data"
-                        @on-page-change="onPageChange"
-                        :rtl="$page.props.rtl"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
-                        @on-sort-change="onSortChange"
-                        @on-search="onSearch"
+                    <DataTable
+                        :value="data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="10"
+                        :totalRecords="totalRecords"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        v-model:filters="filters"
+                        :globalFilterFields="['code', 'title']"
+                        :loading="tableLoading"
+                        dataKey="id"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false">
+                            <template #body="{ data, index }">
                                 <Tag
+                                    :key="`code-${data.id || index}`"
                                     severity="info"
                                     class="w-full mr-2 mb-2 text-xs cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                                    @click="copyCode(data.code)"
                                 >
                                     <i class="pi pi-copy mr-2" />
-                                    {{ props.row.code }}
+                                    {{ data.code }}
                                 </Tag>
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel }">
+                                <InputText v-model="filterModel.value" type="text" :placeholder="__('Search by code')" />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
+                        <Column field="title" :header="__('Title')" :sortable="false">
+                            <template #filter="{ filterModel }">
+                                <InputText v-model="filterModel.value" type="text" :placeholder="__('Search by title')" />
+                            </template>
+                        </Column>
+
+                        <Column field="category" :header="__('Category')" :sortable="false"></Column>
+                        <Column field="type" :header="__('Type')" :sortable="false"></Column>
+                        <Column field="questions" :header="__('Questions')" :sortable="false"></Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false">
+                            <template #body="slotProps">
                                 <span
                                     :class="[
-                                        props.row.status === 'Published' ? 'badge-success' : 'badge-danger',
+                                        slotProps.data.status === 'Published' ? 'badge-success' : 'badge-danger',
                                         'badge',
                                     ]"
-                                    >{{ __(props.row.status) }}</span
+                                    >{{ __(slotProps.data.status) }}</span
                                 >
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
+                        <Column field="actions" :header="__('Actions')" :sortable="false">
+                            <template #body="{ data, index }">
+                                <ActionsDropdown :key="`actions-${data.id || index}`">
                                     <template #actions>
-                                        <button class="action-item" @click="goToAnalytics(props.row.id)">{{
-                                            __('Analytics')
-                                        }}</button>
-                                        <button class="action-item" @click="goToSchedules(props.row.id)">{{
-                                            __('Schedules')
-                                        }}</button>
-                                        <button class="action-item" @click="editExam(props.row.id)">{{
-                                            __('Edit')
-                                        }}</button>
-                                        <button class="action-item" @click="deleteExam(props.row.id)">{{
-                                            __('Delete')
-                                        }}</button>
+                                        <button class="action-item" @click="goToAnalytics(data.id)">{{ __('Analytics') }}</button>
+                                        <button class="action-item" @click="goToSchedules(data.id)">{{ __('Schedules') }}</button>
+                                        <button class="action-item" @click="editExam(data.id)">{{ __('Edit') }}</button>
+                                        <button class="action-item" @click="deleteExam(data.id)">{{ __('Delete') }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <Link :href="route('exams.create')" class="qt-btn-sm qt-btn-primary">
@@ -83,7 +91,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -96,7 +104,11 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import Tag from 'primevue/tag'
 // Removed unused Button import
@@ -104,83 +116,83 @@ import { useConfirmToast } from '@/composables/useConfirmToast'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import { codeColumn, textFilterColumn, dropdownFilterColumn, statusColumn } from '@/tables/columns'
 
-const props = defineProps({
-    examTypes: Array,
-    exams: Object,
-    statusFilters: Array,
-})
-
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
 
-// Define columns first
-const columns = reactive([
-    codeColumn(__, { width: '11rem', trigger: 'enter' }),
-    textFilterColumn(__, { label: 'Title', field: 'title', placeholderLabel: 'Title', trigger: 'enter' }),
-    textFilterColumn(__, { label: 'Category', field: 'category', placeholderLabel: 'Category', trigger: 'enter' }),
-    dropdownFilterColumn(__, {
-        label: 'Type',
-        field: 'examType',
-        items: props.examTypes.map(t => ({ value: t.id || t.value, text: t.name || t.text })),
-        filterKey: 'exam_type_id',
-    }),
-    { label: __('Sections'), field: 'sections', sortable: false },
-    dropdownFilterColumn(__, {
-        label: 'Visibility',
-        field: 'is_private',
-        items: [
-            { value: 1, text: __('Private') },
-            { value: 0, text: __('Public') },
-        ],
-    }),
-    dropdownFilterColumn(__, {
-        label: 'Status',
-        field: 'status',
-        items: [
-            { value: 'Published', text: __('Published') },
-            { value: 'Draft', text: __('Draft') },
-        ],
-    }),
-    { label: __('Actions'), field: 'actions', sortable: false, width: '200px', tdClass: 'text-center' },
-])
+// Filters
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
 
 // Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange, onSearch, tableParams, serverParams, loadItems } =
-    useServerTable({
-        page: props.exams.meta.pagination.current_page,
-        perPage: props.exams.meta.pagination.per_page,
-        columns: columns,
-        routeName: 'exams.index',
-        resourceKeys: ['exams', 'examTypes', 'statusFilters'],
-        labels: {
-            pagination: {
-                firstLabel: __('First'),
-                lastLabel: __('Last'),
-                nextLabel: __('Next'),
-                prevLabel: __('Prev'),
+const {
+    data,
+    columns: tableColumns,
+    totalRecords,
+    tableLoading,
+    onPage,
+    onSort,
+    onFilter,
+    deleteExam: deleteServerExam,
+} = useServerTable(route('exams.index'), {
+    columns: [
+        {
+            label: 'Code',
+            field: 'code',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by code',
             },
-            search: { placeholder: __('Search') + ' ' + __('records') + '...' },
         },
-        searchDebounceMs: 0, // Align with trigger 'enter'
-        searchTrigger: 'enter',
-        paramMap: {
-            page: 'page',
-            perPage: 'per_page',
-            search: 'search',
-            sortBy: 'sortBy',
-            sortOrder: 'sortOrder',
-            filterPrefix: '',
+        {
+            label: 'Title',
+            field: 'title',
+            filterOptions: {
+                enabled: true,
+                placeholder: 'Search by title',
+            },
         },
-        onError: (_, message) =>
-            toast({
-                severity: 'error',
-                summary: __('Error'),
-                detail: message || __('Failed to load data'),
-                life: 3000,
-            }),
-    })
+        {
+            label: 'Category',
+            field: 'category',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Type',
+            field: 'type',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Questions',
+            field: 'questions',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Status',
+            field: 'status',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+        {
+            label: 'Actions',
+            field: 'actions',
+            filterOptions: {
+                enabled: false,
+            },
+        },
+    ],
+})
 
 const title = computed(() => {
     return __('Exams') + ' - ' + pageProps.general.app_name

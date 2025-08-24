@@ -4,22 +4,28 @@
             Choose multiple options
         </div>
         <div class="q-options">
-            <div v-for="(option, index) in options" :key="option" class="q-option">
+            <div v-for="(sanitizedOption, index) in sanitizedOptions" :key="index" class="q-option">
                 <input
-:id="'q_'+question_id+'_option_'+index" v-model="answer" type="checkbox" :value="index+1" :disabled="(answer.length >= 3 && answer.indexOf(index+1) === -1) || disable"
-                       @change="selectAnswer">
+                    :id="'q_'+question_id+'_option_'+index"
+                    v-model="answer"
+                    type="checkbox"
+                    :value="index+1"
+                    :disabled="(answer.length >= 3 && answer.indexOf(index+1) === -1) || disable"
+                    @change="selectAnswer">
                 <label :class="labelClass(index)" :for="'q_'+question_id+'_option_'+index">
                     <span class="o-id squared"><strong>{{ index+1 }}</strong></span>
-                    <span class="o-text" v-html="option"></span>
+                    <span class="o-text" v-html="sanitizedOption"></span>
                 </label>
             </div>
         </div>
         <div v-if="disable" class="flex gap-2 border border-green-200 bg-green-50 items-center rounded p-4 mt-6">
             <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <h4 class="text-gray-600" v-html="answerText"></h4>
+            <h4 class="text-gray-600" v-html="sanitizeHtml(answerText)"></h4>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
+    import {sanitizeHtml} from "../../../utils/security";
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useMathRender } from '@/composables/useMathRender'
 
@@ -64,9 +70,35 @@
         return ''
     })
 
+    const sanitizedOptions = computed(() => {
+        if (!Array.isArray(props.parentOptions)) {
+            console.error("Invalid options provided. Expected an array.", props.parentOptions);
+            return [];
+        }
+        return props.parentOptions.map(option => {
+            if (typeof option !== 'string') {
+                console.warn("Option is not a string, returning empty string.", option);
+                return sanitizeHtml('');
+            }
+            return sanitizeHtml(option);
+        });
+    });
+
     // Methods
     const selectAnswer = () => {
-        emit('modifyAnswer', answer.value)
+        if (!Array.isArray(answer.value)) {
+            answer.value = [];
+        }
+
+        const validatedAnswer = answer.value
+            .map(val => Number(val))
+            .filter(val => Number.isInteger(val) && val > 0 && val <= options.value.length);
+
+        if (validatedAnswer.length !== answer.value.length) {
+            answer.value = validatedAnswer;
+        }
+
+        emit('modifyAnswer', answer.value);
     }
 
     const labelClass = (index) => {

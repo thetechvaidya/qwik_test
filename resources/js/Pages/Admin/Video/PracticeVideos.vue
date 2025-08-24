@@ -59,18 +59,19 @@ id="topic" v-model="topicFilter" type="text"
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label for="tag" class="pb-2 text-sm font-semibold text-gray-800">By Tag</label>
-                                    <v-select
-id="tag" v-model="tagArray" multiple :options="tags" label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchTags"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                    <Select
+                                        id="tag"
+                                        v-model="tagArray"
+                                        :options="tags"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        placeholder="Select tags"
+                                        filter
+                                        showClear
+                                        multiple
+                                        class="w-full"
+                                        @filter="searchTags"
+                                    />
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label class="mb-3 text-sm font-semibold text-gray-800">{{
@@ -142,7 +143,7 @@ id="tag" v-model="tagArray" multiple :options="tags" label="name"
                                             <AdminPracticeVideoCard :video="video">
                                                 <template #action>
                                                     <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', video.disabled || processing ? 'opacity-25': '']" ]"
+                                                        :class="['qt-btn-sm', qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', video.disabled || processing ? 'opacity-25': '']"
                                                             :disabled="video.disabled"
                                                         @click="qEditFlag ? addVideo(video.id, index) : removeVideo(video.id, index)"
                                                         v-html="qEditFlag ? __('Add') : __('Remove')"
@@ -182,13 +183,27 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import InputText from 'primevue/inputtext'
+import Checkbox from 'primevue/checkbox'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
+import AdminPracticeVideoCard from '@/Components/Cards/AdminPracticeVideoCard.vue'
+import { debounce } from 'lodash'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    subCategory: Object,
+    skill: Object,
+    steps: Array,
+    tags: Array,
+    difficultyLevels: Array,
+    videos: Array,
+    pagination: Object,
+    errors: Object,
 })
 
 // Composables
@@ -204,6 +219,21 @@ const title = computed(() => {
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
+const loading = ref(false)
+const processing = ref(false)
+const videos = ref(props.videos || [])
+const pagination = ref(props.pagination || {})
+const subCategory = ref(props.subCategory || {})
+const skill = ref(props.skill || {})
+const steps = ref(props.steps || [])
+const tags = ref(props.tags || [])
+const difficultyLevels = ref(props.difficultyLevels || [])
+
+// Filters
+const codeFilter = ref('')
+const topicFilter = ref('')
+const tagArray = ref([])
+const difficultyFilter = ref([])
 
 // Composables
 const { copyCode } = useCopy()
@@ -215,12 +245,57 @@ const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServe
     routeName: '', // Add appropriate route name
 })
 
-// Table configuration
-const columns = []
-const options = reactive({
-    enabled: true,
-    mode: 'pages',
-    perPageDropdown: [10, 20, 50, 100],
-    dropdownAllowAll: false,
+// Methods
+const resetFilters = () => {
+    codeFilter.value = ''
+    topicFilter.value = ''
+    tagArray.value = []
+    difficultyFilter.value = []
+}
+
+const filterVideos = () => {
+    loading.value = true
+    // Implementation for filtering videos
+    setTimeout(() => {
+        loading.value = false
+    }, 1000)
+}
+
+const loadMoreVideos = () => {
+    // Implementation for loading more videos
+}
+
+const addVideo = (videoId, index) => {
+    processing.value = true
+    // Implementation for adding video
+    setTimeout(() => {
+        processing.value = false
+    }, 500)
+}
+
+const removeVideo = (videoId, index) => {
+    processing.value = true
+    // Implementation for removing video
+    setTimeout(() => {
+        processing.value = false
+    }, 500)
+}
+
+const searchTags = debounce((event) => {
+    const query = event.value
+    if (query && query.length > 2) {
+        axios.get('/admin/tags/search', {
+            params: { query }
+        }).then(response => {
+            tags.value = response.data
+        }).catch(error => {
+            console.error('Error searching tags:', error)
+        })
+    }
+}, 300)
+
+// Initialize
+onMounted(() => {
+    // Initialize component
 })
 </script>

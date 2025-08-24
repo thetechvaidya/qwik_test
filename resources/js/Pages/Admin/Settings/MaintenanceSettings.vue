@@ -22,14 +22,23 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import ArcSectionBorder from '@/Components/SectionBorder.vue'
+import ClearCacheForm from '@/Pages/Admin/Settings/ClearCacheForm.vue'
+import ExpireSchedulesForm from '@/Pages/Admin/Settings/ExpireSchedulesForm.vue'
+import StorageLinksForm from '@/Pages/Admin/Settings/StorageLinksForm.vue'
+import UpdateAppForm from '@/Pages/Admin/Settings/UpdateAppForm.vue'
+import DebugModeForm from '@/Pages/Admin/Settings/DebugModeForm.vue'
 import { useTranslate } from '@/composables/useTranslate'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    debugMode: {
+        type: Boolean,
+        default: false
+    }
 })
 
 // Composables
@@ -38,7 +47,7 @@ const { props: pageProps } = usePage()
 
 // Reactive variables
 const appVersion = ref(pageProps.general?.app_version || '1.0.0')
-const debugMode = ref(pageProps.settings?.debug_mode || false)
+const debugMode = ref(props.debugMode)
 
 // Computed
 const title = computed(() => {

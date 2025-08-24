@@ -9,11 +9,14 @@
                     <label :for="question_id+'ans_'+(blank-1)">{{ blank }}</label>
                 </div>
                 <input
-:id="question_id+'ans_'+(blank-1)" v-model="answer[blank-1]" :placeholder="'Type your answer for blank '+ blank"
-                       @change="selectAnswer"/>
+                    :id="question_id+'ans_'+(blank-1)" 
+                    v-model="answer[blank-1]" 
+                    :placeholder="'Type your answer for blank '+ blank"
+                    @change="selectAnswer"/>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useMathRender } from '@/composables/useMathRender'

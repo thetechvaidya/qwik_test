@@ -172,7 +172,6 @@
                             v-if="questionNavigation.navigation.viewMode !== 'chip'"
                             :question="question"
                             :sno="index + 1"
-                            :sno="index + 1"
                             :is-correct="question.is_correct"
                             :status="question.status"
                             :active="sessionManager.session.current_question === index"

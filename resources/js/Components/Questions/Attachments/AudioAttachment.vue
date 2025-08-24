@@ -17,7 +17,8 @@
                 </audio>
             </vue-plyr>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import VuePlyr from 'vue-plyr';
 

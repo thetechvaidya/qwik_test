@@ -1,4 +1,6 @@
 import { inject } from 'vue'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 
 /**
  * Lightweight confirm/toast helpers with PrimeVue official composables.
@@ -11,23 +13,23 @@ import { inject } from 'vue'
  *   await confirm({ header, message, accept: () => doAction(), reject: () => {} })
  * toast({ severity, summary, detail, life })
  */
-export async function useConfirmToast() {
-    // Try PrimeVue official composables first, then fall back to services injection
+export function useConfirmToast() {
+    // Use PrimeVue composables directly
     let confirmService, toastService
 
     try {
-        // Import PrimeVue composables dynamically to avoid build errors if not available
-        const [{ useConfirm }, { useToast }] = await Promise.all([
-            import('primevue/useconfirm'),
-            import('primevue/usetoast'),
-        ])
-
         confirmService = useConfirm()
         toastService = useToast()
     } catch (error) {
         // Fall back to service injection if composables are not available
-        confirmService = inject('confirm') || (typeof window !== 'undefined' ? window.$confirm : null)
-        toastService = inject('toast') || (typeof window !== 'undefined' ? window.$toast : null)
+        try {
+            confirmService = inject('confirm') || (typeof window !== 'undefined' ? window.$confirm : null)
+            toastService = inject('toast') || (typeof window !== 'undefined' ? window.$toast : null)
+        } catch (injectError) {
+            console.warn('Could not access confirm/toast services:', injectError)
+            confirmService = null
+            toastService = null
+        }
     }
 
     const confirm = async (options = {}) => {

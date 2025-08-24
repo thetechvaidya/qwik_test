@@ -155,7 +155,7 @@
                         <!--Rewards Badge-->
                         <rewards-badge
                             :text-color="'text-primary'"
-                            :points="$page.props.user.wallet_balance"
+                            :points="$page.props.user?.wallet_balance ?? 0"
                         ></rewards-badge>
 
                         <!--Notification Button-->
@@ -191,8 +191,8 @@
                                     >
                                         <img
                                             class="h-8 w-8 rounded-full object-cover"
-                                            :src="$page.props.user.profile_photo_url"
-                                            :alt="$page.props.user.first_name"
+                                            :src="$page.props.user?.profile_photo_url"
+                                            :alt="$page.props.user?.first_name"
                                         />
                                     </button>
 
@@ -201,7 +201,7 @@
                                             type="button"
                                             class="inline-flex items-center px-3 py-2 border border-transparent leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                         >
-                                            {{ $page.props.user.first_name }}
+                                            {{ $page.props.user?.first_name }}
 
                                             <svg
                                                 class="ml-2 -mr-0.5 h-4 w-4"
@@ -220,9 +220,9 @@
                                 </template>
                                 <template #content>
                                     <!--Account Management-->
-                                    <div class="block px-4 py-2 text-xs text-gray-400">
-                                        {{ $page.props.user.first_name }} {{ $page.props.user.last_name }}
-                                    </div>
+                                <div class="block px-4 py-2 text-xs text-gray-400">
+                                    {{ $page.props.user?.first_name }} {{ $page.props.user?.last_name }}
+                                </div>
 
                                     <arc-dropdown-link :href="route('profile.show')">
                                         {{ __('Profile') }}
@@ -331,6 +331,10 @@ export default {
     },
 
     methods: {
+        __(key) {
+            return this.$page.props.translations?.[key] || key
+        },
+        
         switchToTeam(team) {
             router.put(
                 route('current-team.update'),

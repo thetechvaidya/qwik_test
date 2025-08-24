@@ -23,7 +23,8 @@
                 </div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     import ToggleSwitch from 'primevue/toggleswitch';
     import InputNumber from 'primevue/inputnumber';

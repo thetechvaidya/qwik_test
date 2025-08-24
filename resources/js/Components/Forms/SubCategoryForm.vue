@@ -1,10 +1,5 @@
 <template>
-    <div v-model="form.category_id"class="overflo                <v-select id=" cat" :options="categories" :reduce="cat => cat.id" label="name" :dir="$page.props.rtl ? 'rtl' : 'ltr'">
-                    <template #no-options="{ search, searching }">
-                        <span v-if="searching">{{ __('No results were found for this search') }}.</span>
-                        <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                    </template>
-                </v-select>to h-screen px-2">
+    <div class="overflow-auto h-screen px-2">
         <div class="bg-gray-100 py-4 lg:py-4 rounded">
             <div class="container px-6 mx-auto flex ltr:flex-row rtl:flex-row-reverse">
                 <div>
@@ -25,12 +20,12 @@
             <div class="w-full flex flex-col mb-6">
                 <label for="name" class="pb-2 font-semibold text-gray-800">{{ __('Sub Category') }} {{ __('Name') }}</label>
                 <InputText
-id="name"
-                           v-model="form.name"
-                           type="text"
-                           placeholder="Enter Category Name" aria-describedby="name-help"
-                           :class="[errors.name ? 'p-invalid' : '']"
-
+                    id="name"
+                    v-model="form.name"
+                    type="text"
+                    placeholder="Enter Category Name" 
+                    aria-describedby="name-help"
+                    :class="[errors.name ? 'p-invalid' : '']"
                 />
                 <small v-if="errors.name" id="name-help" class="p-invalid">{{ errors.name }}</small>
             </div>
@@ -55,7 +50,6 @@ id="name"
                         <span v-if="searching">{{ __('No results were found for this search') }}.</span>
                         <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
                     </template>
-                </v-select>
                 </v-select>
                 <small v-if="errors.sub_category_type_id" id="type-help" class="p-invalid">{{ errors.sub_category_type_id }}</small>
             </div>
@@ -101,7 +95,8 @@ id="name"
                 <Button type="submit" :label="editFlag ? __('Update') : __('Create')" />
             </div>
         </form>
-    </template>
+    </div>
+</template>
 <script>
     import InputText from 'primevue/inputtext';
     import Button from 'primevue/button';

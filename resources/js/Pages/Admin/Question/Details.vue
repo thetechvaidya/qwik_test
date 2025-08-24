@@ -26,22 +26,18 @@
                                     <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{
                                         __('Skill')
                                     }}</label>
-                                    <v-select
+                                    <Select
                                         id="skill_id"
                                         v-model="v$.form.skill_id.$model"
                                         :options="skills"
-                                        :reduce="skill => skill.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchSkills"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                        optionValue="id"
+                                        optionLabel="name"
+                                        :placeholder="__('Select Skill')"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        @filter="searchSkills"
+                                    />
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.skill_id.$error && v$.form.skill_id.required?.$invalid"
@@ -179,16 +175,17 @@ import { required } from '@vuelidate/validators'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import TiptapEditor from '@/Components/TiptapEditor'
 import Button from 'primevue/button'
-import HorizontalStepper from '@/Components/Stepper/HorizontalStepper'
-import MSAOptions from '@/Components/Questions/MSAOptions'
-import MMAOptions from '@/Components/Questions/MMAOptions'
-import ORDOptions from '@/Components/Questions/ORDOptions'
-import MTFOptions from '@/Components/Questions/MTFOptions'
-import SAQOptions from '@/Components/Questions/SAQOptions'
-import LAQOptions from '@/Components/Questions/LAQOptions'
-import FIBOptions from '@/Components/Questions/FIBOptions'
-import EMQOptions from '@/Components/Questions/MTFOptions' // EMQ uses MTF component for now
-import TFOptions from '@/Components/Questions/TFOptions' // Corrected import path
+import Select from 'primevue/select'
+import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
+import MSAOptions from '@/Components/Questions/MSAOptions.vue'
+import MMAOptions from '@/Components/Questions/MMAOptions.vue'
+import ORDOptions from '@/Components/Questions/ORDOptions.vue'
+import MTFOptions from '@/Components/Questions/MTFOptions.vue'
+import SAQOptions from '@/Components/Questions/SAQOptions.vue'
+import LAQOptions from '@/Components/Questions/LAQOptions.vue'
+import FIBOptions from '@/Components/Questions/FIBOptions.vue'
+import EMQOptions from '@/Components/Questions/MTFOptions.vue' // EMQ uses MTF component for now
+import TFOptions from '@/Components/Questions/TOFOptions.vue'
 import Preferences from '@/Components/Questions/SAQPreferences.vue'
 import axios from 'axios'
 

@@ -2,6 +2,7 @@
     <SplitButton class="p-button-success" label="Manage" icon="pi pi-cog" :model="items"></SplitButton>
 </template>
 <script>
+import { router } from '@inertiajs/vue3'
 import SplitButton from 'primevue/splitbutton'
 export default {
     name: 'ExamNavigation',
@@ -9,8 +10,8 @@ export default {
         SplitButton,
     },
     props: {
-        currentRoute: '',
-        examId: '',
+        currentRoute: String,
+        examId: String,
     },
     data() {
         return {
@@ -18,37 +19,37 @@ export default {
                 {
                     label: 'Exam Dashboard',
                     command: () => {
-                        this.$inertia.get(route('exams.show', { exam: this.examId }))
+                        router.get(route('exams.show', { exam: this.examId }))
                     },
                 },
                 {
                     label: 'Edit Details',
                     command: () => {
-                        this.$inertia.get(route('exams.edit', { exam: this.examId }))
+                        router.get(route('exams.edit', { exam: this.examId }))
                     },
                 },
                 {
                     label: 'Sections',
                     command: () => {
-                        this.$inertia.get(route('exams.sections.index', { exam: this.examId }))
+                        router.get(route('exams.sections.index', { exam: this.examId }))
                     },
                 },
                 {
                     label: 'Questions',
                     command: () => {
-                        this.$inertia.get(route('exams.questions', { exam: this.examId }))
+                        router.get(route('exams.questions', { exam: this.examId }))
                     },
                 },
                 {
                     label: 'Settings',
                     command: () => {
-                        this.$inertia.get(route('exams.settings', { exam: this.examId }))
+                        router.get(route('exams.settings', { exam: this.examId }))
                     },
                 },
                 {
                     label: 'Schedules',
                     command: () => {
-                        this.$inertia.get(route('exams.sections.index', { exam: this.examId }))
+                        router.get(route('exams.sections.index', { exam: this.examId }))
                     },
                 },
             ],

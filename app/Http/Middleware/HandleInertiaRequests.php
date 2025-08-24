@@ -39,7 +39,28 @@ class HandleInertiaRequests extends Middleware
     {
         $settings = app(SiteSettings::class);
         return array_merge(parent::share($request), [
-            'general' => config('qwiktest.version') == "1.4.1" ? $settings->toArray() : [],
+            'auth' => [
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'role_id' => $request->user()->hasRole('admin') ? 'admin' : 
+                               ($request->user()->hasRole('instructor') ? 'instructor' : 
+                               ($request->user()->hasRole('student') ? 'student' : 'guest')),
+                    'profile_photo_url' => $request->user()->profile_photo_url,
+                ] : null,
+            ],
+            'user' => $request->user() ? [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+                'role_id' => $request->user()->hasRole('admin') ? 'admin' : 
+                           ($request->user()->hasRole('instructor') ? 'instructor' : 
+                           ($request->user()->hasRole('student') ? 'student' : 'guest')),
+                'profile_photo_url' => $request->user()->profile_photo_url,
+            ] : null,
+            'isAdmin' => $request->user() ? $request->user()->hasRole('admin') : false,
+            'general' => $settings->toArray(),
             'canLogin' => \Route::has('login'),
             'canResetPassword' => \Route::has('password.request'),
             'isDemo' => config('qwiktest.demo_mode'),

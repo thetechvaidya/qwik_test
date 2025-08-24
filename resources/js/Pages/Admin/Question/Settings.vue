@@ -3,7 +3,7 @@
     <AdminLayout>
         <div class="container mx-auto pt-4 px-4 sm:px-6 lg:px-8">
             <div
-                class="w-full bg-white dark:bg-gray-800 py-5 flex flex-col xl:flex-row items-start justify-center justify-between px-5 xl:px-10 shadow rounded-t"
+                class="w-full bg-white dark:bg-gray-800 py-5 flex flex-col xl:flex-row items-start xl:items-center justify-between px-5 xl:px-10 shadow rounded-t"
             >
                 <div class="mb-4 sm:mb-0 md:mb-0 lg:mb-0 xl:mb-0 lg:w-1/2">
                     <h2 class="text-gray-800 dark:text-gray-100 text-lg font-bold"
@@ -26,22 +26,18 @@
                                     <label for="skill_id" class="pb-2 text-sm font-semibold text-gray-800">{{
                                         __('Skill')
                                     }}</label>
-                                    <v-select
+                                    <Select
                                         id="skill_id"
                                         v-model="v$.form.skill_id.$model"
                                         :options="skills"
-                                        :reduce="skill => skill.id"
-                                        label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchSkills"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                        optionValue="id"
+                                        optionLabel="name"
+                                        placeholder="Select a skill"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        @filter="searchSkills"
+                                    />
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.skill_id.$error && !v$.form.skill_id.required"
@@ -55,65 +51,50 @@
                                     <label for="topic_id" class="pb-2 text-sm font-semibold text-gray-800">{{
                                         __('Topic')
                                     }}</label>
-                                    <v-select
+                                    <Select
                                         id="topic_id"
                                         v-model="form.topic_id"
                                         :options="topics"
-                                        :reduce="topic => topic.id"
-                                        label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchTopics"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                        optionValue="id"
+                                        optionLabel="name"
+                                        placeholder="Select a topic"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        @filter="searchTopics"
+                                    />
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
                                     <label for="tag" class="pb-2 text-sm font-semibold text-gray-800">{{
                                         __('Tags')
                                     }}</label>
-                                    <v-select
+                                    <MultiSelect
                                         id="tag"
                                         v-model="form.tags"
-                                        taggable
-                                        multiple
                                         :options="tags"
-                                        :reduce="t => t.name"
-                                        label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                        optionValue="name"
+                                        optionLabel="name"
+                                        placeholder="Select tags"
+                                        filter
+                                        class="w-full"
+                                    />
                                     <small v-if="errors.tags" id="tag-help" class="p-invalid">{{ errors.tags }}</small>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
                                     <label class="pb-2 text-sm font-semibold text-gray-800">{{
                                         __('Difficulty Level')
                                     }}</label>
-                                    <v-select
+                                    <Select
                                         id="difficulty_level"
                                         v-model="form.difficulty_level_id"
                                         :options="difficultyLevels"
-                                        :reduce="dl => dl.id"
-                                        label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                        optionValue="id"
+                                        optionLabel="name"
+                                        placeholder="Select difficulty level"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                    />
                                     <div class="form-control-errors">
                                         <p
                                             v-if="
@@ -205,6 +186,11 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
+import InputNumber from 'primevue/inputnumber'
+import ToggleSwitch from 'primevue/toggleswitch'
+import Button from 'primevue/button'
 
 // Props
 const props = defineProps({

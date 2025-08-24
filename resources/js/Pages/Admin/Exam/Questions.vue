@@ -130,18 +130,23 @@ id="topic" v-model="topicFilter" type="text"
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label for="tag" class="pb-2 text-sm font-semibold text-gray-800">By Tag</label>
-                                    <v-select
-id="tag" v-model="tagArray" multiple :options="tags" label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchTags"
+                                    <Select
+                                        id="tag"
+                                        v-model="tagArray"
+                                        :options="tags"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        placeholder="Select tags"
+                                        filter
+                                        showClear
+                                        multiple
+                                        class="w-full"
+                                        @filter="searchTags"
                                     >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                                        <template #empty>
+                                            <span>{{ __('No results were found for this search') }}</span>
                                         </template>
-                                    </v-select>
+                                    </Select>
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label class="mb-3 text-sm font-semibold text-gray-800">{{
@@ -200,8 +205,9 @@ id="tag" v-model="tagArray" multiple :options="tags" label="name"
                                                 <MSAPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -212,8 +218,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <MMAPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -224,8 +231,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <TOFPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -236,8 +244,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <FIBPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -248,8 +257,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <MTFPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -260,8 +270,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <ORDPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -272,8 +283,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <SAQPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -322,13 +334,29 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import InputText from 'primevue/inputtext'
+import Checkbox from 'primevue/checkbox'
+import Select from 'primevue/select'
+import HorizontalStepper from '@/Components/HorizontalStepper.vue'
+import AdminQuestionShimmer from '@/Components/AdminQuestionShimmer.vue'
+import MSAPreview from '@/Components/MSAPreview.vue'
+import MTFPreview from '@/Components/MTFPreview.vue'
+import ORDPreview from '@/Components/ORDPreview.vue'
+import SAQPreview from '@/Components/SAQPreview.vue'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
+import { debounce } from 'lodash'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    exam: Object,
+    sections: Array,
+    questionTypes: Array,
+    difficultyLevels: Array,
+    tags: Array,
+    steps: Array
 })
 
 // Composables
@@ -341,26 +369,121 @@ const title = computed(() => {
 })
 
 // Reactive data
-const createForm = ref(false)
-const editForm = ref(false)
-const currentId = ref(null)
+const loading = ref(false)
+const processing = ref(false)
+const qEditFlag = ref(false)
+const editFlag = ref(!!props.exam)
+const exam = ref(props.exam || {})
+const steps = ref(props.steps || [])
+const sections = ref(props.sections || [])
+const questions = ref([])
+const pagination = ref({})
+const currentSection = ref(null)
+const currentSectionId = ref(null)
+const questionTypes = ref(props.questionTypes || [])
+const difficultyLevels = ref(props.difficultyLevels || [])
+const tags = ref(props.tags || [])
+
+// Filter data
+const codeFilter = ref('')
+const typeFilter = ref([])
+const skillFilter = ref('')
+const topicFilter = ref('')
+const tagArray = ref([])
+const difficultyFilter = ref([])
 
 // Composables
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
 
-// Server table composable
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServerTable({
-    resourceKeys: [], // Add appropriate resource keys
-    routeName: '', // Add appropriate route name
-})
+// Methods
+const viewQuestions = (section) => {
+    currentSection.value = section
+    currentSectionId.value = section.id
+    qEditFlag.value = false
+    loadQuestions()
+}
 
-// Table configuration
-const columns = []
-const options = reactive({
-    enabled: true,
-    mode: 'pages',
-    perPageDropdown: [10, 20, 50, 100],
-    dropdownAllowAll: false,
+const editQuestions = (section) => {
+    currentSection.value = section
+    currentSectionId.value = section.id
+    qEditFlag.value = true
+    loadQuestions()
+}
+
+const resetFilters = () => {
+    codeFilter.value = ''
+    typeFilter.value = []
+    skillFilter.value = ''
+    topicFilter.value = ''
+    tagArray.value = []
+    difficultyFilter.value = []
+    filterQuestions()
+}
+
+const filterQuestions = () => {
+    loadQuestions()
+}
+
+const loadQuestions = () => {
+    if (!currentSection.value) return
+    
+    loading.value = true
+    const params = {
+        section_id: currentSection.value.id,
+        code: codeFilter.value,
+        type: typeFilter.value,
+        skill: skillFilter.value,
+        topic: topicFilter.value,
+        tags: tagArray.value,
+        difficulty: difficultyFilter.value,
+        edit_flag: qEditFlag.value
+    }
+    
+    // Add your API call here
+    // axios.get('/admin/exam/questions', { params })
+    //     .then(response => {
+    //         questions.value = response.data.data
+    //         pagination.value = response.data.pagination
+    //     })
+    //     .finally(() => {
+    //         loading.value = false
+    //     })
+    
+    loading.value = false
+}
+
+const loadMoreQuestions = () => {
+    // Add pagination logic here
+}
+
+const addQuestion = (questionId, index) => {
+    processing.value = true
+    // Add question to exam logic
+    processing.value = false
+}
+
+const removeQuestion = (questionId, index) => {
+    processing.value = true
+    // Remove question from exam logic
+    processing.value = false
+}
+
+const searchTags = debounce((event) => {
+    const query = event.value || ''
+    if (query.length < 2) return
+    
+    axios.get('/admin/tags/search', {
+        params: { q: query }
+    }).then(response => {
+        tags.value = response.data
+    }).catch(error => {
+        console.error('Error searching tags:', error)
+    })
+}, 300)
+
+// Initialize on mount
+onMounted(() => {
+    // Initialize component
 })
 </script>

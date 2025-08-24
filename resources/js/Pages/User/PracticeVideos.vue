@@ -20,7 +20,7 @@
                         <li><practice-set-card-shimmer></practice-set-card-shimmer></li>
                     </ul>
                     <ul v-else role="list" class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                        <li v-for="(video, index) in videos">
+                        <li v-for="(video, index) in videos" :key="video.id || video.code || index">
                             <button
                                 v-if="video.paid && !subscription"
                                 class="w-full focus:outline-none"

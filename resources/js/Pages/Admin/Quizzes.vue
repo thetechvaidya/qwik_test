@@ -13,69 +13,132 @@
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
                 <div class="card-body">
-                    <vue-good-table
-                        mode="remote"
-                        :search-options="tableParams.search"
-                        :pagination-options="tableParams.pagination"
-                        :columns="columns"
-                        :total-rows="quizzes.meta.pagination.total"
-                        :rows="quizzes.data"
-                        @on-page-change="onPageChange"
-                        :rtl="$page.props.rtl"
-                        @on-column-filter="onColumnFilter"
-                        @on-per-page-change="onPerPageChange"
-                        @on-sort-change="onSortChange"
-                        @on-search="onSearch"
+                    <DataTable
+                        :value="quizzes.data"
+                        :lazy="true"
+                        :paginator="true"
+                        :rows="quizzes.meta.pagination.per_page"
+                        :totalRecords="quizzes.meta.pagination.total"
+                        :rowsPerPageOptions="[10, 20, 50, 100]"
+                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                        sortMode="single"
+                        filterDisplay="row"
+                        :globalFilterFields="['code', 'title']"
+                        :loading="tableLoading"
+                        v-model:filters="filters"
+                        dataKey="id"
+                        @page="onPage"
+                        @sort="onSort"
+                        @filter="onFilter"
                     >
-                        <template #table-row="props">
-                            <!-- Code Column -->
-                            <div v-if="props.column.field === 'code'">
+                        <Column field="code" :header="__('Code')" :sortable="false" filterField="code">
+                            <template #body="{ data, index }">
                                 <Tag
+                                    :key="`code-${data.id || index}`"
                                     class="w-full p-mr-2 mb-2 text-xs cursor-pointer"
-                                    @click="copyCode(props.row.code)"
+                                    @click="copyCode(data.code)"
                                 >
                                     <i class="pi pi-copy mr-2" />
-                                    {{ props.row.code }}
+                                    {{ data.code }}
                                 </Tag>
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Code..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Status Column -->
-                            <div v-else-if="props.column.field === 'status'">
+                        <Column field="title" :header="__('Title')" :sortable="true" filterField="title">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Title..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="category" :header="__('Category')" :sortable="false" filterField="category">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText
+                                    v-model="filterModel.value"
+                                    type="text"
+                                    @keydown.enter="filterCallback()"
+                                    placeholder="Search Category..."
+                                    class="p-column-filter"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="quizType" :header="__('Type')" :sortable="false" filterField="quizType">
+                            <template #filter="{ filterModel, filterCallback }">
+                                <Select
+                                    v-model="filterModel.value"
+                                    :options="(props.quizTypes || []).map(t => ({ value: t.id || t.value, text: t.name || t.text }))"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    placeholder="Select Type"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
+                        </Column>
+
+                        <Column field="questions" :header="__('Questions')" :sortable="false">
+                        </Column>
+
+                        <Column field="status" :header="__('Status')" :sortable="false" filterField="status">
+                            <template #body="{ data }">
                                 <span
                                     :class="[
-                                        props.row.status === 'Published' ? 'badge-success' : 'badge-danger',
+                                        data.status === 'Published' ? 'badge-success' : 'badge-danger',
                                         'badge',
                                     ]"
-                                    >{{ __(props.row.status) }}</span
+                                    >{{ __(data.status) }}</span
                                 >
-                            </div>
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <Select
+                                    v-model="filterModel.value"
+                                    :options="[
+                                        { value: 'Published', text: __('Published') },
+                                        { value: 'Draft', text: __('Draft') }
+                                    ]"
+                                    optionLabel="text"
+                                    optionValue="value"
+                                    placeholder="Select Status"
+                                    class="p-column-filter"
+                                    showClear
+                                    @change="filterCallback()"
+                                />
+                            </template>
+                        </Column>
 
-                            <!-- Actions Column -->
-                            <div v-else-if="props.column.field === 'actions'">
-                                <ActionsDropdown>
+                        <Column :header="__('Actions')" :sortable="false">
+                            <template #body="{ data, index }">
+                                <ActionsDropdown :key="`actions-${data.id || index}`">
                                     <template #actions>
-                                        <button class="action-item" @click="goToAnalytics(props.row.id)">{{
-                                            __('Analytics')
-                                        }}</button>
-                                        <button class="action-item" @click="goToSchedules(props.row.id)">{{
-                                            __('Schedules')
-                                        }}</button>
-                                        <button class="action-item" @click="editQuiz(props.row.id)">{{
-                                            __('Edit')
-                                        }}</button>
-                                        <button class="action-item" @click="deleteQuiz(props.row.id)">{{
+                                        <button class="action-item" @click="editQuiz(data.id)">{{ __('Edit') }}</button>
+                                        <button class="action-item" @click="goToSchedules(data.id)">{{ __('Schedules') }}</button>
+                                        <button class="action-item" @click="goToAnalytics(data.id)">{{ __('Analytics') }}</button>
+                                        <button class="action-item" @click="deleteQuiz(data.id)">{{ 
                                             __('Delete')
                                         }}</button>
                                     </template>
                                 </ActionsDropdown>
-                            </div>
+                            </template>
+                        </Column>
 
-                            <!-- Remaining Columns -->
-                            <span v-else>
-                                {{ props.formattedRow[props.column.field] }}
-                            </span>
-                        </template>
-                        <template #emptystate>
+                        <template #empty>
                             <NoDataTable>
                                 <template #action>
                                     <Link :href="route('quizzes.create')" class="qt-btn-sm qt-btn-primary">
@@ -84,7 +147,7 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </vue-good-table>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -99,10 +162,15 @@ import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
-import { codeColumn, textFilterColumn, dropdownFilterColumn } from '@/tables/columns'
+import { codeColumn, textFilterColumn, dropdownFilterColumn, statusColumn } from '@/tables/columns'
+import { FilterMatchMode } from '@primevue/core/api'
 
 const props = defineProps({
     quizzes: Object,
@@ -113,6 +181,15 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
+
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    category: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    quizType: { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS }
+})
 
 // Define columns using shared helpers
 const columns = reactive([
@@ -137,7 +214,7 @@ const columns = reactive([
 ])
 
 // Server table configuration
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange, onSearch, tableParams, loadItems } =
+const { onPage, onSort, onFilter, tableLoading, loadItems } =
     useServerTable({
         page: props.quizzes.meta.pagination.current_page,
         perPage: props.quizzes.meta.pagination.per_page,

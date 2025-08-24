@@ -20,10 +20,11 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
+import EmailSettingsForm from '@/Pages/Admin/Settings/EmailSettingsForm.vue'
 
 // Props
 const props = defineProps({
-    // Add settings props based on original file
+    emailSettings: Object,
 })
 
 // Composables

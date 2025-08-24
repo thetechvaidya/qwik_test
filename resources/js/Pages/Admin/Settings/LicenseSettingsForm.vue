@@ -31,11 +31,17 @@
     </arc-form-section>
 </template>
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
+import ArcTextArea from '@/Components/TextArea.vue'
 
 // Props
 const props = defineProps({
@@ -52,13 +58,21 @@ const title = computed(() => {
     return __('Settings/ License Settings Form') + ' - ' + pageProps.general.app_name
 })
 
+const version = computed(() => {
+    return __('Activation Key (Version: ') + (pageProps.general?.app_version || '1.0.0') + ')'
+})
+
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    purchase_code: props.settings?.purchase_code || '',
+    activation_key: props.settings?.activation_key || '',
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.license.update'), {
+        errorBag: 'updateLicenseSettings',
+        preserveScroll: true,
+    })
 }
 </script>

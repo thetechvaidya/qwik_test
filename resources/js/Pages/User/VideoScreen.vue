@@ -169,98 +169,97 @@ export default {
             loading: true,
             submitting: false,
             current_video: this.videoIndex,
+        };
+    },
+    computed: {
+        title() {
+            return this.skill.name + ' '+ this.__('Videos') +' - ' + this.$page.props.general.app_name;
+        },
+        appUrl() {
+            return this.$page.props.appUrl;
+        },
+        videoTitle() {
+            return this.videos.length > 0 ? this.__('Video')+' '+this.getVideoNo(this.current_video) + ': ' + this.videos[this.current_video].title : '';
         }
     },
-        computed: {
-            title() {
-                return this.skill.name + ' '+ this.__('Videos') +' - ' + this.$page.props.general.app_name;
-            },
-            appUrl() {
-                return this.$page.props.appUrl;
-            },
-            videoTitle() {
-                return this.videos.length > 0 ? this.__('Video')+' '+this.getVideoNo(this.current_video) + ': ' + this.videos[this.current_video].title : '';
+    methods: {
+        exitVideos() {
+            window.history.back();
+        },
+        prevVideo() {
+            this.stopPlayer();
+            if (this.current_video !== 0) {
+                this.current_video--;
+            } else {
+                this.prevPage();
             }
         },
-        methods: {
-            exitVideos() {
-                window.history.back();
-            },
-            prevVideo() {
-                this.stopPlayer();
-                if (this.current_video !== 0) {
-                    this.current_video--;
-                } else {
-                    this.prevPage();
-                }
-            },
-            nextVideo() {
-                this.stopPlayer();
-                if (this.current_video < this.videos.length - 1) {
-                    this.current_video++;
-                } else {
-                    if (this.current_video < this.video.total_videos - 1) {
-                        this.nextPage();
-                    }
-                }
-            },
-            jumpToVideo(videoID) {
-                this.stopPlayer();
-                this.current_video = videoID;
-            },
-            prevPage() {
-                if (this.pagination.current_page !== 1) {
-                    this.current_video = 0;
-                    this.fetchVideos(this.pagination.current_page - 1);
-                }
-            },
-            nextPage() {
-                if (this.pagination.current_page < this.pagination.total_pages) {
-                    this.current_video = 0;
-                    this.fetchVideos(this.pagination.current_page + 1);
-                }
-            },
-            fetchVideos(page) {
-                let _this = this;
-                _this.loading = true;
-                axios.get(route('fetch_practice_videos', {
-                    category: this.category.slug,
-                    section: this.section.slug,
-                    skill: this.skill.slug,
-                    page: page,
-                    withBody: true
-                }))
-                    .then(function (response) {
-                        let data = response.data;
-                        _this.videos = data.videos;
-                        _this.pagination = data.pagination;
-                    })
-                    .catch(function (error) {
-                        _this.loading = false;
-                    })
-                    .then(function () {
-                        _this.loading = false;
-                    });
-            },
-            getVideoNo(index) {
-                return (index + 1) + (this.pagination.per_page * (this.pagination.current_page - 1));
-            },
-            stopPlayer() {
-                let id = 'player_'+this.videos[this.current_video].code;
-                if(this.$refs[id][0].$refs.player) {
-                    this.$refs[id][0].$refs.player.player.stop();
+        nextVideo() {
+            this.stopPlayer();
+            if (this.current_video < this.videos.length - 1) {
+                this.current_video++;
+            } else {
+                if (this.current_video < this.video.total_videos - 1) {
+                    this.nextPage();
                 }
             }
         },
-        metaInfo() {
-            return {
-                title: this.title
+        jumpToVideo(videoID) {
+            this.stopPlayer();
+            this.current_video = videoID;
+        },
+        prevPage() {
+            if (this.pagination.current_page !== 1) {
+                this.current_video = 0;
+                this.fetchVideos(this.pagination.current_page - 1);
             }
         },
+        nextPage() {
+            if (this.pagination.current_page < this.pagination.total_pages) {
+                this.current_video = 0;
+                this.fetchVideos(this.pagination.current_page + 1);
+            }
+        },
+        fetchVideos(page) {
+            let _this = this;
+            _this.loading = true;
+            axios.get(route('fetch_practice_videos', {
+                category: this.category.slug,
+                section: this.section.slug,
+                skill: this.skill.slug,
+                page: page,
+                withBody: true
+            }))
+                .then(function (response) {
+                    let data = response.data;
+                    _this.videos = data.videos;
+                    _this.pagination = data.pagination;
+                })
+                .catch(function (error) {
+                    _this.loading = false;
+                })
+                .then(function () {
+                    _this.loading = false;
+                });
+        },
+        getVideoNo(index) {
+            return (index + 1) + (this.pagination.per_page * (this.pagination.current_page - 1));
+        },
+        stopPlayer() {
+            let id = 'player_'+this.videos[this.current_video].code;
+            if(this.$refs[id][0].$refs.player) {
+                this.$refs[id][0].$refs.player.player.stop();
+            }
+        }
+    },
+    metaInfo() {
+        return {
+            title: this.title
+        };
     },
     mounted() {
-        document.addEventListener('contextmenu', event => event.preventDefault())
-        this.fetchVideos(this.currentPage)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        this.fetchVideos(this.currentPage);
     },
 }
 </script>

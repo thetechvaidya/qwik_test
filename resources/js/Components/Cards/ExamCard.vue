@@ -20,13 +20,14 @@
             </div>
             <div class="w-full flex items-center justify-between mt-4">
                 <div class="flex items-center py-2">
-                    <div class="w-2 h-2 bg-yellow-600 rounded-full">
+                    <div class="w-2 h-2 bg-yellow-600 rounded-full"></div>
                     <p class="font-mono text-sm leading-3 text-yellow-600 ltr:ml-1 rtl:mr-1">{{ exam.type }}</p>
                 </div>
                 <slot name="action"></slot>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'ExamCard',

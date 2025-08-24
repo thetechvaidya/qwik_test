@@ -8,48 +8,62 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <vue-good-table
-mode="remote" @on-page-change="onPageChange" @on-column-filter="onColumnFilter" :pagination-options="options"
-                                @on-per-page-change="onPerPageChange" :columns="columns"
-                    :total-rows="quizSessions.meta.pagination.total"
-                    :rows="quizSessions.data"
-                    :rtl="$page.props.rtl"
-                    :line-numbers="true"
+                <DataTable
+                    :value="quizSessions.data"
+                    :totalRecords="quizSessions.meta.pagination.total"
+                    :loading="false"
+                    lazy
+                    paginator
+                    :rows="quizSessions.meta.pagination.per_page"
+                    :first="(quizSessions.meta.pagination.current_page - 1) * quizSessions.meta.pagination.per_page"
+                    :rowsPerPageOptions="[10, 20, 50, 100]"
+                    paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                    currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                    @page="onPageChange"
+                    @filter="onColumnFilter"
+                    filterDisplay="row"
+                    showGridlines
                 >
-                    <template v-slot:table-row="props" >
-                        <!-- Status Column -->
-                        <div v-if="props.column.field === 'status'">
+                    <Column field="name" :header="__('Quiz') + ' ' + __('Name')" :sortable="false"></Column>
+
+                    <Column field="completed" :header="__('Completed')" :sortable="false"></Column>
+
+                    <Column field="percentage" :header="__('Percentage')" :sortable="false"></Column>
+
+                    <Column field="score" :header="__('Score')" :sortable="false"></Column>
+
+                    <Column field="status" :header="__('Status')" :sortable="false">
+                        <template #body="slotProps">
                             <span
                                 :class="[
-                                    props.row.status === 'Passed' ? 'badge-success' : 'badge-danger',
+                                    slotProps.data.status === 'Passed' ? 'badge-success' : 'badge-danger',
                                     'badge-sm uppercase text-xs',
                                 ]"
-                                >{{ __(props.row.status) }}</span
                             >
-                        </div>
+                                {{ __(slotProps.data.status) }}
+                            </span>
+                        </template>
+                    </Column>
 
-                        <!-- Actions Column -->
-                        <div v-else-if="props.column.field === 'actions'" class="py-2">
-                            <Link
-                                class="qt-btn qt-btn-sm qt-btn-success"
-                                :href="route('quiz_results', { quiz: props.row.slug, session: props.row.id })"
-                            >
-                                {{ __('Results') }}
-                            </Link>
-                        </div>
+                    <Column field="actions" :header="__('Actions')" :sortable="false">
+                        <template #body="slotProps">
+                            <div class="py-2">
+                                <Link
+                                    class="qt-btn qt-btn-sm qt-btn-success"
+                                    :href="route('quiz_results', { quiz: slotProps.data.slug, session: slotProps.data.id })"
+                                >
+                                    {{ __('Results') }}
+                                </Link>
+                            </div>
+                        </template>
+                    </Column>
 
-                        <!-- Remaining Columns -->
-                        <span v-else>
-                            {{ props.formattedRow[props.column.field] }}
-                        </span>
+                    <template #empty>
+                        <div>
+                            <no-data-table></no-data-table>
+                        </div>
                     </template>
-
-                    <template v-slot:emptystate>
-<div>
-                        <no-data-table></no-data-table>
-                    </div>
-</template>
-                </vue-good-table>
+                </DataTable>
             </div>
         </div>
     </app-layout>
@@ -60,6 +74,8 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import EmptyStudentCard from '@/Components/Cards/EmptyStudentCard'
 import ProgressNavigator from '@/Components/Stepper/ProgressNavigator'
 import NoDataTable from '@/Components/NoDataTable'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 export default {
     components: {
@@ -67,6 +83,8 @@ export default {
         EmptyStudentCard,
         ProgressNavigator,
         NoDataTable,
+        DataTable,
+        Column,
     },
     props: {
         quizSessions: Object,
@@ -124,66 +142,65 @@ export default {
                 page: 1,
                 perPage: 10,
             },
+        };
+    },
+    computed: {
+        title() {
+            return this.__('My Quizzes')+' - ' + this.$page.props.general.app_name;
         }
     },
-        computed: {
-            title() {
-                return this.__('My Quizzes')+' - ' + this.$page.props.general.app_name;
-            }
+    methods: {
+        updateParams(newProps) {
+            this.serverParams = Object.assign({}, this.serverParams, newProps);
         },
-        methods: {
-            updateParams(newProps) {
-                this.serverParams = Object.assign({}, this.serverParams, newProps);
-            },
-            onPageChange(params) {
-                this.updateParams({page: params.currentPage});
-                this.loadItems();
-            },
-            onPerPageChange(params) {
-                this.updateParams({perPage: params.currentPerPage});
-                this.loadItems();
-            },
-            onSortChange(params) {
-                this.updateParams({
-                    sort: [{
-                        type: params.sortType,
-                        field: this.columns[params.columnIndex].field,
-                    }],
-                });
-                this.loadItems();
-            },
-            onColumnFilter(params) {
-                this.updateParams(params);
-                this.serverParams.page = 1;
-                this.loadItems();
-            },
-            getQueryParams() {
-                let data = {
-                    'page': this.serverParams.page,
-                    'perPage': this.serverParams.perPage
-                }
+        onPageChange(event) {
+            this.updateParams({page: Math.floor(event.first / event.rows) + 1});
+            this.loadItems();
+        },
+        onPerPageChange(params) {
+            this.updateParams({perPage: params.currentPerPage});
+            this.loadItems();
+        },
+        onSortChange(params) {
+            this.updateParams({
+                sort: [{
+                    type: params.sortType,
+                    field: this.columns[params.columnIndex].field,
+                }],
+            });
+            this.loadItems();
+        },
+        onColumnFilter(params) {
+            this.updateParams(params);
+            this.serverParams.page = 1;
+            this.loadItems();
+        },
+        getQueryParams() {
+            let data = {
+                'page': this.serverParams.page,
+                'perPage': this.serverParams.perPage
+            };
 
-                for (const [key, value] of Object.entries(this.serverParams.columnFilters)) {
-                    if (value) {
-                        data[key] = value;
-                    }
+            for (const [key, value] of Object.entries(this.serverParams.columnFilters)) {
+                if (value) {
+                    data[key] = value;
                 }
-
-                return data;
-            },
-            loadItems() {
-                this.$inertia.get(route(route().current()), this.getQueryParams(), {
-                    replace: false,
-                    preserveState: true,
-                    preserveScroll: true,
-                });
-            },
-        },
-        metaInfo() {
-            return {
-                title: this.title
             }
+
+            return data;
         },
+        loadItems() {
+            this.$inertia.get(route(route().current()), this.getQueryParams(), {
+                replace: false,
+                preserveState: true,
+                preserveScroll: true,
+            });
+        },
+    },
+    metaInfo() {
+        return {
+            title: this.title
+        };
     },
 }
 </script>

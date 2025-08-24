@@ -3,7 +3,7 @@
         <h5 class="inline-block bg-green-100 rounded-sm px-2 py-1 mb-4 text-xs leading-3 text-green-700">{{ lesson.skill }}</h5>
         <div class="q-data mb-4">
             <h4 class="text-base font-semibold mb-2">{{ lesson.title }}</h4>
-            <div class="text-sm">{{ lesson.excerpt }}...
+            <div class="text-sm">{{ lesson.excerpt }}...</div>
         </div>
         <ul class="mt-5">
             <li class="text-gray-600 flex items-center text-sm mb-4">
@@ -19,7 +19,8 @@
             <h5 class="inline-block bg-gray-100 rounded-sm px-2 py-1 text-xs leading-3 text-gray-700">{{ lesson.code }}</h5>
             <slot name="action"></slot>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: "AdminPracticeLessonCard",

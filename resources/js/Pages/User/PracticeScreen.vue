@@ -327,6 +327,7 @@ import { router } from '@inertiajs/vue3'
 import { usePage } from '@inertiajs/vue3'
 import { useConfirm } from 'primevue/useconfirm'
 import { useTranslate } from '@/composables/useTranslate'
+import { useLogger } from '@/composables/useLogger'
 import { useSessionManager } from '@/composables/useSessionManager'
 import { useQuestionNavigation } from '@/composables/useQuestionNavigation'
 import { useTimer } from '@/composables/useTimer'
@@ -366,6 +367,7 @@ const props = defineProps({
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const confirm = useConfirm()
+const { logError, logInfo, logUserAction } = useLogger()
 const { createTimeout } = useCleanup()
 
 // Initialize session manager with practice data
@@ -475,7 +477,7 @@ const submitAnswer = async () => {
             sessionManager.session.total_points_earned = data.total_points_earned
         }
     } catch (error) {
-        console.error('Failed to submit answer:', error)
+        logError('Failed to submit answer', { error: error.message, questionId: sessionManager.currentQuestion.value?.id })
     } finally {
         sessionManager.isLoading.value = false
     }
@@ -607,7 +609,7 @@ const fetchQuestions = async page => {
             startTimer()
         }
     } catch (error) {
-        console.error('Failed to fetch questions:', error)
+        logError('Failed to fetch questions', { error: error.message, practiceSetId: props.practiceSet?.id })
     } finally {
         loading.value = false
     }

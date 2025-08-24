@@ -8,30 +8,44 @@
             <!-- Default Payment Gateway -->
             <div class="col-span-6 sm:col-span-4">
                 <ArcLabel for="default_payment_processor" :value="__('Default Payment Processor')" />
-                <v-select
-                    id="locale"
+                <Select
+                    id="default_payment_processor"
                     v-model="form.default_payment_processor"
                     :options="paymentProcessors"
-                    :reduce="payment => payment.code"
-                    label="name"
+                    optionLabel="name"
+                    optionValue="code"
                     :placeholder="__('Select a Processor')"
-                    :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                />
+                    filter
+                    showClear
+                    class="w-full"
+                    :class="[form.errors.default_payment_processor ? 'p-invalid' : '']"
+                >
+                    <template #empty>
+                        <span>{{ __('No results were found for this search') }}</span>
+                    </template>
+                </Select>
                 <ArcInputError :message="form.errors.default_payment_processor" class="mt-2" />
             </div>
 
             <!-- Default Currency -->
             <div class="col-span-6 sm:col-span-4">
                 <ArcLabel for="default_currency" :value="__('Currency')" />
-                <v-select
+                <Select
                     id="default_currency"
                     v-model="form.default_currency"
                     :options="currencies"
-                    :reduce="currency => currency.code"
-                    label="name"
+                    optionLabel="name"
+                    optionValue="code"
                     :placeholder="__('Select a Currency')"
-                    :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                />
+                    filter
+                    showClear
+                    class="w-full"
+                    :class="[form.errors.default_currency ? 'p-invalid' : '']"
+                >
+                    <template #empty>
+                        <span>{{ __('No results were found for this search') }}</span>
+                    </template>
+                </Select>
                 <ArcInputError :message="form.errors.default_currency" class="mt-2" />
             </div>
 
@@ -45,15 +59,22 @@
             <!-- Currency Symbol Position -->
             <div class="col-span-6 sm:col-span-4">
                 <ArcLabel for="currency_symbol_position" :value="__('Currency Symbol Position')" />
-                <v-select
+                <Select
                     id="currency_symbol_position"
                     v-model="form.currency_symbol_position"
                     :options="positions"
-                    :reduce="position => position.id"
-                    label="name"
+                    optionLabel="name"
+                    optionValue="id"
                     :placeholder="__('Select Position')"
-                    :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                />
+                    filter
+                    showClear
+                    class="w-full"
+                    :class="[form.errors.currency_symbol_position ? 'p-invalid' : '']"
+                >
+                    <template #empty>
+                        <span>{{ __('No results were found for this search') }}</span>
+                    </template>
+                </Select>
                 <ArcInputError :message="form.errors.currency_symbol_position" class="mt-2" />
             </div>
         </template>
@@ -82,6 +103,7 @@ import ArcLabel from '@/Components/Label'
 import ArcSecondaryButton from '@/Components/SecondaryButton'
 import ArcTextArea from '@/Components/TextArea'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Select from 'primevue/select'
 
 const props = defineProps({
     settings: Object,

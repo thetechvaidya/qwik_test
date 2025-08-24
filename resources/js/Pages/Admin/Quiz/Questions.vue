@@ -101,18 +101,19 @@ id="topic" v-model="topicFilter" type="text"
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label for="tag" class="pb-2 text-sm font-semibold text-gray-800">By Tag</label>
-                                    <v-select
-id="tag" v-model="tagArray" multiple :options="tags" label="name"
-                                        :dir="pageProps.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchTags"
-                                    >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                        </template>
-                                    </v-select>
+                                    <Select
+                                        id="tag"
+                                        v-model="tagArray"
+                                        :options="tags"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        placeholder="Select tags"
+                                        filter
+                                        showClear
+                                        multiple
+                                        class="w-full"
+                                        @filter="searchTags"
+                                    />
                                 </div>
                                 <div class="w-full flex flex-col mt-6">
                                     <label class="mb-3 text-sm font-semibold text-gray-800">{{
@@ -184,8 +185,9 @@ id="tag" v-model="tagArray" multiple :options="tags" label="name"
                                                 <MSAPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -196,8 +198,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <MMAPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -208,8 +211,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <TOFPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -220,8 +224,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <FIBPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -232,8 +237,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <MTFPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -244,8 +250,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <ORDPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -256,8 +263,9 @@ class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', quest
                                                 <SAQPreview :question="question">
                                                     <template #action>
                                                         <button
-class="qt-btn-sm" :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']" ]"
-                                                                :disabled="question.disabled"
+                                                            class="qt-btn-sm"
+                                                            :class="[qEditFlag ? 'qt-btn-success' : 'qt-btn-danger', question.disabled || processing ? 'opacity-25': '']"
+                                                            :disabled="question.disabled"
                                                             @click="qEditFlag ? addQuestion(question.id, index) : removeQuestion(question.id, index)"
                                                             v-html="qEditFlag ? __('Add') : __('Remove')"
                                                         ></button>
@@ -299,6 +307,9 @@ import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
 import InputText from 'primevue/inputtext'
 import Checkbox from 'primevue/checkbox'
+import Select from 'primevue/select'
+import { debounce } from 'lodash'
+import axios from 'axios'
 import HorizontalStepper from '@/Components/Stepper/HorizontalStepper.vue'
 import MSAPreview from '@/Components/Questions/Previews/MSAPreview.vue'
 import MMAPreview from '@/Components/Questions/Previews/MMAPreview.vue'
@@ -347,6 +358,7 @@ const skillFilter = ref('')
 const topicFilter = ref('')
 const tagArray = ref([])
 const difficultyFilter = ref([])
+const tags = ref(props.tags || [])
 
 // Methods
 const viewQuestions = () => {
@@ -402,9 +414,18 @@ const removeQuestion = (questionId, index) => {
     }, 500)
 }
 
-const searchTags = (search, loading) => {
-    // Implementation for searching tags
-}
+const searchTags = debounce((event) => {
+    const query = event.value
+    if (query && query.length > 2) {
+        axios.get('/admin/tags/search', {
+            params: { query }
+        }).then(response => {
+            tags.value = response.data
+        }).catch(error => {
+            console.error('Error searching tags:', error)
+        })
+    }
+}, 300)
 
 // Initialize
 onMounted(() => {

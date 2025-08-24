@@ -48,22 +48,22 @@
                                     <label class="pb-2 text-sm font-semibold text-gray-800"
                                         >{{ __('Sub Category') }}<span class="ml-1 text-red-400">*</span></label
                                     >
-                                    <v-select
+                                    <Select
                                         id="sub_category"
                                         v-model="v$.form.sub_category_id.$model"
                                         :options="subCategories"
-                                        :reduce="sub => sub.id"
-                                        label="name"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchSubCategories"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        :placeholder="__('Select Sub Category')"
+                                        filter
+                                        showClear
+                                        class="w-full"
+                                        @filter="searchSubCategories"
                                     >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                                        <template #empty>
+                                            {{ __('No options available') }}
                                         </template>
-                                    </v-select>
+                                    </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="
@@ -77,26 +77,24 @@
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col mb-6">
-                                    <label for="skill" class="pb-2 text-sm font-semibold text-gray-800">{{
-                                        __('Skill')
-                                    }}</label>
-                                    <v-select
+                                    <label for="skill" class="pb-2 text-sm font-semibold text-gray-800">{{ __('Skill') }}</label>
+                                    <Select
                                         id="skill"
                                         v-model="v$.form.skill_id.$model"
                                         :options="skills"
-                                        :reduce="skill => skill.id"
-                                        label="name"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                        :placeholder="__('Select Skill')"
+                                        filter
+                                        showClear
                                         :disabled="editFlag"
-                                        :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        @search="searchSkills"
+                                        class="w-full"
+                                        @filter="searchSkills"
                                     >
-                                        <template #no-options="{ search, searching }">
-                                            <span v-if="searching"
-                                                >{{ __('No results were found for this search') }}.</span
-                                            >
-                                            <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                                        <template #empty>
+                                            {{ __('No options available') }}
                                         </template>
-                                    </v-select>
+                                    </Select>
                                     <div class="form-control-errors">
                                         <p
                                             v-if="v$.form.skill_id.$error && v$.form.skill_id.required.$invalid"
@@ -232,6 +230,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Select from 'primevue/select'
 import ExamNavigation from '@/Components/Exams/ExamNavigation.vue' // Renamed for clarity - intentionally shared component
 import HorizontalStepper from '@/Components/Stepper/HorizontalStepper'
 import axios from 'axios'
@@ -349,10 +348,9 @@ const update = () => {
     })
 }
 
-const searchSubCategories = (search, loading) => {
-    if (search.length) {
-        loading(true)
-
+const searchSubCategories = (event) => {
+    const search = event.value
+    if (search && search.length) {
         // Cancel previous request
         if (searchAbortController.value) {
             searchAbortController.value.abort()
@@ -372,24 +370,21 @@ const searchSubCategories = (search, loading) => {
                 })
                 .then(response => {
                     subCategories.value = response.data.subCategories
-                    loading(false)
                     searchAbortController.value = null
                 })
                 .catch(error => {
                     if (!axios.isCancel(error)) {
                         console.error('Search subcategories error:', error)
                     }
-                    loading(false)
                     searchAbortController.value = null
                 })
         }, 600)
     }
 }
 
-const searchSkills = (search, loading) => {
-    if (search !== '') {
-        loading(true)
-
+const searchSkills = (event) => {
+    const search = event.value
+    if (search && search !== '') {
         // Cancel previous request
         if (searchAbortController.value) {
             searchAbortController.value.abort()
@@ -410,14 +405,12 @@ const searchSkills = (search, loading) => {
                 })
                 .then(response => {
                     skills.value = response.data.skills
-                    loading(false)
                     searchAbortController.value = null
                 })
                 .catch(error => {
                     if (!axios.isCancel(error)) {
                         console.error('Search skills error:', error)
                     }
-                    loading(false)
                     searchAbortController.value = null
                 })
         }, 600)

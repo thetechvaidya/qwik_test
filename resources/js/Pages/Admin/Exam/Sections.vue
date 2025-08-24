@@ -82,9 +82,9 @@
                                         rounded
                                         class="p-mr-2"
                                         @click="
-                                            editForm = true
-                                            currentId = section.id
-                                        "
+                            editForm = true;
+                            currentId = section.id;
+                        "
                                     />
                                     <Button
                                         icon="pi pi-trash"

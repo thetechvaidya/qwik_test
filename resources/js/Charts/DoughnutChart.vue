@@ -3,8 +3,17 @@
 </template>
 
 <script>
-import Chart from 'chart.js'
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    DoughnutController
+} from 'chart.js'
 import { Doughnut } from 'vue-chartjs'
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController)
 
 export default {
     extends: Doughnut,
@@ -19,11 +28,13 @@ export default {
         },
     },
     mounted() {
-        Chart.pluginService.register({
+        // Register the center text plugin for Chart.js 3+
+        const centerTextPlugin = {
+            id: 'centerText',
             beforeDraw: function (chart) {
                 if (chart.config.options.elements.center) {
-                    // Get ctx from string
-                    let ctx = chart.chart.ctx
+                    // Get ctx from chart
+                    let ctx = chart.ctx
 
                     // Get options from the center object in options
                     let centerConfig = chart.config.options.elements.center
@@ -32,18 +43,18 @@ export default {
                     let color = centerConfig.color || '#000'
                     let maxFontSize = centerConfig.maxFontSize || 75
                     let sidePadding = centerConfig.sidePadding || 20
-                    let sidePaddingCalculated = (sidePadding / 100) * (chart.innerRadius * 2)
+                    let sidePaddingCalculated = (sidePadding / 100) * (chart._metasets[0].controller.innerRadius * 2)
                     // Start with a base font of 30px
                     ctx.font = '30px ' + fontStyle
 
                     // Get the width of the string and also the width of the element minus 10 to give it 5px side padding
                     let stringWidth = ctx.measureText(txt).width
-                    let elementWidth = chart.innerRadius * 2 - sidePaddingCalculated
+                    let elementWidth = chart._metasets[0].controller.innerRadius * 2 - sidePaddingCalculated
 
                     // Find out how much the font can grow in width.
                     let widthRatio = elementWidth / stringWidth
                     let newFontSize = Math.floor(30 * widthRatio)
-                    let elementHeight = chart.innerRadius * 2
+                    let elementHeight = chart._metasets[0].controller.innerRadius * 2
 
                     // Pick a new font size so it will not be larger than the height of label.
                     let fontSizeToUse = Math.min(newFontSize, elementHeight, maxFontSize)
@@ -100,13 +111,19 @@ export default {
                     //Draw text in center
                     ctx.fillText(line, centerX, centerY)
                 }
-            },
-        })
+            }
+        }
+
+        // Register the plugin
+        ChartJS.register(centerTextPlugin)
+        
         this.renderChart(this.chartData, {
             responsive: true,
-            cutoutPercentage: 90,
-            legend: {
-                display: false,
+            cutout: '90%', // Updated from cutoutPercentage for Chart.js 3+
+            plugins: {
+                legend: {
+                    display: false,
+                },
             },
             elements: {
                 center: {

@@ -36,6 +36,13 @@ export default {
         }
     },
     methods: {
+        __(key, replace = {}) {
+            let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
+            Object.keys(replace).forEach(function (key) {
+                translation = translation.replace(':' + key, replace[key])
+            })
+            return translation
+        },
         searchComprehensions(search, loading) {
             if (search !== '') {
                 let _this = this

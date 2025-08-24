@@ -1,56 +1,107 @@
 <template>
-    <div class="bg-white">
-        <store-nav-bar></store-nav-bar>
-        <div class="dark:bg-gray-900 flex items-center justify-center py-12 sm:py-28 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-4xl w-full space-y-8">
-                <div class="bg-white border-t border-gray-100 shadow-md overflow-hidden sm:rounded-sm">
-                    <div class="flex flex-col sm:flex-col md:flex-row lg:flex-row">
-                        <div
-                            class="hidden border-r border-gray-100 mt-2 md:mt-0 h-24 sm:h-64 md:h-auto md:w-1/2 relative lg:mt-0 pr-6 sm:pr-20 pt-10 sm:flex justify-end sm:block"
-                        >
-                            <div class="w-5/6 h-full">
-                                <div
-                                    class="z-20 absolute top-5 ltr:left-5 rtl:right-5 sm:ltr:left-10 sm:rtl:right-10 sm:top-10"
-                                >
-                                    <h4
-                                        class="mt-4 text-xl sm:text-2xl font-bold text-primary tracking-ringtighter"
-                                        v-html="$page.props.heroSettings.title"
-                                    ></h4>
-                                </div>
-                                <img
-                                    class="inset-0 absolute object-contain object-bottom z-10 w-full h-full"
-                                    :src="$page.props.assetUrl + $page.props.heroSettings.image_path"
-                                    :alt="$page.props.general.app_name"
-                                    role="img"
-                                />
-                            </div>
-                        </div>
-                        <div class="flex flex-col lg:w-6/12 md:w-6/12 px-4 sm:p-6 justify-center">
-                            <slot></slot>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <store-footer
-            v-if="$page.props.homePageSettings.enable_footer"
-            :footer-settings="$page.props.footerSettings"
-        ></store-footer>
+  <!-- Modern minimal wrapper that enhances auth pages -->
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <!-- Optional Navigation -->
+    <div v-if="showNavigation" class="relative z-10">
+      <StoreNavBar />
     </div>
+
+    <!-- Main Content Area -->
+    <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div class="w-full max-w-md">
+        <!-- Content Slot - Auth pages render their own modern cards -->
+        <slot />
+      </div>
+    </div>
+
+    <!-- Optional Footer -->
+    <div v-if="showFooter && $page.props.homePageSettings?.enable_footer" class="relative z-10">
+      <StoreFooter :footer-settings="$page.props.footerSettings" />
+    </div>
+  </div>
 </template>
 
-<script>
-import StoreFooter from '@/Components/Layout/StoreFooter'
-import StoreNavBar from '@/Components/Layout/StoreNavBar'
+<script setup>
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+import StoreFooter from '@/Components/Layout/StoreFooter.vue'
+import StoreNavBar from '@/Components/Layout/StoreNavBar.vue'
 
-export default {
-    components: {
-        StoreFooter,
-        StoreNavBar,
-    },
-    props: {
-        canLogin: Boolean,
-        canRegister: Boolean,
-    },
-}
+// Props with defaults for optional layout elements
+const props = defineProps({
+  canLogin: {
+    type: Boolean,
+    default: false
+  },
+  canRegister: {
+    type: Boolean,
+    default: false
+  },
+  showNavigation: {
+    type: Boolean,
+    default: false // Default to false since auth pages are self-contained
+  },
+  showFooter: {
+    type: Boolean,
+    default: false // Default to false since auth pages are self-contained
+  }
+})
+
+// Access page props
+const page = usePage()
+
+// Computed properties for conditional rendering
+const shouldShowNavigation = computed(() => {
+  return props.showNavigation || page.props.value.showAuthNavigation
+})
+
+const shouldShowFooter = computed(() => {
+  return props.showFooter || page.props.value.showAuthFooter
+})
 </script>
+
+<style scoped>
+/* Ensure smooth transitions and modern styling */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+/* Modern gradient background that matches auth pages */
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+/* Ensure proper stacking context */
+.relative {
+  position: relative;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+/* Responsive spacing adjustments */
+@media (max-width: 640px) {
+  .py-12 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+  .bg-gradient-to-br {
+    /* Keep light theme for auth pages for now */
+  }
+}
+</style>

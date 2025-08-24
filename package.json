@@ -21,26 +21,47 @@
         "precommit": "npm run lint:js && npm run lint:css",
         "health-check": "node scripts/health-check.js",
         "deploy:staging": "npm run build && echo 'Staging deployment would run here'",
-        "deploy:production": "npm run build:production && echo 'Production deployment would run here'"
+        "deploy:production": "npm run build:production && echo 'Production deployment would run here'",
+        "clean": "rm -rf node_modules/.vite && rm -rf public/build",
+        "clean:install": "npm run clean && npm ci",
+        "security:audit": "npm audit --audit-level moderate",
+        "security:fix": "npm audit fix",
+        "security:check": "npm audit --audit-level high --json",
+        "security:report": "npm audit --audit-level moderate --json > security-audit.json",
+        "validate:optimization": "node scripts/optimization-validator.js",
+        "performance:check": "node scripts/optimization-validator.js",
+        "test": "npm run test:unit && npm run test:feature",
+        "test:unit": "php artisan test --testsuite=Unit",
+        "test:feature": "php artisan test --testsuite=Feature",
+        "test:browser": "php artisan dusk",
+        "test:coverage": "php artisan test --coverage",
+        "deps:check": "npm outdated",
+        "deps:update": "npm update",
+        "deps:audit": "npm audit && npm run security:check"
     },
     "devDependencies": {
+        "@playwright/test": "^1.55.0",
         "@tailwindcss/forms": "^0.5.0",
         "@tailwindcss/typography": "^0.5.0",
         "@vitejs/plugin-vue": "^5.0.0",
         "@vue/eslint-config-prettier": "^10.2.0",
         "autoprefixer": "^10.4.0",
+        "eslint": "^9.0.0",
         "eslint-plugin-vue": "^10.4.0",
         "laravel-vite-plugin": "^1.0.0",
-        "postcss": "^8.4.0",
+        "postcss": "^8.4.31",
         "postcss-import": "^16.0.0",
+        "prettier": "^3.0.0",
+        "stylelint": "^16.0.0",
+        "stylelint-config-standard": "^36.0.0",
         "tailwindcss": "^3.4.0",
         "tailwindcss-dir": "4.0.0",
-        "vite": "^5.0.0",
+        "terser": "^5.43.1",
+        "vite": "^5.4.0",
         "vue": "^3.5.0"
     },
     "dependencies": {
-        "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-        "@chenfengyuan/vue-countdown": "^2.1.3",
+        "@chenfengyuan/vue-countdown": "^2.1.2",
         "@inertiajs/vue3": "^2.0.0",
         "@primeuix/themes": "^1.0.0",
         "@tailwindcss/aspect-ratio": "^0.4.0",
@@ -58,7 +79,6 @@
         "@tiptap/extension-underline": "^2.8.0",
         "@tiptap/starter-kit": "^2.8.0",
         "@tiptap/vue-3": "^2.8.0",
-        "@vue/compat": "^3.5.0",
         "@vuelidate/core": "2.0.3",
         "@vuelidate/validators": "2.0.4",
         "@vueuse/core": "^11.1.0",
@@ -74,358 +94,26 @@
         "plyr": "3.7.8",
         "primeicons": "^7.0.0",
         "primevue": "^4.3.6",
-        "sweetalert2": "11.14.5",
+        "sweetalert2": "^11.22.4",
         "swiper": "11.1.14",
         "tiptap-text-direction-extension": "^1.0.7",
         "v-calendar": "3.1.2",
         "vue-chartjs": "5.3.1",
-        "vue-good-table-next": "0.2.2",
+
         "vue-plyr": "7.0.0",
         "vue-select": "4.0.0-beta.6",
         "vue-sweetalert2": "5.0.11",
-        "vuedraggable": "4.1.0"
+        "vuedraggable": "4.1.0",
+        "ziggy-js": "^2.5.3"
     },
-    "migration-notes": {
-        "primevue-4x-migration": {
-            "status": "completed",
-            "components-migrated": [
-                "InputSwitch->ToggleSwitch",
-                "Dropdown->Select",
-                "Sidebar->Drawer",
-                "OverlayPanel->Popover"
-            ]
-        }
+    "engines": {
+        "node": ">=18.0.0",
+        "npm": ">=9.0.0"
     },
-    "compatibilityExclusions": {
-        "vue-ctk-date-time-picker": "Vue 2 only - REMOVED from dependencies. Replace with vue-datepicker-next for Vue 3",
-        "vue-meta": "Replaced with @vueuse/head for Vue 3",
-        "vue2-perfect-scrollbar": "Vue 2 only - REPLACED with native CSS scroll-behavior or @vueuse/core scrolling utilities",
-        "v-offline": "Vue 2 only - consider @vueuse/core useOnline composable",
-        "vue-awesome-swiper": "Vue 2 only - REPLACED with direct swiper/vue integration in user composables",
-        "vue-draggable": "Vue 2 only - use vuedraggable v4 instead",
-        "vuelidate": "Vue 2 only - replaced with @vuelidate/core",
-        "vue-clipboard2": "Vue 2 only (last updated 4 years ago) - REPLACED with @vueuse/core useClipboard composable for Vue 3 compatibility",
-        "@chenfengyuan/vue-countdown": "Vue 2 only - REPLACED with custom useTimer composable for Vue 3 compatibility",
-        "mitt": "Vue 3 compatible event emitter - good replacement for Vue 2 $eventBus"
-    },
-    "vue3CompatiblePackages": {
-        "vue-good-table-next": "✅ Vue 3 port of vue-good-table - actively maintained",
-        "primevue": "✅ Vue 3 compatible - UPGRADED to 4.3.6 (PrimeVue v4). Migration completed across components, theming, and config. Dependency audit: @primevue/core removed as unused.",
-        "vue-plyr": "✅ Vue 3 compatible - supports both Vue 2 and 3",
-        "pinia": "✅ Vue 3 native state management - recommended over Vuex",
-        "@vueuse/head": "✅ Vue 3 replacement for vue-meta",
-        "@vueuse/core": "✅ Vue 3 compatible - provides useClipboard composable to replace vue-clipboard2",
-        "@primeuix/themes": "✅ PrimeVue 4.x theming system - provides definePreset and built-in themes (Aura, Material, Lara, Nora)",
-        "@vuelidate/core": "✅ Vue 3 compatible validation library",
-        "vue-select": "✅ Vue 3 compatible - version 4.x supports Vue 3",
-        "vuedraggable": "✅ Vue 3 compatible - version 4.x supports Vue 3",
-        "vue-sweetalert2": "✅ Vue 3 compatible",
-        "v-calendar": "✅ Vue 3 compatible - version 3.x supports Vue 3",
-        "vue-chartjs": "✅ Vue 3 compatible - version 5.x supports Vue 3"
-    },
-    "migrationNotes": {
-        "primevue": {
-            "status": "UPGRADED TO 4.3.6 - COMPLETED",
-            "version": "Upgraded from 3.50.0 to 4.3.6",
-            "breakingChanges": [
-                "SASS themes removed - new CSS variable-based theming implemented",
-                "Component names changed: InputSwitch->ToggleSwitch, OverlayPanel->Popover, Dropdown->Select, Sidebar->Drawer",
-                "Deprecated components: Calendar->DatePicker, TabMenu, Steps, InlineMessage, BadgeDirective",
-                "Removed components: TriStateCheckbox, DataViewLayoutOptions",
-                "Import paths changed: primevue/api -> @primevue/core/api",
-                "PT section names changed for PassThrough feature",
-                "Style classes updated: .p-link, .p-highlight, .p-fluid removed"
-            ],
-            "actionRequired": [
-                "✅ COMPLETED: Updated package.json to PrimeVue 4.3.6 (removed unnecessary @primevue/core)",
-                "✅ COMPLETED: Implemented new CSS variable-based theming system",
-                "✅ COMPLETED: Updated component names throughout codebase",
-                "✅ COMPLETED: Updated app.js configuration for PrimeVue 4.x compatibility",
-                "✅ COMPLETED: Migrated all InputSwitch components to ToggleSwitch",
-                "✅ COMPLETED: Updated Sidebar components to Drawer where appropriate",
-                "✅ COMPLETED: Updated Dropdown components to Select",
-                "✅ COMPLETED: Created comprehensive test suite for migration validation",
-                "✅ COMPLETED: Created migration documentation and guide"
-            ]
-        }
-    },
-    "verificationCommentsStatus": {
-        "implementationDate": "2025-01-13",
-        "totalComments": 10,
-        "completedComments": 10,
-        "comments": {
-            "comment1": {
-                "title": "Replace vue2-perfect-scrollbar with Vue 3 compatible scrolling",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "AdminLayout.vue",
-                    "AppLayout.vue",
-                    "ExamLayout.vue",
-                    "QuizLayout.vue",
-                    "PracticeLayout.vue",
-                    "ComprehensionAttachment.vue"
-                ],
-                "implementation": "Replaced perfect-scrollbar with native CSS overflow-y-auto and overflow-x-hidden"
-            },
-            "comment2": {
-                "title": "Replace v-offline component with @vueuse/core useOnline composable",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "ExamLayout.vue",
-                    "QuizLayout.vue",
-                    "PracticeLayout.vue"
-                ],
-                "implementation": "Replaced v-offline with useOnline() composable from @vueuse/core"
-            },
-            "comment3": {
-                "title": "Fix malformed template markup in Login.vue",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "Login.vue"
-                ],
-                "implementation": "Fixed malformed h1 tag and restructured template correctly"
-            },
-            "comment4": {
-                "title": "Implement backward compatibility for this.$inertia.form()",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "app.js"
-                ],
-                "implementation": "Added app.config.globalProperties.$inertia.form = (...args) => useForm(...args)"
-            },
-            "comment5": {
-                "title": "Replace portal-target with Vue 3 teleport",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "app.blade.php",
-                    "AppLayout.vue",
-                    "AdminLayout.vue"
-                ],
-                "implementation": "Added #modals div to blade template and replaced portal-target with teleport"
-            },
-            "comment6": {
-                "title": "Finalize PrimeVue 4.x migration and configuration",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "package.json",
-                    "resources/js/app.js",
-                    "resources/css/primevue-tokens.css"
-                ],
-                "implementation": "Upgraded to PrimeVue 4.3.6 with @primeuix/themes (Aura), updated components (Drawer, Select, ToggleSwitch, DatePicker), and refined configuration"
-            },
-            "comment7": {
-                "title": "Create Inertia navigation tests and migration guide",
-                "status": "COMPLETED ✅",
-                "filesCreated": [
-                    "tests/Feature/InertiaNavigationTest.php",
-                    "INERTIA_2_MIGRATION_GUIDE.md"
-                ],
-                "implementation": "Created comprehensive test suite and detailed migration documentation"
-            },
-            "comment8": {
-                "title": "Search and replace remaining inertia-link usage with Link components",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "Login.vue"
-                ],
-                "implementation": "Fixed remaining inertia-link usage. Global aliasing provides backward compatibility for other files"
-            },
-            "comment9": {
-                "title": "Replace metaInfo with useHead for page title handling",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "Login.vue",
-                    "Register.vue",
-                    "ForgotPassword.vue",
-                    "ResetPassword.vue",
-                    "VerifyEmail.vue",
-                    "ConfirmPassword.vue"
-                ],
-                "implementation": "Added useHead from @vueuse/head to replace deprecated metaInfo"
-            },
-            "comment10": {
-                "title": "Update SidebarLink active state to use $page.url instead of window.location.href",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "SidebarLink.vue"
-                ],
-                "implementation": "Updated computed active() to use this.$page.url for proper SPA navigation"
-            }
-        }
-    },
-    "latestVerificationCommentsStatus": {
-        "implementationDate": "2025-01-13",
-        "totalComments": 6,
-        "completedComments": 6,
-        "comments": {
-            "comment1": {
-                "title": "SelectButton selected state uses .p-highlight instead of .p-checked",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "resources/css/app.css"
-                ],
-                "implementation": "Updated SelectButton CSS selector to use .p-checked (with .p-highlight fallback) for PrimeVue 4 compatibility"
-            },
-            "comment2": {
-                "title": "ToggleSwitch styling duplicated across CSS files",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "resources/css/app.css",
-                    "resources/css/primevue-tokens.css"
-                ],
-                "implementation": "Consolidated ToggleSwitch styles in primevue-tokens.css, removed duplication from app.css"
-            },
-            "comment3": {
-                "title": "Admin Theme Settings do not update PrimeVue design tokens at runtime",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "resources/js/app.js"
-                ],
-                "implementation": "Added runtime theme color updates using CSS custom properties in app.js setup function"
-            },
-            "comment4": {
-                "title": "Dusk tests use assertDontSee for CSS selectors instead of assertMissing",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "tests/Browser/PrimeVue4InteractionTest.php"
-                ],
-                "implementation": "Updated assertions from assertDontSee/assertNotPresent to assertMissing for CSS selectors"
-            },
-            "comment5": {
-                "title": "Feature test tightly couples to Dusk browser test file presence",
-                "status": "COMPLETED ✅",
-                "filesUpdated": [
-                    "tests/Feature/PrimeVue4MigrationTest.php"
-                ],
-                "implementation": "Added skip guard to prevent false failures when Dusk tests are not configured"
-            },
-            "comment6": {
-                "title": "Add automated test to prevent v3 component regressions",
-                "status": "COMPLETED ✅",
-                "filesCreated": [
-                    "tests/Feature/PrimeVue3ComponentRegressionTest.php"
-                ],
-                "implementation": "Created automated test to detect forbidden v3 component imports (inputswitch, dropdown, sidebar, overlaypanel) and enforce v4 usage"
-            }
-        }
-    },
-    "vue3MigrationStatus": {
-        "phase": "COMPLETED",
-        "completedTasks": [
-            "✅ Vue 3.5.0 with compatibility mode enabled",
-            "✅ Vite 5.0.0 configuration optimized with enhanced Vue 3 compatibility and proper chunk splitting",
-            "✅ PrimeVue 4.3.6 migration completed (components, theming, configuration)",
-            "✅ Pinia 2.1.7 for state management - MIGRATION COMPLETED",
-            "✅ @vuelidate/core 2.0.3 for validation - MIGRATION COMPLETED",
-            "✅ Vue 2-only packages moved to devDependencies (@chenfengyuan/vue-countdown)",
-            "✅ Replaced vue-clipboard2 with @vueuse/core useClipboard composable",
-            "✅ Environment variable handling standardized (Vite: import.meta.env.MODE, PostCSS: process.env.NODE_ENV)",
-            "✅ Route helper validation enhanced with fallbacks and alternative navigation methods",
-            "✅ Development logging reduced to essential error handling only",
-            "✅ Laravel Mix artifacts cleanup documented",
-            "✅ Vite build output directory added to .gitignore",
-            "✅ Tailwind CSS 3.x compatibility ensured (@tailwindcss/line-clamp removed - now built-in)",
-            "✅ Vue compatibility mode adjusted for better migration support (GLOBAL_MOUNT, INSTANCE_EVENT_EMITTER enabled)",
-            "✅ Vuex store migrated to Pinia store (examStore.js)",
-            "✅ All Vuelidate v1 imports updated to v2 (@vuelidate/validators)",
-            "✅ Composables created (useTranslate, useHex2Rgba) to modernize mixins"
-        ],
-        "nextSteps": [
-            "✅ COMPLETED: Vuex to Pinia migration completed",
-            "✅ COMPLETED: Vuelidate v1 to v2 migration completed",
-            "✅ COMPLETED: Composables created for mixins (useTranslate, useHex2Rgba)",
-            "🔄 Test all PrimeVue 3.x components for compatibility",
-            "🔄 Review component usage for standard PrimeVue 3.x features",
-            "🔄 Run comprehensive testing on all application features",
-            "🔄 Monitor console for any remaining compatibility warnings"
-        ],
-        "verificationComments": {
-            "allImplemented": true,
-            "totalComments": 31,
-            "completedComments": 31,
-            "phases": [
-                {
-                    "phase": 1,
-                    "comments": 8,
-                    "status": "COMPLETED",
-                    "description": "Core migration tasks (dependencies, build config, error handling)"
-                },
-                {
-                    "phase": 2,
-                    "comments": 5,
-                    "status": "COMPLETED",
-                    "description": "Advanced validation and compatibility checks"
-                },
-                {
-                    "phase": 3,
-                    "comments": 3,
-                    "status": "COMPLETED",
-                    "description": "Final cleanup and route helper validation"
-                },
-                {
-                    "phase": 4,
-                    "comments": 6,
-                    "status": "COMPLETED",
-                    "description": "PrimeVue 4.x theming, Mix cleanup, Vue 3 compatibility optimization"
-                },
-                {
-                    "phase": 5,
-                    "comments": 9,
-                    "status": "COMPLETED",
-                    "description": "Build system optimization, performance tuning, production readiness"
-                }
-            ]
-        }
-    },
-    "inertia2MigrationStatus": {
-        "phase": "PHASE_1_COMPLETED",
-        "completedTasks": [
-            "✅ app.js - Added Inertia 2.x imports (Link, useForm, router)",
-            "✅ app.js - Registered Link component globally as 'Link' and 'inertia-link' for backward compatibility",
-            "✅ app.js - Added global form helpers ($form, $useForm, $inertiaForm) for Options API components",
-            "✅ AppLayout - Updated to use Link component and router instead of this.$inertia",
-            "✅ AdminLayout - Updated to use Link component and router instead of this.$inertia",
-            "✅ AuthLayout - Updated to use router instead of this.$inertia",
-            "✅ Login page - Updated to use Link component and useForm instead of this.$inertia.form",
-            "✅ Register page - Updated to use Link component and useForm",
-            "✅ ForgotPassword page - Updated to use useForm instead of this.$inertia.form",
-            "✅ ResetPassword page - Updated to use Link component and useForm",
-            "✅ VerifyEmail page - Updated to use Link component and useForm",
-            "✅ TwoFactorChallenge page - Updated to use useForm instead of this.$inertia.form",
-            "✅ ConfirmPassword page - Updated to use Link component and useForm",
-            "✅ DropdownLink component - Updated to use Link instead of inertia-link",
-            "✅ NavLink component - Updated to use Link instead of inertia-link",
-            "✅ SidebarLink component - Updated to use Link instead of inertia-link",
-            "✅ ResponsiveNavLink component - Updated to use Link instead of inertia-link",
-            "✅ BackLink component - Updated to use Link instead of inertia-link",
-            "✅ UpdatePasswordForm - Updated to use $form helper for backward compatibility",
-            "✅ Created comprehensive migration test suite",
-            "✅ Created detailed migration documentation"
-        ],
-        "remainingTasks": [
-            "🔄 Phase 2: Update remaining profile components (UpdateProfileInformationForm, DeleteUserForm)",
-            "🔄 Phase 2: Update API management components (ApiTokenManager)",
-            "🔄 Phase 2: Update user dashboard components (ExamScreen, QuizScreen, PracticeScreen)",
-            "🔄 Phase 2: Update pagination components (MySubscriptions, MyPayments, etc.)",
-            "🔄 Phase 3: Run comprehensive testing suite",
-            "🔄 Phase 3: Search and replace any remaining this.$inertia usage",
-            "🔄 Phase 4: Performance optimization review"
-        ],
-        "backwardCompatibility": {
-            "enabled": true,
-            "features": [
-                "Global 'inertia-link' component alias maintained for legacy templates",
-                "Global form helpers ($form, $useForm, $inertiaForm) for Options API",
-                "Existing this.$inertia patterns will work via global helpers"
-            ]
-        },
-        "migrationApproach": {
-            "strategy": "Incremental migration with backward compatibility",
-            "patterns": {
-                "links": "inertia-link → Link (with backward compatibility alias)",
-                "forms": "this.$inertia.form() → useForm()",
-                "navigation": "this.$inertia.visit/get/post/put/delete → router.visit/get/post/put/delete"
-            }
-        }
-    }
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead",
+        "not ie 11"
+    ]
 }

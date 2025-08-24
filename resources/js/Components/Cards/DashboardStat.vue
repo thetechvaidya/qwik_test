@@ -8,12 +8,15 @@
         </div>
     </div>
 </template>
-<script>
-export default {
-    name: 'DashboardStat',
-    props: {
-        title: String,
-        count: String | Number,
-    },
-}
+<script setup>
+import { useTranslate } from '@/composables/useTranslate'
+
+// Props
+defineProps({
+    title: String,
+    count: [String, Number],
+})
+
+// Composables
+const { __ } = useTranslate()
 </script>

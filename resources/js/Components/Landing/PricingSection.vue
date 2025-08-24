@@ -1,38 +1,47 @@
 <template>
-    <section class="pricing-section py-20 bg-gradient-to-br from-gray-50 via-white to-indigo-50">
-        <div class="container mx-auto px-6">
+    <section class="py-20 bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        <!-- Background Effects -->
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute top-0 right-1/4 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="container-modern relative">
             <!-- Section Header -->
-            <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6"> Choose Your Learning Path </h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                    Select the perfect plan that fits your learning goals and budget. All plans include our core
-                    features with varying levels of access.
+            <div class="text-center mb-16 animate-fadeInUp">
+                <h2 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Choose Your <span class="text-gradient">Learning Path</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-4xl mx-auto mb-8 leading-relaxed">
+                    Select the perfect plan that fits your learning goals and budget. All plans include our core features with varying levels of access and premium benefits.
                 </p>
 
-                <!-- Billing Toggle -->
-                <div class="inline-flex items-center bg-white rounded-full p-1 shadow-lg">
+                <!-- Enhanced Billing Toggle -->
+                <div class="inline-flex items-center bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-modern border border-white/30">
                     <button
                         :class="[
-                            'px-6 py-2 rounded-full font-medium transition-all duration-300',
+                            'px-8 py-3 rounded-xl font-semibold transition-all duration-300 relative overflow-hidden',
                             billingCycle === 'monthly'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'text-gray-600 hover:text-gray-900',
+                                ? 'bg-gradient-primary text-white shadow-modern'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
                         ]"
                         @click="billingCycle = 'monthly'"
                     >
-                        Monthly
+                        <span class="relative z-10">Monthly</span>
+                        <div v-if="billingCycle === 'monthly'" class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-90"></div>
                     </button>
                     <button
                         :class="[
-                            'px-6 py-2 rounded-full font-medium transition-all duration-300 relative',
+                            'px-8 py-3 rounded-xl font-semibold transition-all duration-300 relative overflow-hidden',
                             billingCycle === 'yearly'
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'text-gray-600 hover:text-gray-900',
+                                ? 'bg-gradient-primary text-white shadow-modern'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
                         ]"
                         @click="billingCycle = 'yearly'"
                     >
-                        Yearly
-                        <span class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        <span class="relative z-10">Yearly</span>
+                        <div v-if="billingCycle === 'yearly'" class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 opacity-90"></div>
+                        <span class="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg animate-pulse">
                             Save 20%
                         </span>
                     </button>
@@ -40,105 +49,144 @@
             </div>
 
             <!-- Pricing Cards -->
-            <div ref="pricingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div ref="pricingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
                 <div
                     v-for="(plan, index) in displayedPlans"
                     :key="index"
                     :class="[
-                        'pricing-card relative p-8 bg-white rounded-2xl border-2 transition-all duration-300 transform hover:-translate-y-2',
+                        'pricing-card group relative overflow-hidden transition-all duration-500 transform',
                         plan.popular
-                            ? 'border-indigo-500 shadow-2xl scale-105'
-                            : 'border-gray-200 hover:border-indigo-300 shadow-lg hover:shadow-xl',
+                            ? 'pricing-card-popular scale-105 lg:scale-110'
+                            : 'hover:-translate-y-4',
                     ]"
                 >
                     <!-- Popular Badge -->
-                    <div v-if="plan.popular" class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <div
-                            class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg"
-                        >
-                            Most Popular
+                    <div v-if="plan.popular" class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-xl animate-bounce">
+                            ⭐ Most Popular
                         </div>
                     </div>
 
-                    <!-- Plan Header -->
-                    <div class="text-center mb-8">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                            {{ plan.name }}
-                        </h3>
-                        <div class="mb-4">
-                            <span class="text-5xl font-bold text-gray-900">
-                                {{ getPlanPrice(plan) }}
-                            </span>
-                            <span class="text-gray-600 ml-1">
-                                {{ getPlanPeriod(plan) }}
-                            </span>
+                    <!-- Card Background -->
+                    <div :class="[
+                        'relative p-8 rounded-3xl border-2 transition-all duration-500 h-full',
+                        plan.popular
+                            ? 'bg-gradient-to-br from-white via-indigo-50 to-purple-50 border-indigo-300 shadow-2xl'
+                            : 'bg-white/80 backdrop-blur-sm border-white/30 shadow-modern hover:shadow-2xl hover:border-indigo-200'
+                    ]">
+                        <!-- Gradient Overlay for Popular Plan -->
+                        <div v-if="plan.popular" class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl"></div>
+                        
+                        <!-- Shimmer Effect -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                         </div>
-                        <p v-if="plan.description" class="text-gray-600">
-                            {{ plan.description }}
-                        </p>
-                    </div>
 
-                    <!-- Features List -->
-                    <div class="mb-8">
-                        <ul class="space-y-4">
-                            <li
-                                v-for="(feature, featureIndex) in plan.features"
-                                :key="featureIndex"
-                                class="flex items-start gap-3"
+                        <!-- Plan Header -->
+                        <div class="text-center mb-8 relative z-10">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                                {{ plan.name }}
+                            </h3>
+                            <div class="mb-6">
+                                <div class="flex items-baseline justify-center gap-2">
+                                    <span :class="[
+                                        'text-6xl font-bold transition-all duration-500',
+                                        plan.popular ? 'text-gradient' : 'text-gray-900'
+                                    ]">
+                                        {{ getPlanPrice(plan) }}
+                                    </span>
+                                    <span class="text-gray-600 text-lg">
+                                        {{ getPlanPeriod(plan) }}
+                                    </span>
+                                </div>
+                                <div v-if="billingCycle === 'yearly' && plan.price !== 'Free'" class="text-green-600 font-semibold text-sm mt-2">
+                                    💰 Save ${{ calculateYearlySavings(plan) }} per year
+                                </div>
+                            </div>
+                            <p v-if="plan.description" class="text-gray-600 text-lg">
+                                {{ plan.description }}
+                            </p>
+                        </div>
+
+                        <!-- Features List -->
+                        <div class="mb-8 relative z-10">
+                            <ul class="space-y-4">
+                                <li
+                                    v-for="(feature, featureIndex) in plan.features"
+                                    :key="featureIndex"
+                                    class="flex items-start gap-3 group/feature"
+                                >
+                                    <div :class="[
+                                        'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 transition-all duration-300 group-hover/feature:scale-110',
+                                        plan.popular ? 'bg-gradient-primary' : 'bg-green-500'
+                                    ]">
+                                        <i class="pi pi-check text-white text-sm"></i>
+                                    </div>
+                                    <span class="text-gray-700 group-hover/feature:text-gray-900 transition-colors duration-300">{{ feature }}</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- CTA Button -->
+                        <div class="text-center relative z-10">
+                            <Link
+                                :href="plan.cta_link || '/register'"
+                                :class="[
+                                    'inline-block w-full px-8 py-4 font-bold rounded-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group/btn',
+                                    plan.popular
+                                        ? 'bg-gradient-primary text-white shadow-modern hover:shadow-glow'
+                                        : 'bg-gray-900 text-white hover:bg-gray-800 shadow-modern',
+                                ]"
                             >
-                                <i
-                                    :class="[
-                                        'pi pi-check text-lg mt-0.5 flex-shrink-0',
-                                        plan.popular ? 'text-indigo-600' : 'text-green-500',
-                                    ]"
-                                ></i>
-                                <span class="text-gray-700">{{ feature }}</span>
-                            </li>
-                        </ul>
+                                <span class="relative z-10">{{ plan.cta_text || 'Get Started' }}</span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+                            </Link>
+                        </div>
                     </div>
-
-                    <!-- CTA Button -->
-                    <div class="text-center">
-                        <Link
-                            :href="plan.cta_link || '/register'"
-                            :class="[
-                                'inline-block w-full px-8 py-4 font-semibold rounded-xl transition-all duration-300 transform hover:scale-105',
-                                plan.popular
-                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                                    : 'bg-gray-900 text-white hover:bg-gray-800',
-                            ]"
-                        >
-                            {{ plan.cta_text || 'Get Started' }}
-                        </Link>
-                    </div>
-
-                    <!-- Background Gradient for Popular Plan -->
-                    <div
-                        v-if="plan.popular"
-                        class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl opacity-30 pointer-events-none"
-                    ></div>
                 </div>
             </div>
 
-            <!-- Money Back Guarantee -->
-            <div class="text-center mt-16">
-                <div class="inline-flex items-center gap-4 p-6 bg-green-50 rounded-2xl border border-green-200">
-                    <i class="pi pi-shield text-green-600 text-2xl"></i>
-                    <div class="text-left">
-                        <div class="font-semibold text-gray-900">30-Day Money Back Guarantee</div>
-                        <div class="text-gray-600 text-sm"
-                            >Try any plan risk-free. Not satisfied? Get a full refund.</div
-                        >
+            <!-- Trust Indicators -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <!-- Money Back Guarantee -->
+                <div class="glass-card text-center hover-lift group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <i class="pi pi-shield text-white text-2xl"></i>
                     </div>
+                    <h3 class="font-bold text-gray-900 mb-2">30-Day Money Back</h3>
+                    <p class="text-gray-600 text-sm">Try any plan risk-free. Not satisfied? Get a full refund, no questions asked.</p>
+                </div>
+
+                <!-- Instant Access -->
+                <div class="glass-card text-center hover-lift group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <i class="pi pi-bolt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">Instant Access</h3>
+                    <p class="text-gray-600 text-sm">Start learning immediately after signup. No waiting, no setup required.</p>
+                </div>
+
+                <!-- Expert Support -->
+                <div class="glass-card text-center hover-lift group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <i class="pi pi-heart text-white text-2xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">Expert Support</h3>
+                    <p class="text-gray-600 text-sm">Get help from our learning experts whenever you need it, 24/7.</p>
                 </div>
             </div>
 
             <!-- FAQ Teaser -->
-            <div class="text-center mt-12">
-                <p class="text-gray-600 mb-4">Have questions about our pricing?</p>
-                <Link href="/faq" class="text-indigo-600 hover:text-indigo-700 font-medium underline">
-                    Check our FAQ →
-                </Link>
+            <div class="text-center">
+                <div class="inline-flex items-center gap-4 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-white/30 shadow-modern hover-lift">
+                    <i class="pi pi-question-circle text-indigo-600 text-2xl"></i>
+                    <div class="text-left">
+                        <div class="font-semibold text-gray-900">Have questions about our pricing?</div>
+                        <Link href="/faq" class="text-indigo-600 hover:text-indigo-700 font-medium underline transition-colors duration-300">
+                            Check our comprehensive FAQ →
+                        </Link>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -154,51 +202,61 @@ const props = defineProps({
         type: Array,
         default: () => [
             {
-                name: 'Basic',
+                name: 'Starter',
                 price: 'Free',
                 yearly_price: 'Free',
                 period: '',
-                description: 'Perfect for getting started',
-                features: ['5 quizzes per month', 'Basic analytics', 'Community support', 'Mobile access'],
-                cta_text: 'Get Started',
+                description: 'Perfect for getting started with learning',
+                features: [
+                    '5 quizzes per month',
+                    'Basic analytics dashboard',
+                    'Community support',
+                    'Mobile app access',
+                    'Progress tracking'
+                ],
+                cta_text: 'Start Free',
                 cta_link: '/register',
                 popular: false,
             },
             {
-                name: 'Pro',
-                price: '$9.99',
-                yearly_price: '$8.99',
+                name: 'Professional',
+                price: '$12.99',
+                yearly_price: '$9.99',
                 period: '/month',
-                description: 'Best for serious learners',
+                description: 'Best for serious learners and professionals',
                 features: [
-                    'Unlimited quizzes',
-                    'Advanced analytics',
-                    'Priority support',
-                    'Custom categories',
-                    'Progress tracking',
-                    'Export results',
+                    'Unlimited quizzes & tests',
+                    'Advanced analytics & insights',
+                    'Priority email support',
+                    'Custom study categories',
+                    'Detailed progress reports',
+                    'Export results to PDF',
+                    'Ad-free experience',
+                    'Offline mode access'
                 ],
-                cta_text: 'Go Pro',
+                cta_text: 'Go Professional',
                 cta_link: '/subscribe/pro',
                 popular: true,
             },
             {
                 name: 'Enterprise',
-                price: '$29.99',
-                yearly_price: '$24.99',
+                price: '$39.99',
+                yearly_price: '$29.99',
                 period: '/month',
                 description: 'For teams and organizations',
                 features: [
-                    'Everything in Pro',
-                    'Team management',
-                    'API access',
-                    'Custom branding',
-                    'Advanced reporting',
+                    'Everything in Professional',
+                    'Team management dashboard',
+                    'API access & integrations',
+                    'Custom branding options',
+                    'Advanced reporting suite',
                     'SSO integration',
-                    'Dedicated support',
+                    'Dedicated account manager',
+                    'Custom training sessions',
+                    'White-label solutions'
                 ],
                 cta_text: 'Contact Sales',
-                cta_link: '/contact',
+                cta_link: '/contact-sales',
                 popular: false,
             },
         ],
@@ -219,7 +277,7 @@ const displayedPlans = computed(() => {
 })
 
 // Methods
-const getPlanPrice = plan => {
+const getPlanPrice = (plan) => {
     if (plan.price === 'Free') return 'Free'
 
     if (billingCycle.value === 'yearly' && plan.yearly_price) {
@@ -229,7 +287,7 @@ const getPlanPrice = plan => {
     return plan.price
 }
 
-const getPlanPeriod = plan => {
+const getPlanPeriod = (plan) => {
     if (plan.price === 'Free') return ''
 
     if (billingCycle.value === 'yearly') {
@@ -237,6 +295,15 @@ const getPlanPeriod = plan => {
     }
 
     return plan.period || '/month'
+}
+
+const calculateYearlySavings = (plan) => {
+    if (plan.price === 'Free' || !plan.yearly_price) return 0
+    
+    const monthlyPrice = parseFloat(plan.price.replace('$', ''))
+    const yearlyPrice = parseFloat(plan.yearly_price.replace('$', ''))
+    
+    return Math.round((monthlyPrice * 12) - (yearlyPrice * 12))
 }
 
 const animatePricingCards = () => {
@@ -247,8 +314,8 @@ const animatePricingCards = () => {
     const cards = pricingGrid.value.querySelectorAll('.pricing-card')
     cards.forEach((card, index) => {
         setTimeout(() => {
-            card.classList.add('animate-slide-in-up')
-        }, index * 150)
+            card.classList.add('animate-slideInUp')
+        }, index * 200)
     })
 }
 
@@ -257,8 +324,8 @@ onMounted(() => {
     if (pricingGrid.value) {
         // Create intersection observer to trigger animations when in view
         const observer = new IntersectionObserver(
-            entries => {
-                entries.forEach(entry => {
+            (entries) => {
+                entries.forEach((entry) => {
                     if (entry.isIntersecting && !hasAnimated.value) {
                         animatePricingCards()
                         observer.unobserve(entry.target)
@@ -276,13 +343,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Pricing card animations */
 .pricing-card {
     opacity: 0;
     transform: translateY(30px);
 }
 
-.pricing-card.animate-slide-in-up {
-    animation: slideInUp 0.6s ease-out forwards;
+.pricing-card.animate-slideInUp {
+    animation: slideInUp 0.8s ease-out forwards;
 }
 
 @keyframes slideInUp {
@@ -292,16 +360,39 @@ onMounted(() => {
     }
 }
 
-/* Hover effects for pricing cards */
+/* Popular card special styling */
+.pricing-card-popular {
+    position: relative;
+}
+
+.pricing-card-popular::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, #667eea, #764ba2, #667eea);
+    border-radius: 1.75rem;
+    z-index: -1;
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* Enhanced hover effects */
 .pricing-card:hover {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-/* Popular plan glow effect */
-.pricing-card.border-indigo-500 {
-    box-shadow:
-        0 0 0 1px rgba(99, 102, 241, 0.1),
-        0 25px 50px -12px rgba(99, 102, 241, 0.25);
+.pricing-card-popular:hover {
+    box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.4);
 }
 
 /* Feature checkmark animations */
@@ -310,25 +401,43 @@ onMounted(() => {
 }
 
 @keyframes checkBounce {
-    0%,
-    100% {
+    0%, 100% {
         transform: scale(1);
     }
     50% {
-        transform: scale(1.2);
+        transform: scale(1.3);
     }
 }
 
-/* Button hover effects */
-.pricing-card button:hover,
-.pricing-card a:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+/* Price change animations */
+.pricing-card .text-6xl {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass card styling */
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Billing toggle enhancements */
+.billing-toggle button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-    .pricing-card.scale-105 {
+    .pricing-card-popular {
         transform: scale(1);
     }
 }
@@ -337,27 +446,44 @@ onMounted(() => {
     .pricing-card {
         padding: 1.5rem;
     }
-}
-
-/* Billing toggle animations */
-.billing-toggle button {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Price change animations */
-.price-change {
-    animation: priceFlip 0.4s ease-in-out;
-}
-
-@keyframes priceFlip {
-    0% {
-        transform: rotateX(0deg);
+    
+    .text-6xl {
+        font-size: 3rem;
     }
-    50% {
-        transform: rotateX(90deg);
+}
+
+/* Staggered animation delays */
+.pricing-card:nth-child(1) { animation-delay: 0ms; }
+.pricing-card:nth-child(2) { animation-delay: 200ms; }
+.pricing-card:nth-child(3) { animation-delay: 400ms; }
+
+/* Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .pricing-card,
+    .glass-card,
+    .animate-bounce,
+    .animate-pulse {
+        animation: none;
+        transition: none;
     }
-    100% {
-        transform: rotateX(0deg);
+    
+    .hover-lift:hover {
+        transform: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .pricing-card > div {
+        background: rgba(31, 41, 55, 0.8);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass-card {
+        background: rgba(31, 41, 55, 0.7);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.1);
     }
 }
 </style>

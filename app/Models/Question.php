@@ -10,6 +10,10 @@ namespace App\Models;
 
 use App\Filters\QueryFilter;
 use App\Traits\SecureDeletes;
+use App\Traits\SanitizesContent;
+use App\Traits\ValidatesContent;
+use App\Traits\TracksContentHistory;
+use App\Traits\ValidatesMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,21 +26,29 @@ class Question extends Model
     use SoftDeletes;
     use SecureDeletes;
     use BelongsToThrough;
+    use SanitizesContent;
+    use ValidatesContent;
+    use TracksContentHistory;
+    use ValidatesMedia;
 
-    /*
-    |--------------------------------------------------------------------------
-    | GLOBAL VARIABLES
-    |--------------------------------------------------------------------------
-    */
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'question_type_id', 'skill_id', 'question', 'options', 'correct_answer',
+        'default_marks', 'default_time', 'is_active', 'preferences'
+    ];
 
-    protected $guarded = [];
-
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
     protected $casts = [
         'options' => 'array',
         'preferences' => 'object',
-        'has_attachment' => 'boolean',
-        'attachment_options' => 'object',
-        'solution_video' => 'object',
         'is_active' => 'boolean',
     ];
 
@@ -46,10 +58,43 @@ class Question extends Model
     |--------------------------------------------------------------------------
     */
 
-    protected static function booted()
+    /**
+     * The columns that should be sanitized.
+     *
+     * @var array
+     */
+    protected $sanitized = ['question', 'options'];
+
+    /**
+     * The columns that should be validated.
+     *
+     * @var array
+     */
+    protected $validated = ['question', 'options', 'correct_answer'];
+
+    /**
+     * The columns that should be versioned.
+     *
+     * @var array
+     */
+    protected $versioned = ['question', 'options', 'correct_answer'];
+
+    /**
+     * The columns that should be checked for media.
+     *
+     * @var array
+     */
+    protected $media = ['question', 'options'];
+
+    /**
+     *  Boot the model.
+     */
+    protected static function boot()
     {
-        static::creating(function ($category) {
-            $category->attributes['code'] = 'que_'.Str::random(11);
+        parent::boot();
+
+        static::creating(function ($question) {
+            $question->attributes['code'] = 'que_'.Str::random(11);
         });
     }
 

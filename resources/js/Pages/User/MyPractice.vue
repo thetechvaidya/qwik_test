@@ -8,57 +8,56 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <vue-good-table
-                    mode="remote"
-                    :pagination-options="options"
-                    :columns="columns"
-                    :total-rows="practiceSessions.meta.pagination.total"
-                    :rows="practiceSessions.data"
-                    :rtl="$page.props.rtl"
-                    :line-numbers="true"
-                    @on-page-change="onPageChange"
-                    @on-column-filter="onColumnFilter"
-                    @on-per-page-change="onPerPageChange"
+                <DataTable
+                    :value="practiceSessions.data"
+                    :totalRecords="practiceSessions.meta.pagination.total"
+                    :rows="practiceSessions.meta.pagination.per_page"
+                    :first="(practiceSessions.meta.pagination.current_page - 1) * practiceSessions.meta.pagination.per_page"
+                    :lazy="true"
+                    :paginator="true"
+                    :rowsPerPageOptions="[10, 20, 50, 100]"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                    @page="onPageChange"
+                    @sort="onSortChange"
+                    @filter="onColumnFilter"
+                    showGridlines
+                    stripedRows
                 >
-                    <template #table-row="props">
-                        <!-- Status Column -->
-                        <div v-if="props.column.field === 'status'">
+                    <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.label" :sortable="col.sortable">
+                        <template #body="slotProps" v-if="col.field === 'status'">
                             <span
                                 :class="[
-                                    props.row.status === 'Passed' ? 'badge-success' : 'badge-danger',
+                                    slotProps.data.status === 'Passed' ? 'badge-success' : 'badge-danger',
                                     'badge-sm uppercase text-xs',
                                 ]"
-                                >{{ props.row.status }}</span
+                                >{{ slotProps.data.status }}</span
                             >
-                        </div>
+                        </template>
+                        
+                        <template #body="slotProps" v-else-if="col.field === 'actions'">
+                            <div class="py-2">
+                                <Link
+                                    class="qt-btn qt-btn-sm qt-btn-success"
+                                    :href="
+                                        route('practice_session_analysis', {
+                                            practiceSet: slotProps.data.slug,
+                                            session: slotProps.data.id,
+                                        })
+                                    "
+                                >
+                                    {{ __('View Analysis') }}
+                                </Link>
+                            </div>
+                        </template>
+                    </Column>
 
-                        <!-- Actions Column -->
-                        <div v-else-if="props.column.field === 'actions'" class="py-2">
-                            <Link
-                                class="qt-btn qt-btn-sm qt-btn-success"
-                                :href="
-                                    route('practice_session_analysis', {
-                                        practiceSet: props.row.slug,
-                                        session: props.row.id,
-                                    })
-                                "
-                            >
-                                {{ __('View Analysis') }}
-                            </Link>
-                        </div>
-
-                        <!-- Remaining Columns -->
-                        <span v-else>
-                            {{ props.formattedRow[props.column.field] }}
-                        </span>
-                    </template>
-
-                    <template #emptystate>
+                    <template #empty>
                         <div>
                             <no-data-table></no-data-table>
                         </div>
                     </template>
-                </vue-good-table>
+                </DataTable>
             </div>
         </div>
     </app-layout>
@@ -69,6 +68,8 @@ import AppLayout from '@/Layouts/AppLayout.vue'
 import EmptyStudentCard from '@/Components/Cards/EmptyStudentCard'
 import ProgressNavigator from '@/Components/Stepper/ProgressNavigator'
 import NoDataTable from '@/Components/NoDataTable'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 export default {
     components: {
@@ -76,6 +77,8 @@ export default {
         EmptyStudentCard,
         ProgressNavigator,
         NoDataTable,
+        DataTable,
+        Column,
     },
     props: {
         practiceSessions: Object,
@@ -134,8 +137,8 @@ export default {
         updateParams(newProps) {
             this.serverParams = Object.assign({}, this.serverParams, newProps)
         },
-        onPageChange(params) {
-            this.updateParams({ page: params.currentPage })
+        onPageChange(event) {
+            this.updateParams({ page: Math.floor(event.first / event.rows) + 1 })
             this.loadItems()
         },
         onPerPageChange(params) {

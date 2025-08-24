@@ -16,7 +16,8 @@
                 <comprehension-attachment :passage="attachment"></comprehension-attachment>
             </div>
         </div>
-        <div class="q-data question" v-html="question.question">
+        <div class="q-data question" v-html="question.question"></div>
+    </div>
 </template>
 <script setup>
     import { ref, nextTick, onMounted } from 'vue'

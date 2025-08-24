@@ -61,6 +61,10 @@ export default {
         },
     },
     methods: {
+        __(key) {
+            return this.$page.props.translations?.[key] || key
+        },
+        
         updateSyllabus(code) {
             this.$inertia.post(route('update_syllabus'), {
                 category: code,

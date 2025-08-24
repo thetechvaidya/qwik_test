@@ -160,11 +160,15 @@
     </arc-form-section>
 </template>
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 // Props
 const props = defineProps({
@@ -183,11 +187,21 @@ const title = computed(() => {
 
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    enable_top_bar: props.settings?.enable_top_bar || false,
+    enable_hero: props.settings?.enable_hero || false,
+    enable_features: props.settings?.enable_features || false,
+    enable_categories: props.settings?.enable_categories || false,
+    enable_stats: props.settings?.enable_stats || false,
+    enable_testimonials: props.settings?.enable_testimonials || false,
+    enable_cta: props.settings?.enable_cta || false,
+    enable_footer: props.settings?.enable_footer || false,
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.homepage.update'), {
+        errorBag: 'updateHomePageSettings',
+        preserveScroll: true,
+    })
 }
 </script>

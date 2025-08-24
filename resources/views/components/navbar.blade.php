@@ -57,7 +57,9 @@
                         <div class="ltr:mr-4 rtl:ml-4 flex ltr:lg:ml-0 rtl:lg:ml-0">
                             <a href="{{ route('welcome') }}">
                                 <span class="sr-only">{{ $siteSettings->app_name }}</span>
-                                <img class="h-8 w-auto" src="{{ asset('storage/'.$siteSettings->logo_path) }}" alt="{{ $siteSettings->app_name }}">
+                                @if($siteSettings->logo_path)
+                                    <img class="h-8 w-auto" src="{{ asset('storage/'.$siteSettings->logo_path) }}" alt="{{ $siteSettings->app_name }}">
+                                @endif
                             </a>
                         </div>
 

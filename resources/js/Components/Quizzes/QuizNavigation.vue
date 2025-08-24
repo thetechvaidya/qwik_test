@@ -2,6 +2,7 @@
     <SplitButton class="p-button-success" label="Manage" icon="pi pi-cog" :model="items"></SplitButton>
 </template>
 <script>
+import { router } from '@inertiajs/vue3'
 import SplitButton from 'primevue/splitbutton'
 export default {
     name: 'QuizNavigation',
@@ -9,8 +10,8 @@ export default {
         SplitButton,
     },
     props: {
-        currentRoute: '',
-        quizId: '',
+        currentRoute: String,
+        quizId: String,
     },
     data() {
         return {
@@ -18,25 +19,25 @@ export default {
                 {
                     label: 'Edit Details',
                     command: () => {
-                        this.$inertia.get(route('quizzes.edit', { quiz: this.quizId }))
+                        router.get(route('quizzes.edit', { quiz: this.quizId }))
                     },
                 },
                 {
                     label: 'Questions',
                     command: () => {
-                        this.$inertia.get(route('quizzes.questions', { quiz: this.quizId }))
+                        router.get(route('quizzes.questions', { quiz: this.quizId }))
                     },
                 },
                 {
                     label: 'Settings',
                     command: () => {
-                        this.$inertia.get(route('quizzes.settings', { quiz: this.quizId }))
+                        router.get(route('quizzes.settings', { quiz: this.quizId }))
                     },
                 },
                 {
                     label: 'Schedules',
                     command: () => {
-                        this.$inertia.get(route('quizzes.schedules.index', { quiz: this.quizId }))
+                        router.get(route('quizzes.schedules.index', { quiz: this.quizId }))
                     },
                 },
             ],
@@ -44,7 +45,7 @@ export default {
     },
     computed: {
         activeLink() {
-            return route(route().current(), { exam: this.examId })
+            return route(route().current(), { quiz: this.quizId })
         },
     },
 }

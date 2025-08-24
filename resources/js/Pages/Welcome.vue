@@ -1,5 +1,8 @@
 <template>
-    <div class="landing-page">
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
+        <!-- Modern Navigation -->
+        <ModernHeader :showSearch="false" />
+
         <!-- Hero Section -->
         <ModernHero
             v-if="sections.hero.enabled"
@@ -26,126 +29,85 @@
         <!-- Testimonials Section -->
         <TestimonialsCarousel v-if="sections.testimonials.enabled" :testimonials="sections.testimonials.list" />
 
-        <!-- CTA Section -->
+        <!-- Enhanced CTA Section -->
         <section
             v-if="sections.cta.enabled"
-            class="cta-section py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+            class="relative py-20 lg:py-24 overflow-hidden"
         >
-            <div class="container mx-auto px-6 text-center">
+            <!-- Background Effects -->
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"></div>
+            <div class="absolute inset-0 bg-black/20"></div>
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-transparent rounded-full blur-3xl"></div>
+            
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <!-- Main CTA Content -->
                 <div class="max-w-4xl mx-auto">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6"> Ready to Transform Your Learning? </h2>
-                    <p class="text-xl mb-10 opacity-90">
-                        Join thousands of successful learners who have already started their journey with us.
+                    <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                        Ready to <span class="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">Transform</span> Your Learning Journey?
+                    </h2>
+                    <p class="text-xl lg:text-2xl text-indigo-100 mb-8 leading-relaxed">
+                        Join over <strong class="text-yellow-300">50,000+</strong> learners who are already mastering new skills with our interactive quiz platform.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-12">
                         <Link
                             href="/register"
-                            class="px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
+                            class="group relative inline-flex items-center px-8 py-4 text-lg font-semibold text-indigo-600 bg-white rounded-2xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/30"
                         >
-                            Get Started for Free
+                            <i class="pi pi-rocket mr-3 text-indigo-600 group-hover:animate-bounce"></i>
+                            Get Started Free
+                            <i class="pi pi-arrow-right ml-3 text-indigo-600 transform group-hover:translate-x-1 transition-transform duration-200"></i>
                         </Link>
                         <Link
                             href="/login"
-                            class="px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-indigo-600 transition-all duration-300"
+                            class="group inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-white/30"
                         >
+                            <i class="pi pi-sign-in mr-3 group-hover:animate-pulse"></i>
                             Sign In
                         </Link>
+                    </div>
+                    
+                    <!-- Trust Indicators -->
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-8 text-indigo-100">
+                        <div class="flex items-center">
+                            <div class="flex -space-x-2 mr-3">
+                                <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full border-2 border-white"></div>
+                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white">+</div>
+                            </div>
+                            <span class="text-sm font-medium">50K+ Active Learners</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="flex text-yellow-300 mr-2">
+                                <i class="pi pi-star-fill"></i>
+                                <i class="pi pi-star-fill"></i>
+                                <i class="pi pi-star-fill"></i>
+                                <i class="pi pi-star-fill"></i>
+                                <i class="pi pi-star-fill"></i>
+                            </div>
+                            <span class="text-sm font-medium">4.9/5 Rating</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="pi pi-shield-check mr-2 text-green-300"></i>
+                            <span class="text-sm font-medium">100% Free to Start</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer v-if="legacy_settings.enable_footer" class="bg-gray-900 text-white py-16">
-            <div class="container mx-auto px-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <!-- Brand Column -->
-                    <div class="md:col-span-2">
-                        <div class="flex items-center gap-3 mb-4">
-                            <img v-if="site.logo" :src="site.logo" :alt="site.name" class="h-10 w-auto" />
-                            <span class="text-2xl font-bold">{{ site.name }}</span>
-                        </div>
-                        <p class="text-gray-400 mb-6 max-w-md">
-                            {{ site.description }}
-                        </p>
-                        <div class="flex gap-4">
-                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                                <i class="pi pi-facebook text-xl"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                                <i class="pi pi-twitter text-xl"></i>
-                            </a>
-                            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                                <i class="pi pi-linkedin text-xl"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Quick Links -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                        <ul class="space-y-2">
-                            <li
-                                ><Link href="/about" class="text-gray-400 hover:text-white transition-colors"
-                                    >About Us</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/features" class="text-gray-400 hover:text-white transition-colors"
-                                    >Features</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/pricing" class="text-gray-400 hover:text-white transition-colors"
-                                    >Pricing</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/contact" class="text-gray-400 hover:text-white transition-colors"
-                                    >Contact</Link
-                                ></li
-                            >
-                        </ul>
-                    </div>
-
-                    <!-- Support -->
-                    <div>
-                        <h3 class="text-lg font-semibold mb-4">Support</h3>
-                        <ul class="space-y-2">
-                            <li
-                                ><Link href="/help" class="text-gray-400 hover:text-white transition-colors"
-                                    >Help Center</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/faq" class="text-gray-400 hover:text-white transition-colors"
-                                    >FAQ</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/privacy" class="text-gray-400 hover:text-white transition-colors"
-                                    >Privacy Policy</Link
-                                ></li
-                            >
-                            <li
-                                ><Link href="/terms" class="text-gray-400 hover:text-white transition-colors"
-                                    >Terms of Service</Link
-                                ></li
-                            >
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-                    <p>&copy; {{ new Date().getFullYear() }} {{ site.name }}. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
+        <!-- Modern Footer -->
+        <ModernFooter v-if="legacy_settings.enable_footer" />
     </div>
 </template>
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
+import ModernHeader from '@/Components/Layout/ModernHeader.vue'
+import ModernFooter from '@/Components/Layout/ModernFooter.vue'
 import ModernHero from '@/Components/Landing/ModernHero.vue'
 import StatsSection from '@/Components/Landing/StatsSection.vue'
 import FeaturesGrid from '@/Components/Landing/FeaturesGrid.vue'

@@ -9,10 +9,7 @@
 
 <script>
 export default {
-    model: {
-        prop: 'checked',
-        event: 'change',
-    },
+    emits: ['change', 'update:checked'],
 
     props: {
         checked: {
@@ -31,6 +28,7 @@ export default {
             },
             set(val) {
                 this.$emit('change', val)
+                this.$emit('update:checked', val)
             },
         },
     },

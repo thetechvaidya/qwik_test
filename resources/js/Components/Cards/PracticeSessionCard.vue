@@ -6,14 +6,15 @@
             </div>
             <h1 class="text-lg font-semibold text-gray-800 leading-5 py-2">{{ practiceSession.title }}</h1>
             <div class="w-full bg-gray-300 h-1 mr-1 relative rounded mt-4">
-                <div class="h-1 bg-green-700 rounded" :style="'width: '+ practiceSession.percentage_completed +'%'">
+                <div class="h-1 bg-green-700 rounded" :style="'width: '+ practiceSession.percentage_completed +'%'"></div>
             </div>
             <div class="w-full flex items-end justify-between mt-4">
                 <h2 class="font-mono text-gray-600 text-sm">{{ practiceSession.percentage_completed }}% {{ __('Completed') }}</h2>
                 <slot name="action"></slot>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     defineOptions({ name: 'PracticeSessionCard' })
     const props = defineProps({

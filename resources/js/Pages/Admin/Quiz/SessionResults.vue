@@ -419,7 +419,6 @@
                                             <practice-question-card
                                                 :key="question.card"
                                                 :question="question"
-                                                :question="question"
                                                 :sno="index + 1"
                                                 :total-questions="quiz.total_questions"
                                             ></practice-question-card>
@@ -520,12 +519,12 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
-import DoughnutChart from '@/Components/Charts/DoughnutChart.vue'
+import DoughnutChart from '@/Charts/DoughnutChart.vue'
 import NavigationQuestionCardShimmer from '@/Components/Shimmers/NavigationQuestionCardShimmer.vue'
-import PracticeQuestionChip from '@/Components/Questions/PracticeQuestionChip.vue'
+import PracticeQuestionChip from '@/Components/Cards/PracticeQuestionChip.vue'
 import PracticeQuestionShimmer from '@/Components/Shimmers/PracticeQuestionShimmer.vue'
-import PracticeQuestionCard from '@/Components/Questions/PracticeQuestionCard.vue'
-import PracticeSolutionCard from '@/Components/Questions/PracticeSolutionCard.vue'
+import PracticeQuestionCard from '@/Components/Cards/PracticeQuestionCard.vue'
+import PracticeSolutionCard from '@/Components/Cards/PracticeSolutionCard.vue'
 import MSASolution from '@/Components/Questions/Solutions/MSASolution.vue'
 import MMASolution from '@/Components/Questions/Solutions/MMASolution.vue'
 import MTFSolution from '@/Components/Questions/Solutions/MTFSolution.vue'

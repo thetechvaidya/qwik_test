@@ -64,15 +64,22 @@
     </arc-form-section>
 </template>
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { computed } from 'vue'
+import { Head, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useForm } from '@inertiajs/vue3'
+import ArcActionMessage from '@/Components/ActionMessage.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcFormSection from '@/Components/FormSection.vue'
+import ArcInput from '@/Components/Input.vue'
+import ArcInputError from '@/Components/InputError.vue'
+import ArcLabel from '@/Components/Label.vue'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 // Props
 const props = defineProps({
     settings: Object,
+    paymentSettings: Object,
     errors: Object,
 })
 
@@ -85,13 +92,23 @@ const title = computed(() => {
     return __('Settings/ Razorpay Settings Form') + ' - ' + pageProps.general.app_name
 })
 
+const webhookURL = computed(() => {
+    return route('razorpay.webhook')
+})
+
 // Form handling
 const form = useForm({
-    // Add form fields based on original file
+    enable_razorpay: props.settings?.enable_razorpay || false,
+    key_id: props.settings?.key_id || '',
+    key_secret: props.settings?.key_secret || '',
+    webhook_secret: props.settings?.webhook_secret || '',
 })
 
 // Methods
 const updateSettings = () => {
-    // Add form submission logic
+    form.post(route('admin.settings.razorpay.update'), {
+        errorBag: 'updateRazorpaySettings',
+        preserveScroll: true,
+    })
 }
 </script>

@@ -167,89 +167,88 @@ export default {
             loading: true,
             submitting: false,
             current_lesson: this.lessonIndex,
+        };
+    },
+    computed: {
+        title() {
+            return this.skill.name + ' '+this.__('Lessons')+' - ' + this.$page.props.general.app_name;
+        },
+        appUrl() {
+            return this.$page.props.appUrl;
+        },
+        lessonTitle() {
+            return this.lessons.length > 0 ? this.__('Lesson')+' '+this.getLessonNo(this.current_lesson) + ': ' + this.lessons[this.current_lesson].title : '';
         }
     },
-        computed: {
-            title() {
-                return this.skill.name + ' '+this.__('Lessons')+' - ' + this.$page.props.general.app_name;
-            },
-            appUrl() {
-                return this.$page.props.appUrl;
-            },
-            lessonTitle() {
-                return this.lessons.length > 0 ? this.__('Lesson')+' '+this.getLessonNo(this.current_lesson) + ': ' + this.lessons[this.current_lesson].title : '';
+    methods: {
+        exitLessons() {
+            window.history.back();
+        },
+        prevLesson() {
+            if (this.current_lesson !== 0) {
+                this.current_lesson--;
+            } else {
+                this.prevPage();
             }
         },
-        methods: {
-            exitLessons() {
-                window.history.back();
-            },
-            prevLesson() {
-                if (this.current_lesson !== 0) {
-                    this.current_lesson--;
-                } else {
-                    this.prevPage();
+        nextLesson() {
+            if (this.current_lesson < this.lessons.length - 1) {
+                this.current_lesson++;
+            } else {
+                if (this.current_lesson < this.lesson.total_lessons - 1) {
+                    this.nextPage();
                 }
-            },
-            nextLesson() {
-                if (this.current_lesson < this.lessons.length - 1) {
-                    this.current_lesson++;
-                } else {
-                    if (this.current_lesson < this.lesson.total_lessons - 1) {
-                        this.nextPage();
-                    }
-                }
-            },
-            jumpToLesson(lessonID) {
-                this.current_lesson = lessonID;
-            },
-            prevPage() {
-                if (this.pagination.current_page !== 1) {
-                    this.current_lesson = 0;
-                    this.fetchLessons(this.pagination.current_page - 1);
-                }
-            },
-            nextPage() {
-                if (this.pagination.current_page < this.pagination.total_pages) {
-                    this.current_lesson = 0;
-                    this.fetchLessons(this.pagination.current_page + 1);
-                }
-            },
-            fetchLessons(page) {
-                let _this = this;
-                _this.loading = true;
-                axios.get(route('fetch_practice_lessons', {
-                    category: this.category.slug,
-                    section: this.section.slug,
-                    skill: this.skill.slug,
-                    page: page,
-                    withBody: true
-                }))
-                    .then(function (response) {
-                        let data = response.data;
-                        _this.lessons = data.lessons;
-                        _this.pagination = data.pagination;
-                    })
-                    .catch(function (error) {
-                        _this.loading = false;
-                    })
-                    .then(function () {
-                        _this.loading = false;
-                    });
-            },
-            getLessonNo(index) {
-                return (index + 1) + (this.pagination.per_page * (this.pagination.current_page - 1));
-            },
-        },
-        metaInfo() {
-            return {
-                title: this.title
             }
+        },
+        jumpToLesson(lessonID) {
+            this.current_lesson = lessonID;
+        },
+        prevPage() {
+            if (this.pagination.current_page !== 1) {
+                this.current_lesson = 0;
+                this.fetchLessons(this.pagination.current_page - 1);
+            }
+        },
+        nextPage() {
+            if (this.pagination.current_page < this.pagination.total_pages) {
+                this.current_lesson = 0;
+                this.fetchLessons(this.pagination.current_page + 1);
+            }
+        },
+        fetchLessons(page) {
+            let _this = this;
+            _this.loading = true;
+            axios.get(route('fetch_practice_lessons', {
+                category: this.category.slug,
+                section: this.section.slug,
+                skill: this.skill.slug,
+                page: page,
+                withBody: true
+            }))
+                .then(function (response) {
+                    let data = response.data;
+                    _this.lessons = data.lessons;
+                    _this.pagination = data.pagination;
+                })
+                .catch(function (error) {
+                    _this.loading = false;
+                })
+                .then(function () {
+                    _this.loading = false;
+                });
+        },
+        getLessonNo(index) {
+            return (index + 1) + (this.pagination.per_page * (this.pagination.current_page - 1));
         },
     },
+    metaInfo() {
+        return {
+            title: this.title
+        };
+    },
     mounted() {
-        document.addEventListener('contextmenu', event => event.preventDefault())
-        this.fetchLessons(this.currentPage)
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        this.fetchLessons(this.currentPage);
     },
 }
 </script>

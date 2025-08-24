@@ -49,22 +49,18 @@
                                             >{{ __('Sub Category')
                                             }}<span class="ltr:ml-1 rtl:mr-1 text-red-400">*</span></label
                                         >
-                                        <v-select
-                                            id="sub_category_id"
-                                            v-model="form.sub_category_id"
-                                            :options="subCategories"
-                                            :reduce="sub => sub.id"
-                                            label="name"
-                                            :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                            @search="searchSubCategories"
-                                        >
-                                            <template #no-options="{ search, searching }">
-                                                <span v-if="searching"
-                                                    >{{ __('No results were found for this search') }}.</span
-                                                >
-                                                <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                            </template>
-                                        </v-select>
+                                        <Select
+                            id="sub_category_id"
+                            v-model="form.sub_category_id"
+                            :options="subCategories"
+                            optionValue="id"
+                            optionLabel="name"
+                            :placeholder="__('Select Sub Category')"
+                            filter
+                            showClear
+                            class="w-full"
+                            @filter="searchSubCategories"
+                        />
                                         <div class="form-control-errors">
                                             <p
                                                 v-if="
@@ -81,21 +77,16 @@
                                         <label class="pb-2 text-sm font-semibold text-gray-800">{{
                                             __('Quiz Type')
                                         }}</label>
-                                        <v-select
-                                            id="quiz_type_id"
-                                            v-model="form.quiz_type_id"
-                                            :options="quizTypes"
-                                            :reduce="pattern => pattern.id"
-                                            label="name"
-                                            :dir="$page.props.rtl ? 'rtl' : 'ltr'"
-                                        >
-                                            <template #no-options="{ search, searching }">
-                                                <span v-if="searching"
-                                                    >{{ __('No results were found for this search') }}.</span
-                                                >
-                                                <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
-                                            </template>
-                                        </v-select>
+                                        <Select
+                            id="quiz_type_id"
+                            v-model="form.quiz_type_id"
+                            :options="quizTypes"
+                            optionValue="id"
+                            optionLabel="name"
+                            :placeholder="__('Select Quiz Type')"
+                            showClear
+                            class="w-full"
+                        />
                                         <div class="form-control-errors">
                                             <p
                                                 v-if="
@@ -145,6 +136,7 @@ import InputNumber from 'primevue/inputnumber'
 import RadioButton from 'primevue/radiobutton'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
+import Select from 'primevue/select'
 import QuizNavigation from '@/Components/Quizzes/QuizNavigation'
 import HorizontalStepper from '@/Components/Stepper/HorizontalStepper'
 import axios from 'axios'

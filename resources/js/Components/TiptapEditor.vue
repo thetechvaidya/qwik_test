@@ -442,6 +442,22 @@ export default {
     },
 
     methods: {
+        // Logger methods for production-safe logging
+        logError(message, context = {}) {
+            if (window.logger) {
+                window.logger.error(message, { ...context, component: 'TiptapEditor' })
+            } else if (import.meta.env.DEV) {
+                console.error(`[TiptapEditor] ${message}`, context)
+            }
+        },
+        logWarn(message, context = {}) {
+            if (window.logger) {
+                window.logger.warn(message, { ...context, component: 'TiptapEditor' })
+            } else if (import.meta.env.DEV) {
+                console.warn(`[TiptapEditor] ${message}`, context)
+            }
+        },
+
         initEditor() {
             this.editor = new Editor({
                 content: this.modelValue,
@@ -572,7 +588,7 @@ export default {
                     }, 100)
                 }
             } catch (e) {
-                console.warn('reRender failed:', e)
+                this.logWarn('reRender failed', { error: e.message })
             }
         },
 
@@ -691,7 +707,7 @@ export default {
                 if (csrf) {
                     headers['X-CSRF-TOKEN'] = csrf
                 } else {
-                    console.warn('CSRF token not found in meta tag, proceeding with cookie-based CSRF protection')
+                    this.logWarn('CSRF token not found in meta tag, proceeding with cookie-based CSRF protection')
                 }
 
                 const response = await fetch('/admin/file-manager/upload', {
@@ -746,11 +762,11 @@ export default {
                 if (url) {
                     this.editor.chain().focus().setImage({ src: url }).run()
                 } else {
-                    console.error('Upload response:', data)
+                    this.logError('Upload response unexpected', { response: data })
                     throw new Error('Unexpected upload response: ' + JSON.stringify(data))
                 }
             } catch (error) {
-                console.error('Image upload failed:', error)
+                this.logError('Image upload failed', { error: error.message })
 
                 // Extract meaningful error message
                 let errorMessage = 'Failed to upload image. Please try again.'

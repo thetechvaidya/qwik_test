@@ -4,9 +4,10 @@
             Read the passage and answer the question
         </div>
         <div ref="comScroll" class="max-h-96 overflow-y-auto overflow-x-hidden">
-            <div v-html="passage">
+            <div v-html="passage"></div>
         </div>
-    </template>
+    </div>
+</template>
 <script>
     export default {
         name: 'ComprehensionAttachment',

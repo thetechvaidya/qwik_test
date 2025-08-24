@@ -22,11 +22,12 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
-import { Head, Link, usePage, router } from '@inertiajs/vue3'
-import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { ref, computed } from 'vue'
+import { Head, usePage, router } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
-import { useForm } from '@inertiajs/vue3'
+import ArcActionSection from '@/Components/ActionSection.vue'
+import ArcButton from '@/Components/Button.vue'
+import ArcConfirmsPassword from '@/Components/ConfirmsPassword.vue'
 
 // Props
 const props = defineProps({
@@ -38,18 +39,21 @@ const props = defineProps({
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 
+// Reactive variables
+const loading = ref(false)
+
 // Computed
 const title = computed(() => {
     return __('Settings/ Clear Cache Form') + ' - ' + pageProps.general.app_name
 })
 
-// Form handling
-const form = useForm({
-    // Add form fields based on original file
-})
-
 // Methods
-const updateSettings = () => {
-    // Add form submission logic
+const clearCache = () => {
+    loading.value = true
+    router.post(route('admin.settings.clear-cache'), {}, {
+        onFinish: () => {
+            loading.value = false
+        }
+    })
 }
 </script>

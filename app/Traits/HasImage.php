@@ -67,7 +67,7 @@ trait HasImage
      */
     protected function defaultImageUrl()
     {
-        return '';
+        return asset('images/placeholders/default-profile.png');
     }
 
     /**

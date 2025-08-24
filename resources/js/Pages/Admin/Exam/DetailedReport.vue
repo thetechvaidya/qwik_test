@@ -44,52 +44,81 @@
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="card">
                     <div class="card-body">
-                        <vue-good-table
-mode="remote" :pagination-options="options" :columns="columns" :total-rows="examSessions.meta.pagination.total"
-                                        :rows="examSessions.data" :rtl="pageProps.rtl"
-                            @on-page-change="onPageChange"
-                            @on-column-filter="onColumnFilter"
-                            @on-per-page-change="onPerPageChange"
+                        <DataTable
+                            :value="data"
+                            :totalRecords="totalRecords"
+                            :loading="tableLoading"
+                            lazy
+                            paginator
+                            :rows="10"
+                            :rowsPerPageOptions="[10, 20, 50, 100]"
+                            paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                            currentPageReportTemplate="{first} to {last} of {totalRecords}"
+                            @page="onPage"
+                            @sort="onSort"
+                            @filter="onFilter"
+                            filterDisplay="row"
+                            :globalFilterFields="['user.name']"
                         >
-                            <template #table-row="props">
-                                <!-- Status Column -->
-                                <div v-if="props.column.field === 'status'">
+                            <Column
+                                v-for="col in columns"
+                                :key="col.field"
+                                :field="col.field"
+                                :header="col.header"
+                                :sortable="col.sortable"
+                                :showFilterMenu="false"
+                            >
+                                <template v-if="col.filterable" #filter="{ filterModel, filterCallback }">
+                                    <InputText
+                                        v-if="col.filterType === 'text'"
+                                        v-model="filterModel.value"
+                                        type="text"
+                                        @input="filterCallback()"
+                                        class="p-column-filter"
+                                        :placeholder="`Search ${col.header}`"
+                                    />
+                                    <Select
+                        v-else-if="col.filterType === 'dropdown'"
+                        v-model="filterModel.value"
+                        :options="col.filterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        @change="filterCallback()"
+                        :placeholder="`Select ${col.header}`"
+                        :showClear="true"
+                    />
+                                </template>
+
+                                <template #body="slotProps" v-if="col.field === 'status'">
                                     <span
                                         :class="[
-                                            props.row.status === 'Passed' ? 'badge-success' : 'badge-danger',
+                                            slotProps.data.status === 'Passed' ? 'badge-success' : 'badge-danger',
                                             'badge-sm uppercase text-xs',
                                         ]"
-                                        >{{ __(props.row.status) }}</span
+                                        >{{ __(slotProps.data.status) }}</span
                                     >
-                                </div>
+                                </template>
 
-                                <!-- Actions Column -->
-                                <div v-else-if="props.column.field === 'actions'" class="py-2">
-                                    <ActionsDropdown>
-                                        <template #actions>
-                                            <Link
-:href="route('exam_session_results', {exam: props.row.slug, session: props.row.id})"
-                                                "
-                                                class="action-item"
-                                                >{{ __('Results') }}</Link
-                                            >
-                                            <button class="action-item" @click="deleteSession(props.row.id)">{{
-                                                __('Delete')
-                                            }}</button>
-                                        </template>
-                                    </ActionsDropdown>
-                                </div>
+                                <template #body="slotProps" v-else-if="col.field === 'actions'">
+                                    <div class="py-2">
+                                        <ActionsDropdown>
+                                            <template #actions>
+                                                <Link
+                                                    :href="route('exam_session_results', {exam: slotProps.data.slug, session: slotProps.data.id})"
+                                                    class="action-item"
+                                                    >{{ __('Results') }}</Link
+                                                >
+                                                <button class="action-item" @click="deleteSession(slotProps.data.id)">{{ __('Delete') }}</button>
+                                            </template>
+                                        </ActionsDropdown>
+                                    </div>
+                                </template>
+                            </Column>
 
-                                <!-- Remaining Columns -->
-                                <span v-else>
-                                    {{ props.formattedRow[props.column.field] }}
-                                </span>
-                            </template>
-
-                            <template #emptystate>
+                            <template #empty>
                                 <NoDataTable></NoDataTable>
                             </template>
-                        </vue-good-table>
+                        </DataTable>
                     </div>
                 </div>
             </div>
@@ -105,45 +134,118 @@ import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
 import { useConfirmToast } from '@/composables/useConfirmToast'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import ActionsDropdown from '@/Components/ActionsDropdown.vue'
 
 // Props
 const props = defineProps({
-    // Add props based on original file
+    exam: Object,
+    schedule: Object,
+    examSessions: Object,
+    errors: Object,
 })
 
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
+const { confirm, toast } = useConfirmToast()
 
 // Computed
 const title = computed(() => {
     return __('Exam/ Detailed Report') + ' - ' + pageProps.general.app_name
 })
 
-// Reactive data
-const createForm = ref(false)
-const editForm = ref(false)
-const currentId = ref(null)
-
-// Composables
-const { copyCode } = useCopy()
-const { confirm, toast } = useConfirmToast()
-
 // Server table composable
-const { onPageChange, onPerPageChange, onColumnFilter, onSortChange } = useServerTable({
-    resourceKeys: [], // Add appropriate resource keys
-    routeName: '', // Add appropriate route name
+const {
+    data,
+    columns,
+    totalRecords,
+    tableLoading,
+    onPage,
+    onSort,
+    onFilter,
+} = useServerTable({
+    resourceKeys: ['examSessions'],
+    routeName: 'exams.detailed_report',
+    routeParams: { exam: props.exam.id, ...(props.schedule ? { schedule: props.schedule.id } : {}) },
+    columns: [
+        {
+            field: 'user.name',
+            header: __('User'),
+            sortable: true,
+            filterable: true,
+            filterType: 'text',
+        },
+        {
+            field: 'started_at',
+            header: __('Started At'),
+            sortable: true,
+        },
+        {
+            field: 'completed_at',
+            header: __('Completed At'),
+            sortable: true,
+        },
+        {
+            field: 'total_time_taken',
+            header: __('Time Taken'),
+            sortable: true,
+        },
+        {
+            field: 'total_marks',
+            header: __('Total Marks'),
+            sortable: true,
+        },
+        {
+            field: 'status',
+            header: __('Status'),
+            sortable: true,
+            filterable: true,
+            filterType: 'dropdown',
+            filterOptions: [
+                { label: __('Passed'), value: 'Passed' },
+                { label: __('Failed'), value: 'Failed' },
+            ],
+        },
+        {
+            field: 'actions',
+            header: __('Actions'),
+            sortable: false,
+        },
+    ],
 })
 
-// Table configuration
-const columns = []
-const options = reactive({
-    enabled: true,
-    mode: 'pages',
-    perPageDropdown: [10, 20, 50, 100],
-    dropdownAllowAll: false,
-})
+// Methods
+const deleteSession = (sessionId) => {
+    confirm({
+        message: __('Are you sure you want to delete this session?'),
+        header: __('Confirmation'),
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => {
+            router.delete(route('exam_sessions.destroy', sessionId), {
+                onSuccess: () => {
+                    toast.add({
+                        severity: 'success',
+                        summary: __('Success'),
+                        detail: __('Session deleted successfully'),
+                        life: 3000,
+                    })
+                },
+                onError: () => {
+                    toast.add({
+                        severity: 'error',
+                        summary: __('Error'),
+                        detail: __('Failed to delete session'),
+                        life: 3000,
+                    })
+                },
+            })
+        },
+    })
+}
 </script>

@@ -19,7 +19,7 @@
                         type="password"
                         class="mt-1 block w-3/4"
                         placeholder="Password"
-                        @keyup.enter.native="confirmPassword"
+                        @keyup.enter="confirmPassword"
                     />
 
                     <jet-input-error :message="form.error" class="mt-2" />
@@ -27,13 +27,14 @@
             </template>
 
             <template #footer>
-                <jet-secondary-button @click.native="closeModal"> Nevermind </jet-secondary-button>
+                <jet-secondary-button @click="closeModal"> Nevermind </jet-secondary-button>
 
                 <jet-button
                     class="ml-2"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
-                    @click.native="confirmPassword"
+                    @click="confirmPassword"
+                >
                 >
                     {{ button }}
                 </jet-button>
@@ -75,6 +76,7 @@ export default {
             form: {
                 password: '',
                 error: '',
+                processing: false,
             },
         }
     },

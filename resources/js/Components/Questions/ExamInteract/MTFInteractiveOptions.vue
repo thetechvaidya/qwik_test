@@ -28,7 +28,8 @@
                 </draggable>
             </div>
         </div>
-    </template>
+    </div>
+</template>
 <script setup>
     import { ref, computed, watch, onMounted, nextTick } from 'vue'
     import { useMathRender } from '@/composables/useMathRender'

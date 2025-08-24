@@ -1,7 +1,7 @@
 <template>
     <div class="mma-options">
         <div v-for="(option, index) in options" :key="index" class="mb-4">
-            <div class="text-sm font-semibold mb-2">{{ __('Option') }} {{ index+1 }}
+            <div class="text-sm font-semibold mb-2">{{ __('Option') }} {{ index+1 }}</div>
             <TiptapEditor 
                 v-model="options[index].option" 
                 :config="{ 
@@ -28,7 +28,8 @@
             </div>
         </div>
         <button type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400" @click="addOption">{{ __('Add Option') }}</button>
-    </template>
+    </div>
+</template>
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
     import InputNumber from 'primevue/inputnumber';

@@ -13,10 +13,12 @@
 
                 <div v-show="!logoPreview" class="my-4">
                     <img
+                        v-if="settings.logo_path"
                         :src="$page.props.assetUrl + settings.logo_path"
                         :alt="settings.app_name"
                         class="h-10 object-cover"
                     />
+                    <p v-else class="text-gray-500 text-sm">No logo uploaded</p>
                 </div>
 
                 <!-- New Logo Preview -->

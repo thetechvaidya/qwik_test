@@ -129,7 +129,7 @@ v-if="notice" :class="notice.type === 'success' ? 'border-green-200 bg-green-100
                                     </h4>
                                     <div class="prose text-gray-800 mb-2">
                                         <ul>
-                                            <li v-for="instruction in instructions.quiz" v-html="instruction"></li>
+                                            <li v-for="(instruction, index) in instructions.quiz" :key="index" v-html="instruction"></li>
                                         </ul>
                                     </div>
                                     <hr class="my-8 border-t border-gray-200" />
@@ -138,7 +138,7 @@ v-if="notice" :class="notice.type === 'success' ? 'border-green-200 bg-green-100
                                     </h4>
                                     <div class="prose text-gray-800 mb-2">
                                         <ul>
-                                            <li v-for="instruction in instructions.standard" v-html="instruction"></li>
+                                            <li v-for="(instruction, index) in instructions.standard" :key="index" v-html="instruction"></li>
                                         </ul>
                                     </div>
                                 </div>
