@@ -141,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, defineAsyncComponent } from 'vue'
+import { ref, reactive, computed, defineAsyncComponent, onBeforeUnmount } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Drawer from 'primevue/drawer'
@@ -188,6 +188,7 @@ const {
     showErrorToast,
 } = useAdminForm({
     // No form configuration needed - UserForm handles its own form state
+    routeName: 'users',
     deleteUrl: user => route('users.destroy', { user: user.id }),
     // Do not redirect on success; page will refresh table via loadItems
     onDeleteSuccess: async () => {
@@ -365,4 +366,17 @@ const deleteUserWithConfirmation = async id => {
         return
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Cancel any pending delete confirmations
+    if (resolveDeleteConfirm) {
+        resolveDeleteConfirm(false)
+        resolveDeleteConfirm = null
+    }
+    
+    // Reset reactive state to prevent memory leaks
+    showDeleteConfirm.value = false
+    deleteConfirmText.value = ''
+})
 </script>

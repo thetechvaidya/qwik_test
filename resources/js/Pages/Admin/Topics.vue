@@ -27,6 +27,7 @@
                         @sort="onSort"
                         @filter="onFilter"
                         filterDisplay="row"
+                        v-model:filters="filters"
                         :globalFilterFields="['code', 'name', 'skill', 'status']"
                         class="p-datatable-sm"
                     >
@@ -139,7 +140,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -169,6 +170,14 @@ const { copyCode } = useCopy()
 const createForm = ref(false)
 const editForm = ref(false)
 const currentId = ref(null)
+
+// Initialize filters for DataTable
+const filters = ref({
+    code: { value: null },
+    name: { value: null },
+    skill: { value: null },
+    status: { value: null }
+})
 
 // Server table configuration
 const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
@@ -251,4 +260,17 @@ const deleteTopic = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

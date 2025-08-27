@@ -136,7 +136,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -260,4 +260,24 @@ const deleteComprehension = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

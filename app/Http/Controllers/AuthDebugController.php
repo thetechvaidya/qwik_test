@@ -52,8 +52,7 @@ class AuthDebugController extends Controller
                     'demo_credentials' => [
                         'admin' => 'admin@qwiktest.com / password',
                         'instructor' => 'instructor@qwiktest.com / password',
-                        'student' => 'student@qwiktest.com / password',
-                        'guest' => 'guest@qwiktest.com / password'
+                        'student' => 'student@qwiktest.com / password'
                     ]
                 ]
             ]);
@@ -79,8 +78,7 @@ class AuthDebugController extends Controller
             $credentials = [
                 'admin' => ['email' => 'admin@qwiktest.com', 'username' => 'admin'],
                 'instructor' => ['email' => 'instructor@qwiktest.com', 'username' => 'instructor'],
-                'student' => ['email' => 'student@qwiktest.com', 'username' => 'student'],
-                'guest' => ['email' => 'guest@qwiktest.com', 'username' => 'guest']
+                'student' => ['email' => 'student@qwiktest.com', 'username' => 'student']
             ];
 
             $results = [];
@@ -233,7 +231,6 @@ class AuthDebugController extends Controller
                 'admin@qwiktest.com',
                 'instructor@qwiktest.com',
                 'student@qwiktest.com',
-                'guest@qwiktest.com',
                 'admin_legacy@qwiktest.com'
             ];
 

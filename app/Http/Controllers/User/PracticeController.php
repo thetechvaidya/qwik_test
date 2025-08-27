@@ -33,7 +33,7 @@ class PracticeController extends Controller
 
     public function __construct(UserPracticeSetRepository $repository, QuestionRepository $questionRepository)
     {
-        $this->middleware(['role:guest|student|employee']);
+        $this->middleware(['role:student|employee']);
         $this->repository = $repository;
         $this->questionRepository = $questionRepository;
     }

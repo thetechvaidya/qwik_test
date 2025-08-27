@@ -25,6 +25,7 @@ import VueSweetalert2 from 'vue-sweetalert2'
 import hex2rgbaMixin from './Mixins/hex2rgba'
 import { useTranslate } from './composables/useTranslate'
 import { useHex2Rgba } from './composables/useHex2Rgba'
+import { sanctumAuth } from './composables/useSanctumAuth'
 
 // Import modern CSS for enhanced components
 import 'primeicons/primeicons.css'
@@ -379,6 +380,21 @@ const primeVueConfig = {
         mergeSections: true,
         mergeProps: false,
     },
+}
+
+// Initialize Sanctum authentication state
+if (typeof window !== 'undefined') {
+    // Make Sanctum auth globally available
+    window.sanctumAuth = sanctumAuth
+    
+    // Initialize authentication state on app load
+    router.on('start', () => {
+        // Update auth state from page props when navigating
+        const currentPage = router.page
+        if (currentPage?.props) {
+            sanctumAuth.updateAuthState(currentPage.props)
+        }
+    })
 }
 
 // Initialize the application using the optimized core function

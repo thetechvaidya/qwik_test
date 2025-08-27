@@ -16,7 +16,7 @@ class SubscriptionController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['role:guest|student|employee']);
+        $this->middleware(['role:student|employee']);
     }
 
     /**

@@ -184,8 +184,7 @@ export function useAuthDebug() {
             const commonDemoCredentials = [
                 { email: 'admin@qwiktest.com', password: 'password' },
                 { email: 'instructor@qwiktest.com', password: 'password' },
-                { email: 'student@qwiktest.com', password: 'password' },
-                { email: 'guest@qwiktest.com', password: 'password' }
+                { email: 'student@qwiktest.com', password: 'password' }
             ]
 
             const matchesDemo = commonDemoCredentials.some(cred => 
@@ -237,8 +236,7 @@ export function useAuthDebug() {
         return [
             { role: 'Admin', email: 'admin@qwiktest.com', password: 'password' },
             { role: 'Instructor', email: 'instructor@qwiktest.com', password: 'password' },
-            { role: 'Student', email: 'student@qwiktest.com', password: 'password' },
-            { role: 'Guest', email: 'guest@qwiktest.com', password: 'password' }
+            { role: 'Student', email: 'student@qwiktest.com', password: 'password' }
         ]
     }
 

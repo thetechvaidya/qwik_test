@@ -21,7 +21,7 @@
                             <div><strong>Admin:</strong> admin@qwiktest.com / password</div>
                             <div><strong>Instructor:</strong> instructor@qwiktest.com / password</div>
                             <div><strong>Student:</strong> student@qwiktest.com / password</div>
-                            <div><strong>Guest:</strong> guest@qwiktest.com / password</div>
+            
                         </div>
                     </div>
                 </div>

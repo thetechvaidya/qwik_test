@@ -21,6 +21,7 @@
                         filterDisplay="row"
                         :globalFilterFields="['code', 'name']"
                         :loading="tableLoading"
+                        v-model:filters="filters"
                         @page="onPage"
                         @sort="onSort"
                         @filter="onFilter"
@@ -80,6 +81,12 @@ const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 
+// Filters
+const filters = ref({
+    code: { value: null },
+    name: { value: null }
+})
+
 // Server table configuration
 const {
     data,
@@ -89,7 +96,8 @@ const {
     onPage,
     onSort,
     onFilter,
-} = useServerTable(route('question-types.index'), {
+} = useServerTable({
+    routeName: 'question-types.index',
     columns: [
         {
             label: 'Code',

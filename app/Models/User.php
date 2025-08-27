@@ -87,6 +87,16 @@ class User extends Authenticatable implements Wallet, MustVerifyEmail
         'preferences',
     ];
 
+    /**
+     * Get the default profile photo URL if no profile photo has been uploaded.
+     *
+     * @return string
+     */
+    protected function defaultProfilePhotoUrl()
+    {
+        return asset('images/placeholders/default-profile.svg');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | FUNCTIONS

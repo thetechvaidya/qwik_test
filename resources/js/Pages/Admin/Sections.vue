@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -251,4 +251,23 @@ const deleteSection = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.EQUALS }
+    }
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 </script>

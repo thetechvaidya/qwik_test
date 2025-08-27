@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive } from 'vue'
+import { computed, ref, reactive, onBeforeUnmount } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -137,8 +137,10 @@ const {
     onPage,
     onSort,
     onFilter,
+    loadItems,
     deleteExam: deleteServerExam,
-} = useServerTable(route('exams.index'), {
+} = useServerTable({
+    routeName: 'exams.index',
     columns: [
         {
             label: 'Code',
@@ -243,6 +245,21 @@ const deleteExam = async id => {
         },
     })
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.EQUALS }
+    }
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 
 // Expose loadItems for external table refreshing
 defineExpose({

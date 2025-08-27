@@ -26,8 +26,8 @@ return [
         'base-uri' => ["'self'"],
         'form-action' => ["'self'"],
         'frame-ancestors' => ["'none'"],
-        'upgrade-insecure-requests' => [],
-        'report-uri' => [env('CSP_REPORT_URI')],
+        'upgrade-insecure-requests' => env('APP_ENV') === 'production' ? [] : null,
+        'report-uri' => env('CSP_REPORT_URI') ? [env('CSP_REPORT_URI')] : [],
     ],
 
     /*
@@ -44,7 +44,7 @@ return [
         'X-Content-Type-Options' => 'nosniff',
         'X-Frame-Options' => 'SAMEORIGIN',
         'X-XSS-Protection' => '1; mode=block',
-        'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains; preload',
+        'Strict-Transport-Security' => env('APP_ENV') === 'production' ? 'max-age=31536000; includeSubDomains; preload' : null,
         'Referrer-Policy' => 'strict-origin-when-cross-origin',
         'Permissions-Policy' => "camera=(), microphone=(), geolocation=()",
         'Cross-Origin-Embedder-Policy' => 'unsafe-none',

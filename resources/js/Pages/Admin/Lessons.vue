@@ -122,7 +122,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { Head, Link, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DataTable from 'primevue/datatable'
@@ -342,6 +342,21 @@ const deleteLesson = async id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 
 // Initialize math rendering
 onMounted(() => {

@@ -20,7 +20,7 @@ class ExamDashboardController extends Controller
 
     public function __construct(LocalizationSettings $localizationSettings)
     {
-        $this->middleware(['role:guest|student|employee', 'verify.syllabus']);
+        $this->middleware(['role:student|employee', 'verify.syllabus']);
         $this->localizationSettings = $localizationSettings;
     }
 

@@ -142,6 +142,17 @@ class SecurityHeaders
             if ($directive === 'report-uri' && empty($sources)) {
                 continue;
             }
+            
+            // Skip directives with null values
+            if ($sources === null) {
+                continue;
+            }
+            
+            // Ensure sources is an array
+            if (!is_array($sources)) {
+                $sources = [$sources];
+            }
+            
             $policy[] = $directive . ' ' . implode(' ', $sources);
         }
 

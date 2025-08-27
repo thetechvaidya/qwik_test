@@ -28,7 +28,7 @@ class ProgressController extends Controller
 
     public function __construct(UserRepository $repository)
     {
-        $this->middleware(['role:guest|student|employee']);
+        $this->middleware(['role:student|employee']);
         $this->repository = $repository;
     }
 

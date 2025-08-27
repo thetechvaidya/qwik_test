@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Drawer from 'primevue/drawer'
@@ -213,4 +213,22 @@ const deleteTag = async id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Reset filters
+    filters.value = {
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

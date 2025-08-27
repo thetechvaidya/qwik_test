@@ -42,7 +42,6 @@ class UserCrudController extends Controller
                 ['value' => 1, 'text' => 'Admin'],
                 ['value' => 2, 'text' => 'Instructor'],
                 ['value' => 3, 'text' => 'Student'],
-                ['value' => 5, 'text' => 'Guest'],
             ],
             'users' => function () use($filters) {
                 return fractal(User::with('roles:id,name')->filter($filters)

@@ -41,7 +41,7 @@ class LoginResponse implements LoginResponseContract
         }
         
         if($user->hasRole("student")) {
-            return redirect()->route('student_dashboard');
+            return redirect()->route('user_dashboard');
         }
         
         // Default fallback

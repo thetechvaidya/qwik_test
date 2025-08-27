@@ -301,11 +301,11 @@
                     <div>
                         <Button
                             type="submit"
-                            :loading="isSubmitting"
-                            :disabled="!validator.$valid || isSubmitting || !formData.terms"
+                            :loading="isSubmitting || authLoading"
+                            :disabled="!validator.$valid || isSubmitting || authLoading || !formData.terms"
                             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                         >
-                            <i v-if="isSubmitting" class="pi pi-spinner pi-spin mr-2"></i>
+                            <i v-if="isSubmitting || authLoading" class="pi pi-spinner pi-spin mr-2"></i>
                             {{ __('Create Account') }}
                         </Button>
                     </div>
@@ -360,6 +360,7 @@ import {
 } from '@/composables/useFormValidation'
 import { useToast } from '@/composables/useToast'
 import { useTranslate } from '@/composables/useTranslate'
+import { useSanctumAuth } from '@/composables/useSanctumAuth'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
@@ -373,6 +374,7 @@ const props = defineProps({
 const { handleSubmit, isSubmitting } = useFormValidation()
 const { registrationSuccess, error: showError } = useToast()
 const { __ } = useTranslate()
+const { register: sanctumRegister, isLoading: authLoading } = useSanctumAuth()
 
 // Form data
 const formData = reactive({
@@ -398,42 +400,48 @@ const passwordStrength = computed(() => getPasswordStrength(formData.password))
 // Methods
 const handleRegister = async () => {
     await handleSubmit(
-        () => {
-            return new Promise((resolve, reject) => {
-                router.post(route('register'), formData, {
-                    onSuccess: () => {
-                        registrationSuccess()
-                        resolve()
-                    },
-                    onError: errors => {
-                        console.log('Registration errors:', errors)
-                        
-                        // Handle specific registration errors
-                        if (errors.email && errors.email.includes('already been taken')) {
-                            showError('This email address is already registered. Please use a different email or try logging in.')
-                        } else if (errors.user_name && errors.user_name.includes('already been taken')) {
-                            showError('This username is already taken. Please choose a different username.')
-                        } else if (errors.password) {
-                            const passwordErrors = Array.isArray(errors.password) ? errors.password : [errors.password]
-                            showError(`Password requirements not met: ${passwordErrors.join(', ')}`)
-                        } else {
-                            // Get the first error message
-                            const errorMessages = Object.values(errors).flat()
-                            if (errorMessages.length > 0) {
-                                showError(errorMessages[0])
-                            } else {
-                                showError('Registration failed. Please check your information and try again.')
-                            }
-                        }
-                        
-                        reject(new Error('Registration failed'))
-                    },
-                    onFinish: () => {
-                        formData.password = ''
-                        formData.password_confirmation = ''
-                    },
+        async () => {
+            try {
+                // Use Sanctum authentication for registration
+                await sanctumRegister({
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    user_name: formData.user_name,
+                    email: formData.email,
+                    password: formData.password,
+                    password_confirmation: formData.password_confirmation,
+                    terms: formData.terms
                 })
-            })
+                
+                registrationSuccess()
+            } catch (error) {
+                console.log('Registration errors:', error)
+                
+                // Handle specific registration errors
+                if (error.email && error.email.includes('already been taken')) {
+                    showError('This email address is already registered. Please use a different email or try logging in.')
+                } else if (error.user_name && error.user_name.includes('already been taken')) {
+                    showError('This username is already taken. Please choose a different username.')
+                } else if (error.password) {
+                    const passwordErrors = Array.isArray(error.password) ? error.password : [error.password]
+                    showError(`Password requirements not met: ${passwordErrors.join(', ')}`)
+                } else if (typeof error === 'object' && Object.keys(error).length > 0) {
+                    // Get the first error message
+                    const errorMessages = Object.values(error).flat()
+                    if (errorMessages.length > 0) {
+                        showError(errorMessages[0])
+                    } else {
+                        showError('Registration failed. Please check your information and try again.')
+                    }
+                } else {
+                    showError('Registration failed. Please check your information and try again.')
+                }
+                
+                // Clear passwords on error
+                formData.password = ''
+                formData.password_confirmation = ''
+                throw error
+            }
         },
         {
             successMessage: 'Account created successfully! Welcome aboard!',

@@ -24,6 +24,7 @@
                         currentPageReportTemplate="{first} to {last} of {totalRecords}"
                         sortMode="single"
                         filterDisplay="row"
+                        v-model:filters="filters"
                         :globalFilterFields="['name', 'code']"
                         :loading="tableLoading"
                         @page="onPage"
@@ -151,11 +152,12 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
 import { useCopy } from '@/composables/useCopy'
+import { FilterMatchMode } from '@primevue/core/api'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import SubCategoryForm from '@/Components/Forms/SubCategoryForm.vue'
 import SectionMapForm from '@/Components/Forms/SectionMapForm.vue'
@@ -182,6 +184,12 @@ const createForm = ref(false)
 const editForm = ref(false)
 const mapForm = ref(false)
 const currentId = ref(null)
+
+// Filters
+const filters = ref({
+    code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
 
 // Server table composable
 const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
@@ -276,4 +284,24 @@ const deleteSubCategory = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    mapForm.value = false
+    currentId.value = null
+    
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

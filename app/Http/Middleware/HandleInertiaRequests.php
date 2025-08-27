@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                     'role_id' => $request->user()->hasRole('admin') ? 'admin' : 
                                ($request->user()->hasRole('instructor') ? 'instructor' : 
-                               ($request->user()->hasRole('student') ? 'student' : 'guest')),
+                               ($request->user()->hasRole('student') ? 'student' : 'employee')),
                     'profile_photo_url' => $request->user()->profile_photo_url,
                 ] : null,
             ],
@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
                 'email' => $request->user()->email,
                 'role_id' => $request->user()->hasRole('admin') ? 'admin' : 
                            ($request->user()->hasRole('instructor') ? 'instructor' : 
-                           ($request->user()->hasRole('student') ? 'student' : 'guest')),
+                           ($request->user()->hasRole('student') ? 'student' : 'employee')),
                 'profile_photo_url' => $request->user()->profile_photo_url,
             ] : null,
             'isAdmin' => $request->user() ? $request->user()->hasRole('admin') : false,

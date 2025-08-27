@@ -38,7 +38,7 @@ class CheckoutController extends Controller
 
     public function __construct(CheckoutRepository $repository, PaymentRepository $paymentRepository, PaymentSettings $paymentSettings)
     {
-        $this->middleware(['role:guest|student|employee']);
+        $this->middleware(['role:student|employee']);
         $this->repository = $repository;
         $this->paymentRepository = $paymentRepository;
         $this->paymentSettings = $paymentSettings;

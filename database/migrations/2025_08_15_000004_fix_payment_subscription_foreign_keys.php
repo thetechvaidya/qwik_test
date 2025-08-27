@@ -140,17 +140,29 @@ return new class extends Migration
     private function indexExists(string $table, string $indexName): bool
     {
         try {
-            // For MySQL/MariaDB
             $connection = Schema::getConnection();
-            $database = $connection->getDatabaseName();
+            $driver = $connection->getDriverName();
             
-            $indexes = $connection->select("
-                SELECT INDEX_NAME 
-                FROM INFORMATION_SCHEMA.STATISTICS 
-                WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND INDEX_NAME = ?
-            ", [$database, $table, $indexName]);
+            if ($driver === 'sqlite') {
+                // For SQLite
+                $indexes = $connection->select("
+                    SELECT name FROM sqlite_master 
+                    WHERE type = 'index' AND tbl_name = ? AND name = ?
+                ", [$table, $indexName]);
+                
+                return count($indexes) > 0;
+            } else {
+                // For MySQL/MariaDB
+                $database = $connection->getDatabaseName();
+                
+                $indexes = $connection->select("
+                    SELECT INDEX_NAME 
+                    FROM INFORMATION_SCHEMA.STATISTICS 
+                    WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND INDEX_NAME = ?
+                ", [$database, $table, $indexName]);
 
-            return count($indexes) > 0;
+                return count($indexes) > 0;
+            }
         } catch (\Exception $e) {
             // If we can't check, assume it doesn't exist
             return false;

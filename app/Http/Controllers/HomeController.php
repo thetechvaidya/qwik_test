@@ -21,7 +21,7 @@ class HomeController extends Controller
     {
         if (Auth::user()->hasRole('admin')) {
             return redirect()->route('admin_dashboard');
-        } elseif (Auth::user()->hasRole(['guest', 'student', 'employee'])) {
+        } elseif (Auth::user()->hasRole(['student', 'employee'])) {
             return redirect()->route('user_dashboard');
         } elseif (Auth::user()->hasRole('instructor')) {
             return redirect()->route('instructor_dashboard');

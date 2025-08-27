@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // Create Roles
-        $roles = ['admin', 'instructor', 'student', 'parent', 'guest', 'employee', 'institute', 'candidate'];
+        $roles = ['admin', 'instructor', 'student', 'parent', 'employee', 'institute', 'candidate'];
 
         foreach($roles as $role) {
             Role::create(['name' => $role]);
@@ -66,16 +66,7 @@ class DatabaseSeeder extends Seeder
         ]);
         $student->assignRole('student');
 
-        $guest = User::create([
-            'first_name' => 'Guest',
-            'last_name' => 'User',
-            'user_name' => 'guest',
-            'email' => 'guest@qwiktest.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => Carbon::now()->toDateTimeString(),
-            'is_active' => true
-        ]);
-        $guest->assignRole('guest');
+
 
         // Create admin with legacy password for backward compatibility
         $adminLegacy = User::create([

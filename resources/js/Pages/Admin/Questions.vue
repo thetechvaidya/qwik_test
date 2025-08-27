@@ -142,7 +142,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import ArcDropdown from '@/Components/Dropdown.vue';
@@ -372,6 +372,18 @@ const deleteQuestion = async id => {
         },
     });
 };
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    showPreview.value = false
+    currentId.value = null
+    tableRoot.value = null
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 
 // Expose loadItems for external table refreshing
 defineExpose({

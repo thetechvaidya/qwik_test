@@ -37,7 +37,6 @@ class UserImportController extends Controller
                 ['code' => 'admin', 'name' => 'Admin'],
                 ['code' => 'instructor', 'name' => 'Instructor'],
                 ['code' => 'student', 'name' => 'Student'],
-                ['code' => 'guest', 'name' => 'Guest'],
             ],
             'sampleFileUrl' => url('assets/sample-users-upload.xlsx')
         ]);

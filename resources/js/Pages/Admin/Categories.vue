@@ -116,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -251,4 +251,17 @@ const deleteCategory = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

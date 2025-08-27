@@ -26,7 +26,7 @@ return [
         // Development origins (only in non-production)
         env('APP_ENV') !== 'production' ? 'http://localhost:3000' : null,
         env('APP_ENV') !== 'production' ? 'http://localhost:8000' : null,
-        env('APP_ENV') !== 'production' ? 'https://localhost:8000' : null,
+        // Removed https://localhost:8000 to prevent HTTPS upgrade issues in development
         env('APP_ENV') !== 'production' ? 'http://127.0.0.1:8000' : null,
     ]),
 

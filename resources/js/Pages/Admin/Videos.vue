@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -226,4 +226,19 @@ const deleteVideo = id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset filters
+    filters.value = {
+        code: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        title: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    }
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 </script>

@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import ExamTypeForm from '@/Components/Forms/ExamTypeForm.vue'
@@ -163,6 +163,7 @@ const currentId = ref(null)
 
 // Server table configuration
 const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    routeName: 'exam-types.index',
     columns: [
         {
             field: 'code',
@@ -241,4 +242,17 @@ const deleteRecord = async id => {
         })
     }
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Cancel any pending confirmation dialogs
+    if (window.$confirm && window.$confirm.close) {
+        window.$confirm.close()
+    }
+})
 </script>

@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useTranslate } from '@/composables/useTranslate'
@@ -276,4 +276,23 @@ const deleteRecord = id => {
         },
     })
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    currentRecord.value = {}
+    
+    // Reset filters
+    filters.value = {
+        name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        status: { value: null, matchMode: FilterMatchMode.EQUALS }
+    }
+    
+    // Close any pending confirmation dialogs
+    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+        window.PrimeVue.confirmDialog.close()
+    }
+})
 </script>

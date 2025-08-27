@@ -23,7 +23,7 @@ class PaymentController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['role:guest|student|employee'])->except('downloadInvoice');
+        $this->middleware(['role:student|employee'])->except('downloadInvoice');
         $this->middleware(['throttle:60,1'])->only('store');
     }
 

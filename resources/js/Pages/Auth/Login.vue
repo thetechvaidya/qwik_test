@@ -138,11 +138,11 @@
           <div>
             <Button
               type="submit"
-              :loading="isSubmitting"
-              :disabled="isSubmitting"
+              :loading="isSubmitting || authLoading"
+              :disabled="isSubmitting || authLoading"
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              <i v-if="isSubmitting" class="pi pi-spinner pi-spin mr-2"></i>
+              <i v-if="isSubmitting || authLoading" class="pi pi-spinner pi-spin mr-2"></i>
               {{ __('Sign in') }}
             </Button>
           </div>
@@ -221,6 +221,7 @@ import ModernFooter from '@/Components/Layout/ModernFooter.vue'
 import { useToast } from '@/composables/useToast'
 import { useTranslate } from '@/composables/useTranslate'
 import { useAuthDebug } from '@/composables/useAuthDebug'
+import { useSanctumAuth } from '@/composables/useSanctumAuth'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
@@ -246,6 +247,7 @@ const { handleSubmit, isSubmitting } = useFormValidation()
 const { success: loginSuccess, error: showError } = useToast()
 const { __ } = useTranslate()
 const { testCredentials, validateFormData, isDemoMode } = useAuthDebug()
+const { login: sanctumLogin, isLoading: authLoading } = useSanctumAuth()
 
 // UI state
 const showPassword = ref(false)
@@ -254,8 +256,7 @@ const showPassword = ref(false)
 const demoRoles = [
   { key: 'admin', label: 'Admin', color: 'bg-red-100 text-red-700 hover:bg-red-200' },
   { key: 'instructor', label: 'Instructor', color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
-  { key: 'student', label: 'Student', color: 'bg-green-100 text-green-700 hover:bg-green-200' },
-  { key: 'guest', label: 'Guest', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' }
+  { key: 'student', label: 'Student', color: 'bg-green-100 text-green-700 hover:bg-green-200' }
 ]
 
 // Methods
@@ -278,52 +279,51 @@ const handleLogin = async () => {
   }
 
   await handleSubmit(
-    () => {
-      return new Promise((resolve, reject) => {
-        router.post('/login', formData, {
-          onSuccess: () => {
-            loginSuccess()
-            resolve()
-          },
-          onError: (errors) => {
-            console.log('Login errors:', errors)
-            
-            // Handle specific authentication errors
-            if (errors.email || errors.password) {
-              if (errors.email && errors.email.includes('disabled')) {
-                showError('Your account has been disabled. Please contact administrator.')
-              } else if (errors.email && errors.email.includes('These credentials')) {
-                showError('Invalid credentials. Please check your email/username and password.')
-              } else {
-                showError('Login failed. Please verify your credentials and try again.')
-              }
-            } else if (Object.keys(errors).length > 0) {
-              const firstError = Object.values(errors)[0]
-              showError(Array.isArray(firstError) ? firstError[0] : firstError)
-            } else {
-              showError('Login failed. Please check your credentials and try again.')
-            }
-            
-            // Add debug information for demo mode
-            if (props.settings?.demo_mode || isDemoMode.value) {
-              console.log('Demo mode login attempt:', {
-                email: formData.email,
-                availableCredentials: {
-                  admin: 'admin@qwiktest.com / password',
-                  instructor: 'instructor@qwiktest.com / password',
-                  student: 'student@qwiktest.com / password',
-                  guest: 'guest@qwiktest.com / password'
-                }
-              })
-            }
-            
-            reject(new Error('Login failed'))
-          },
-          onFinish: () => {
-            formData.password = ''
-          }
+    async () => {
+      try {
+        // Use Sanctum authentication
+        await sanctumLogin({
+          email: formData.email,
+          password: formData.password,
+          remember: formData.remember
         })
-      })
+        
+        loginSuccess()
+      } catch (error) {
+        console.log('Login errors:', error)
+        
+        // Handle specific authentication errors
+        if (error.email || error.password) {
+          if (error.email && error.email.includes('disabled')) {
+            showError('Your account has been disabled. Please contact administrator.')
+          } else if (error.email && error.email.includes('These credentials')) {
+            showError('Invalid credentials. Please check your email/username and password.')
+          } else {
+            showError('Login failed. Please verify your credentials and try again.')
+          }
+        } else if (typeof error === 'object' && Object.keys(error).length > 0) {
+          const firstError = Object.values(error)[0]
+          showError(Array.isArray(firstError) ? firstError[0] : firstError)
+        } else {
+          showError('Login failed. Please check your credentials and try again.')
+        }
+        
+        // Add debug information for demo mode
+        if (props.settings?.demo_mode || isDemoMode.value) {
+          console.log('Demo mode login attempt:', {
+            email: formData.email,
+            availableCredentials: {
+              admin: 'admin@qwiktest.com / password',
+              instructor: 'instructor@qwiktest.com / password',
+              student: 'student@qwiktest.com / password'
+            }
+          })
+        }
+        
+        // Clear password on error
+        formData.password = ''
+        throw error
+      }
     },
     {
       successMessage: 'Login successful! Welcome back.',
@@ -336,8 +336,7 @@ const fillCredentials = (role) => {
   const credentials = {
     admin: { email: 'admin@qwiktest.com', password: 'password' },
     instructor: { email: 'instructor@qwiktest.com', password: 'password' },
-    student: { email: 'student@qwiktest.com', password: 'password' },
-    guest: { email: 'guest@qwiktest.com', password: 'password' }
+    student: { email: 'student@qwiktest.com', password: 'password' }
   }
   
   if (credentials[role]) {

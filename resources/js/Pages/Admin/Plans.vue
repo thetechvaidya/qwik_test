@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import Drawer from 'primevue/drawer'
@@ -230,6 +230,19 @@ const options = reactive({
     dropdownAllowAll: false,
 })
 
+// Table parameters
+const tableParams = {
+    lazy: true,
+    paginator: true,
+    rows: 10,
+    rowsPerPageOptions: [10, 20, 50, 100],
+    paginatorTemplate: 'RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink',
+    currentPageReportTemplate: '{first} to {last} of {totalRecords}',
+    sortMode: 'single',
+    filterDisplay: 'row',
+    globalFilterFields: ['code', 'name', 'duration', 'category', 'status']
+}
+
 // Server table composable
 const { onPage, onSort, onFilter, tableLoading } = useServerTable({
     resourceKeys: ['plans', 'subCategories', 'features'],
@@ -275,4 +288,21 @@ const deletePlan = async id => {
         })
     }
 }
+
+// Cleanup on component unmount
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Close any pending confirmation dialogs
+    if (window.$primevue?.config?.ripple) {
+        document.querySelectorAll('.p-confirm-dialog').forEach(dialog => {
+            if (dialog.style.display !== 'none') {
+                dialog.style.display = 'none'
+            }
+        })
+    }
+})
 </script>

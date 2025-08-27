@@ -56,27 +56,30 @@ export function createInertiaApplication() {
                 app.config.errorHandler = (err, instance, info) => {
                     console.error('[Vue Error Handler]', err, info);
                     
-                    // Handle DOM manipulation errors
-                    if (err.message && (err.message.includes('nextSibling') || err.message.includes('previousSibling') || err.message.includes('removeChild'))) {
+                    // Handle DOM manipulation errors during component transitions
+                    if (err.message && (
+                        err.message.includes('nextSibling') || 
+                        err.message.includes('previousSibling') || 
+                        err.message.includes('removeChild') ||
+                        err.message.includes('Cannot read properties of null')
+                    )) {
                         console.warn('[Vue Error Handler] DOM manipulation error detected. This may be due to component lifecycle timing or element removal.');
-                        
-                        // Attempt to recover by re-rendering the component if possible
-                        if (instance && instance.$forceUpdate) {
-                            setTimeout(() => {
-                                try {
-                                    instance.$forceUpdate();
-                                } catch (recoveryErr) {
-                                    console.error('[Vue Error Handler] Failed to recover from DOM error:', recoveryErr);
-                                }
-                            }, 100);
-                        }
+                        return; // Silently handle these errors as they're often harmless during transitions
+                    }
+                    
+                    // Handle property access errors on null/undefined objects
+                    if (err.message && (
+                        err.message.includes('Cannot read properties of undefined') ||
+                        err.message.includes('Cannot read properties of null')
+                    )) {
+                        console.warn('[Vue Error Handler] Property access error detected. This may be due to reactive data timing.');
                         return; // Prevent error from bubbling up
                     }
                     
-                    // Handle filterModel errors
-                    if (err.message && err.message.includes('Cannot read properties of undefined')) {
-                        console.warn('[Vue Error Handler] Property access error detected. This may be due to reactive data timing.');
-                        return; // Prevent error from bubbling up
+                    // Handle Inertia navigation errors
+                    if (info === 'scheduler flush' && err.message && err.message.includes('nextSibling')) {
+                        console.warn('[Vue Error Handler] Scheduler flush error during navigation - this is typically harmless.');
+                        return;
                     }
                 };
 

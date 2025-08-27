@@ -139,7 +139,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onBeforeUnmount } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -259,4 +259,26 @@ const deleteSkill = id => {
         })
     }
 }
+
+// Cleanup on component unmount
+onBeforeUnmount(() => {
+    // Reset reactive state
+    createForm.value = false
+    editForm.value = false
+    currentId.value = null
+    
+    // Reset filters
+    filters.value.code.value = null
+    filters.value.name.value = null
+    filters.value.status.value = null
+    
+    // Close any pending confirmation dialogs
+    if (window.$primevue?.config?.ripple) {
+        document.querySelectorAll('.p-confirm-dialog').forEach(dialog => {
+            if (dialog.style.display !== 'none') {
+                dialog.style.display = 'none'
+            }
+        })
+    }
+})
 </script>

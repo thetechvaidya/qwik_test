@@ -38,9 +38,9 @@ class CreateNewUser implements CreatesNewUsers
             'password' => Hash::make($input['password']),
         ]);
 
-        // By default assign guest role to new user
+        // By default assign student role to new user
         if($user) {
-            $user->assignRole('Guest');
+            $user->assignRole('student');
         }
 
         return $user;
