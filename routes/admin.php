@@ -174,19 +174,27 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('admin')->group(function
     | Practice Set Routes
     |--------------------------------------------------------------------------
     */
-    Route::resource('practice-sets', PracticeSetCrudController::class);
-    Route::get('/practice-sets/{practice_set}/settings', [PracticeSetCrudController::class, 'settings'])->name('practice-sets.settings');
-    Route::post('/practice-sets/{practice_set}/settings', [PracticeSetCrudController::class, 'updateSettings'])->name('practice-sets.settings.update');
+    Route::resource('practice-sets', PracticeSetCrudController::class)->names([
+        'index' => 'admin.practice-sets.index',
+        'create' => 'admin.practice-sets.create',
+        'store' => 'admin.practice-sets.store',
+        'show' => 'admin.practice-sets.show',
+        'edit' => 'admin.practice-sets.edit',
+        'update' => 'admin.practice-sets.update',
+        'destroy' => 'admin.practice-sets.destroy'
+    ]);
+    Route::get('/practice-sets/{practice_set}/settings', [PracticeSetCrudController::class, 'settings'])->name('admin.practice-sets.settings');
+    Route::post('/practice-sets/{practice_set}/settings', [PracticeSetCrudController::class, 'updateSettings'])->name('admin.practice-sets.settings.update');
 
-    Route::get('/practice-sets/{practice_set}/questions', [PracticeSetQuestionController::class, 'index'])->name('practice-sets.questions');
-    Route::get('/practice-sets/{practice_set}/fetch-questions', [PracticeSetQuestionController::class, 'fetchQuestions'])->name('practice-sets.fetch_questions');
-    Route::get('/practice-sets/{practice_set}/fetch-available-questions', [PracticeSetQuestionController::class, 'fetchAvailableQuestions'])->name('practice-sets.fetch_available_questions');
-    Route::post('/practice-sets/{practice_set}/add-question', [PracticeSetQuestionController::class, 'addQuestion'])->name('practice-sets.add_question');
-    Route::post('/practice-sets/{practice_set}/remove-question', [PracticeSetQuestionController::class, 'removeQuestion'])->name('practice-sets.remove_question');
+    Route::get('/practice-sets/{practice_set}/questions', [PracticeSetQuestionController::class, 'index'])->name('admin.practice-sets.questions');
+    Route::get('/practice-sets/{practice_set}/fetch-questions', [PracticeSetQuestionController::class, 'fetchQuestions'])->name('admin.practice-sets.fetch_questions');
+    Route::get('/practice-sets/{practice_set}/fetch-available-questions', [PracticeSetQuestionController::class, 'fetchAvailableQuestions'])->name('admin.practice-sets.fetch_available_questions');
+    Route::post('/practice-sets/{practice_set}/add-question', [PracticeSetQuestionController::class, 'addQuestion'])->name('admin.practice-sets.add_question');
+    Route::post('/practice-sets/{practice_set}/remove-question', [PracticeSetQuestionController::class, 'removeQuestion'])->name('admin.practice-sets.remove_question');
 
-    Route::get('practice-sets/{practice_set}/overall-report', [PracticeAnalyticsController::class, 'overallReport'])->name('practice-sets.overall_report');
-    Route::get('practice-sets/{practice_set}/detailed-report', [PracticeAnalyticsController::class, 'detailedReport'])->name('practice-sets.detailed_report');
-    Route::get('practice-sets/{practice_set}/export-report', [PracticeAnalyticsController::class, 'exportReport'])->name('practice-sets.export_report');
+    Route::get('practice-sets/{practice_set}/overall-report', [PracticeAnalyticsController::class, 'overallReport'])->name('admin.practice-sets.overall_report');
+    Route::get('practice-sets/{practice_set}/detailed-report', [PracticeAnalyticsController::class, 'detailedReport'])->name('admin.practice-sets.detailed_report');
+    Route::get('practice-sets/{practice_set}/export-report', [PracticeAnalyticsController::class, 'exportReport'])->name('admin.practice-sets.export_report');
 
     Route::get('/practice/{practice_set:slug}/analysis/{session}', [PracticeAnalyticsController::class, 'analysis'])->name('practice_session_results');
     Route::get('/practice/{practice_set:slug}/solutions/{session}', [PracticeAnalyticsController::class, 'solutions'])->name('fetch_practice_session_solutions');

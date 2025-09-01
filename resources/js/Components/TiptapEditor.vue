@@ -687,7 +687,9 @@ export default {
         },
 
         triggerImageUpload() {
-            this.$refs.imageInput.click()
+            if (this.$refs.imageInput && this.$refs.imageInput.click) {
+                this.$refs.imageInput.click()
+            }
         },
 
         async handleImageUpload(event) {

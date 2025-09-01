@@ -96,17 +96,21 @@
         },
         mounted() {
             let sideBar = this.$refs.mobileNav;
-            sideBar.style.transform = this.$page.props.rtl ? "translateX(320px)" : "translateX(-320px)";
+            if (sideBar) {
+                sideBar.style.transform = this.$page.props.rtl ? "translateX(320px)" : "translateX(-320px)";
+            }
         },
         methods: {
             sidebarHandler() {
                 let sideBar = this.$refs.mobileNav;
-                if (this.moved) {
-                    sideBar.style.transform = "translateX(0px)";
-                    this.moved = false;
-                } else {
-                    sideBar.style.transform = this.$page.props.rtl ? "translateX(320px)" : "translateX(-320px)";
-                    this.moved = true;
+                if (sideBar) {
+                    if (this.moved) {
+                        sideBar.style.transform = "translateX(0px)";
+                        this.moved = false;
+                    } else {
+                        sideBar.style.transform = this.$page.props.rtl ? "translateX(320px)" : "translateX(-320px)";
+                        this.moved = true;
+                    }
                 }
             },
             toggleFullScreen() {

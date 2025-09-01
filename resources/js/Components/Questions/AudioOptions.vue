@@ -2,18 +2,18 @@
     <div class="audio-options">
         <div class="w-full flex flex-col mb-6">
             <label class="pb-2 text-sm font-semibold text-gray-800">
-                {{ __('Audio Type') }} (Supported .mp3 & .ogg files)
+                {{ translate('Audio Type') }} (Supported .mp3 & .ogg files)
             </label>
             <SelectButton v-model="options.audio_type" :options="audioFormats" option-label="name" option-value="value" data-key="value" @change="changePlayer"></SelectButton>
         </div>
         <div class="w-full flex flex-col mb-6">
             <label for="audio_link" class="pb-2 text-sm font-semibold text-gray-800">
-                {{ __('Audio Link') }}
+                {{ translate('Audio Link') }}
             </label>
-            <InputText id="audio_link" v-model="options.link" :placeholder="__('Audio Link')" aria-describedby="audio_link-help" @input="selectOptions" />
+            <InputText id="audio_link" v-model="options.link" :placeholder="translate('Audio Link')" aria-describedby="audio_link-help" @input="selectOptions" />
         </div>
         <div class="my-4 flex">
-            <Button type="button" icon="pi pi-play" :label="__('Preview')" @click="showPlayer" />
+            <Button type="button" icon="pi pi-play" :label="translate('Preview')" @click="showPlayer" />
         </div>
         <div v-if="player && options.audio_type === 'mp3'">
             <vue-plyr>
@@ -36,6 +36,7 @@
     import SelectButton from 'primevue/selectbutton';
     import VuePlyr from 'vue-plyr';
     import Button from 'primevue/button';
+    import { useTranslate } from '@/composables/useTranslate';
 
     export default {
         name: 'AudioOptions',
@@ -44,6 +45,10 @@
             SelectButton,
             VuePlyr,
             Button
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentOptions: Object,

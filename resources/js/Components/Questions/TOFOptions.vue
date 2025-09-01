@@ -1,7 +1,7 @@
 <template>
     <div class="msa-options">
         <div v-for="(option, index) in options" :key="index" class="mb-4">
-            <div class="font-semibold mb-2">{{ __('Option') }} {{ index+1 }}</div>
+            <div class="font-semibold mb-2">{{ translate('Option') }} {{ index+1 }}</div>
             <TiptapEditor 
                 v-model="options[index].option" 
                 :config="{ 
@@ -13,7 +13,7 @@
             <div class="flex bg-gray-50 border-b border-l border-r border-gray-300 justify-between items-center px-4 py-2">
                 <div class="flex gap-1 items-center">
                     <input :id="'option-'+index" v-model="correct_answer" type="radio" class="custom-control-input" :value="index+1" @change="selectAnswer">
-                    <label class="custom-control-label" :for="'option-'+index">{{ __('Correct Answer') }}</label>
+                    <label class="custom-control-label" :for="'option-'+index">{{ translate('Correct Answer') }}</label>
                 </div>
                 <div class="flex items-center justify-end gap-2">
                     <!--<div class="flex gap-1 items-center">
@@ -30,11 +30,16 @@
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
     import InputNumber from 'primevue/inputnumber';
+    import { useTranslate } from '@/composables/useTranslate';
     export default {
         name: 'TOFOptions',
         components: {
             TiptapEditor,
             InputNumber
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentOptions: Array,
@@ -47,13 +52,6 @@
             }
         },
         methods: {
-            __(key, replace = {}) {
-                let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
-                Object.keys(replace).forEach(function (key) {
-                    translation = translation.replace(':' + key, replace[key])
-                })
-                return translation
-            },
             selectAnswer (event) {
                 this.options[this.correct_answer-1].partial_weightage = 0;
                 this.$emit('modifyAnswer', this.correct_answer)

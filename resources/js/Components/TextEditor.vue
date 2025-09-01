@@ -48,6 +48,14 @@ export default {
             default: () => ({}),
         },
     },
+    data() {
+        return {
+            isUnmounting: false,
+        }
+    },
+    beforeUnmount() {
+        this.isUnmounting = true
+    },
     computed: {
         mergedValue() {
             // Vue 3 takes precedence over Vue 2
@@ -78,13 +86,19 @@ export default {
             this.$emit('input', newValue) // Vue 2
         },
         focus() {
-            if (this.$refs.tiptapEditor) {
+            if (this.isUnmounting || !this.$refs.tiptapEditor) return
+            try {
                 this.$refs.tiptapEditor.focus()
+            } catch (error) {
+                console.warn('TextEditor: Focus error during component transition:', error)
             }
         },
         reRender() {
-            if (this.$refs.tiptapEditor) {
+            if (this.isUnmounting || !this.$refs.tiptapEditor) return
+            try {
                 this.$refs.tiptapEditor.reRender()
+            } catch (error) {
+                console.warn('TextEditor: ReRender error during component transition:', error)
             }
         },
     },

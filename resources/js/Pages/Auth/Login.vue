@@ -65,21 +65,20 @@
             <div class="relative">
               <input
                 id="email"
-                v-model="formData.email"
+                v-model="form.email"
                 type="text"
                 autocomplete="username"
                 required
                 :class="[
                   'block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200',
-                  hasError(validator, 'email') ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                  form.errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
                 ]"
                 :placeholder="__('Enter your email or username')"
-                @blur="validator.email.$touch()"
               />
               <i class="pi pi-envelope absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             </div>
-            <div v-if="hasError(validator, 'email')" class="mt-1 text-sm text-red-600">
-              {{ getFirstError(validator, 'email') }}
+            <div v-if="form.errors.email" class="mt-1 text-sm text-red-600">
+              {{ form.errors.email }}
             </div>
           </div>
 
@@ -91,16 +90,15 @@
             <div class="relative">
               <input
                 id="password"
-                v-model="formData.password"
+                v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 required
                 :class="[
                   'block w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200',
-                  hasError(validator, 'password') ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+                  form.errors.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
                 ]"
                 :placeholder="__('Enter your password')"
-                @blur="validator.password.$touch()"
               />
               <button
                 type="button"
@@ -110,8 +108,8 @@
                 <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
-            <div v-if="hasError(validator, 'password')" class="mt-1 text-sm text-red-600">
-              {{ getFirstError(validator, 'password') }}
+            <div v-if="form.errors.password" class="mt-1 text-sm text-red-600">
+              {{ form.errors.password }}
             </div>
           </div>
 
@@ -119,7 +117,7 @@
           <div class="flex items-center justify-between">
             <label class="flex items-center">
               <Checkbox
-                v-model="formData.remember"
+                v-model="form.remember"
                 name="remember"
                 class="mr-2"
               />
@@ -138,11 +136,11 @@
           <div>
             <Button
               type="submit"
-              :loading="isSubmitting || authLoading"
-              :disabled="isSubmitting || authLoading"
+              :loading="form.processing"
+              :disabled="form.processing"
               class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
-              <i v-if="isSubmitting || authLoading" class="pi pi-spinner pi-spin mr-2"></i>
+              <i v-if="form.processing" class="pi pi-spinner pi-spin mr-2"></i>
               {{ __('Sign in') }}
             </Button>
           </div>
@@ -215,13 +213,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { createLoginValidation, useFormValidation, hasError, getFirstError } from '@/composables/useFormValidation'
 import ModernHeader from '@/Components/Layout/ModernHeader.vue'
 import ModernFooter from '@/Components/Layout/ModernFooter.vue'
-import { useToast } from '@/composables/useToast'
+import { usePage, useForm } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
-import { useAuthDebug } from '@/composables/useAuthDebug'
-import { useSanctumAuth } from '@/composables/useSanctumAuth'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
@@ -232,22 +227,15 @@ const props = defineProps({
   status: String
 })
 
-// Form data
-const formData = reactive({
+// Composables
+const { __ } = useTranslate()
+
+// Inertia form
+const form = useForm({
   email: '',
   password: '',
   remember: false
 })
-
-// Form validation
-const validator = createLoginValidation(formData)
-
-// Composables (don't pass validator for now to avoid errors)
-const { handleSubmit, isSubmitting } = useFormValidation()
-const { success: loginSuccess, error: showError } = useToast()
-const { __ } = useTranslate()
-const { testCredentials, validateFormData, isDemoMode } = useAuthDebug()
-const { login: sanctumLogin, isLoading: authLoading } = useSanctumAuth()
 
 // UI state
 const showPassword = ref(false)
@@ -260,76 +248,10 @@ const demoRoles = [
 ]
 
 // Methods
-const handleLogin = async () => {
-  // Basic validation before submission
-  if (!formData.email || !formData.password) {
-    showError('Please fill in both email/username and password.')
-    return
-  }
-
-  // Pre-validate credentials for better UX
-  if (isDemoMode.value) {
-    const validation = validateFormData(formData)
-    if (!validation.isValid) {
-      console.log('Form validation failed:', validation.errors)
-    }
-    if (validation.warnings.length > 0) {
-      console.log('Form validation warnings:', validation.warnings)
-    }
-  }
-
-  await handleSubmit(
-    async () => {
-      try {
-        // Use Sanctum authentication
-        await sanctumLogin({
-          email: formData.email,
-          password: formData.password,
-          remember: formData.remember
-        })
-        
-        loginSuccess()
-      } catch (error) {
-        console.log('Login errors:', error)
-        
-        // Handle specific authentication errors
-        if (error.email || error.password) {
-          if (error.email && error.email.includes('disabled')) {
-            showError('Your account has been disabled. Please contact administrator.')
-          } else if (error.email && error.email.includes('These credentials')) {
-            showError('Invalid credentials. Please check your email/username and password.')
-          } else {
-            showError('Login failed. Please verify your credentials and try again.')
-          }
-        } else if (typeof error === 'object' && Object.keys(error).length > 0) {
-          const firstError = Object.values(error)[0]
-          showError(Array.isArray(firstError) ? firstError[0] : firstError)
-        } else {
-          showError('Login failed. Please check your credentials and try again.')
-        }
-        
-        // Add debug information for demo mode
-        if (props.settings?.demo_mode || isDemoMode.value) {
-          console.log('Demo mode login attempt:', {
-            email: formData.email,
-            availableCredentials: {
-              admin: 'admin@qwiktest.com / password',
-              instructor: 'instructor@qwiktest.com / password',
-              student: 'student@qwiktest.com / password'
-            }
-          })
-        }
-        
-        // Clear password on error
-        formData.password = ''
-        throw error
-      }
-    },
-    {
-      successMessage: 'Login successful! Welcome back.',
-      errorMessage: 'Login failed. Please check your credentials and try again.'
-    }
-  )
+const handleLogin = () => {
+  form.post(route('login'), {
+    onFinish: () => form.reset('password'),
+  })
 }
 
 const fillCredentials = (role) => {
@@ -340,13 +262,11 @@ const fillCredentials = (role) => {
   }
   
   if (credentials[role]) {
-    formData.email = credentials[role].email
-    formData.password = credentials[role].password
+    form.email = credentials[role].email
+    form.password = credentials[role].password
     
     // Clear validation errors when filling demo credentials
-    if (validator && typeof validator.$reset === 'function') {
-      validator.$reset()
-    }
+    form.clearErrors()
   }
 }
 </script>

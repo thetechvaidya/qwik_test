@@ -201,6 +201,7 @@ const title = computed(() => {
 
 // Server table configuration
 const { data, columns, totalRecords, tableLoading, onPage, onSort, onFilter } = useServerTable({
+    routeName: 'subscriptions.index',
     columns: [
         {
             field: 'code',

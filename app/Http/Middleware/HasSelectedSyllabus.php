@@ -13,7 +13,8 @@ class HasSelectedSyllabus
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        if(!Cookie::has('category_id')) {
+        // Allow dashboard access without syllabus selection for modern UX
+        if(!Cookie::has('category_id') && !$request->routeIs('user_dashboard')) {
             return redirect()->route('change_syllabus');
         }
 

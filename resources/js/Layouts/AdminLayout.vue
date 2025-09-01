@@ -18,10 +18,9 @@
                 </Link>
                 <div ref="scroll" class="h-full overflow-y-auto overflow-x-hidden">
                     <nav class="text-sm font-medium pb-16 text-gray-400" aria-label="Main Navigation">
-                        <template v-for="(item, index) in navItems" :key="item.id || item.label || `nav-${index}`">
+                        <template v-for="(item, index) in navItems" :key="`nav-item-${index}-${item.label || 'unknown'}`">
                             <sidebar-dropdown
                                 v-if="item.active && item.item_type === 'dropdown'"
-                                :key="`dropdown-${item.label}-${index}`"
                                 :title="item.label"
                                 :items="item.items"
                             >
@@ -31,7 +30,6 @@
                             </sidebar-dropdown>
                             <sidebar-link
                                 v-else-if="item.active === true && item.item_type === 'link'"
-                                :key="`link-${item.label}-${index}`"
                                 :title="item.label"
                                 :url="item.url"
                             >
@@ -41,7 +39,6 @@
                             </sidebar-link>
                             <div
                                 v-else-if="item.item_type === 'divider'"
-                                :key="`divider-${item.label}-${index}`"
                                 class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs"
                             >
                                 {{ item.label }}
@@ -182,7 +179,7 @@
                 </main>
 
                 <!-- Modal Portal using Vue 3 Teleport -->
-                <teleport to="#modals">
+                <teleport to="#modals" :disabled="!modalTargetExists">
                     <!-- Modals will be rendered here -->
                 </teleport>
 
@@ -233,6 +230,22 @@ export default {
             darkMode: false,
             successMessage: String,
             errorMessage: String,
+            modalTargetExists: false,
+        }
+    },
+
+    mounted() {
+        this.checkModalTarget()
+        // Watch for DOM changes
+        this.modalObserver = new MutationObserver(() => {
+            this.checkModalTarget()
+        })
+        this.modalObserver.observe(document.body, { childList: true, subtree: true })
+    },
+
+    beforeUnmount() {
+        if (this.modalObserver) {
+            this.modalObserver.disconnect()
         }
     },
 
@@ -307,7 +320,7 @@ export default {
                     items: [
                         {
                             label: 'Practice Sets',
-                            url: this.route('practice-sets.index'),
+                            url: this.route('admin.practice-sets.index'),
                             active: isAdminOrInstructor,
                         },
                         {
@@ -517,6 +530,10 @@ export default {
     },
 
     methods: {
+        checkModalTarget() {
+            this.modalTargetExists = !!document.getElementById('modals')
+        },
+
         switchToTeam(team) {
             router.put(
                 route('current-team.update'),

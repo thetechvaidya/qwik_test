@@ -48,6 +48,48 @@ class ExamController extends Controller
     }
 
     /**
+     * Mobile-optimized exam listing (200 bytes per exam)
+     */
+    public function mobileIndex(Request $request): JsonResponse
+    {
+        $perPage = $request->get('per_page', 20);
+        $search = $request->get('search');
+        $categoryId = $request->get('category_id');
+
+        $query = Exam::select(['id', 'code', 'title', 'total_questions', 'total_duration', 'sub_category_id'])
+            ->with(['subCategory:id,name'])
+            ->where('is_active', true);
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        if ($categoryId) {
+            $query->where('sub_category_id', $categoryId);
+        }
+
+        $exams = $query->orderBy('title')
+            ->paginate($perPage)
+            ->through(function ($exam) {
+                return [
+                    'id' => $exam->id,
+                    'code' => $exam->code,
+                    'title' => $exam->title,
+                    'questions' => $exam->total_questions,
+                    'duration' => (int)($exam->total_duration / 60),
+                    'category' => $exam->subCategory->name ?? 'General'
+                ];
+            });
+
+        return response()->json([
+            'data' => $exams->items(),
+            'total' => $exams->total(),
+            'page' => $exams->currentPage(),
+            'pages' => $exams->lastPage()
+        ]);
+    }
+
+    /**
      * Display the specified exam
      */
     public function show(Exam $exam): JsonResponse

@@ -18,9 +18,22 @@ export default {
         },
     },
     emits: ['update:modelValue'],
+    data() {
+        return {
+            isUnmounting: false,
+        }
+    },
+    beforeUnmount() {
+        this.isUnmounting = true
+    },
     methods: {
         focus() {
-            this.$refs.input.focus()
+            if (this.isUnmounting || !this.$refs.input) return
+            try {
+                this.$refs.input.focus()
+            } catch (error) {
+                console.warn('TextArea: Focus error during component transition:', error)
+            }
         },
     },
 }

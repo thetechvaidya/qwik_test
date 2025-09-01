@@ -94,4 +94,54 @@ class CategoryController extends Controller
             'message' => 'Category deleted successfully',
         ]);
     }
+
+    /**
+     * Mobile-optimized category listing (200-byte response target)
+     */
+    public function mobileIndex(Request $request)
+    {
+        $categories = Category::select('id', 'name', 'slug')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug
+                ];
+            });
+
+        return response()->json([
+            'categories' => $categories,
+            'total' => $categories->count()
+        ]);
+    }
+
+    /**
+     * Mobile category with subcategories (optimized)
+     */
+    public function mobileShow($id)
+    {
+        $category = Category::select('id', 'name', 'slug', 'description')
+            ->with(['subCategories:id,name,slug,category_id'])
+            ->where('is_active', true)
+            ->findOrFail($id);
+
+        return response()->json([
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'subcategories' => $category->subCategories->map(function ($sub) {
+                    return [
+                        'id' => $sub->id,
+                        'name' => $sub->name,
+                        'slug' => $sub->slug
+                    ];
+                })
+            ]
+        ]);
+    }
 }

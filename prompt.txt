@@ -1,0 +1,414 @@
+I have created the following plan after thorough exploration and analysis of the codebase. Follow the below plan verbatim. Trust the files and references. Do not re-verify what's written in the plan. Explore only when absolutely necessary. First implement all the proposed file changes and then I'll review all the changes together at the end.
+
+### Observations
+
+The codebase has excellent foundations for implementing exam session functionality. Key strengths include:
+
+1. **Comprehensive exam infrastructure** - entities, models, repositories, and blocs already exist
+2. **Robust authentication and network layer** - DioClient with AuthInterceptor handles authenticated API calls
+3. **Well-defined API endpoints** - clear documentation for session start, answer submission, and exam completion
+4. **Material 3 UI system** - theme, responsive layout, and shared components ready for use
+5. **Clean architecture patterns** - consistent structure across features with proper separation of concerns
+6. **Hive storage setup** - ready for caching with available typeIds (17-20+)
+7. **Router placeholders** - `/exams/:examId/take` route already defined, just needs implementation
+
+Missing components that need creation: timer utilities, question/answer entities and models, session management bloc, and question display UI components.
+
+### Approach
+
+The implementation will create a complete exam session lifecycle system following the established clean architecture patterns. The approach focuses on:
+
+1. **Creating exam session domain entities** for Question, Option, Answer, and ExamSession with proper type safety
+2. **Building session management infrastructure** with timer utilities, progress tracking, and state management
+3. **Implementing API integration** for session start, answer submission, and exam completion using existing DioClient
+4. **Creating responsive UI components** for question display, answer selection, and navigation with Material 3 design
+5. **Adding timer and progress management** with automatic submission and real-time updates
+6. **Integrating with existing router** by replacing placeholder pages with functional exam taking screens
+
+The solution leverages existing infrastructure (authentication, network, storage, navigation) while adding minimal new dependencies and maintaining consistency with established patterns.
+
+### Reasoning
+
+I explored the mobile app codebase comprehensively, examining the authentication system, network layer with DioClient and AuthInterceptor, existing exam feature structure, router configuration, shared UI components, dependency injection patterns, and API documentation. I also checked Hive typeId allocation (found 17+ available), confirmed no existing question/session code, reviewed timer-related theme elements, and verified the UseCase patterns. This exploration revealed a well-structured foundation ready for exam session implementation.
+
+## Mermaid Diagram
+
+sequenceDiagram
+    participant User as User
+    participant UI as ExamTakingPage
+    participant Bloc as ExamSessionBloc
+    participant Timer as ExamTimer
+    participant UseCase as StartExamSessionUseCase
+    participant Repo as ExamSessionRepository
+    participant Remote as ExamSessionRemoteDataSource
+    participant API as Backend API
+
+    Note over User,API: Exam Session Lifecycle Implementation
+
+    User->>UI: Navigate to /exams/:examId/take
+    UI->>Bloc: SessionStartRequested(examId)
+    Bloc->>UseCase: call(StartExamSessionParams)
+    UseCase->>Repo: startSession(examId)
+    Repo->>Remote: startExamSession(examId)
+    Remote->>API: POST /mobile/exams/{examId}/start
+    API-->>Remote: ExamSessionModel with questions
+    Remote-->>Repo: ExamSessionModel
+    Repo-->>UseCase: Either.right(ExamSession)
+    UseCase-->>Bloc: ExamSession entity
+    Bloc->>Timer: start(session.expiresAt)
+    Bloc-->>UI: SessionActive(session, timer, progress)
+
+    Note over User,API: Question Navigation & Answer Submission
+
+    UI->>UI: Display QuestionDisplayWidget
+    User->>UI: Select answer option
+    UI->>Bloc: AnswerSelected(questionId, optionIds)
+    Bloc->>Bloc: Update local answer state
+    Bloc-->>UI: AnswerSubmitting(questionId)
+    
+    Bloc->>UseCase: SubmitAnswerUseCase.call()
+    UseCase->>Repo: submitAnswer(sessionId, answer)
+    Repo->>Remote: submitAnswer(sessionId, answerModel)
+    Remote->>API: POST /exam-sessions/{sessionId}/answers
+    API-->>Remote: Success response
+    Remote-->>Repo: Success
+    Repo-->>UseCase: Either.right(void)
+    UseCase-->>Bloc: Success
+    Bloc-->>UI: AnswerSubmitted(questionId)
+
+    User->>UI: Click Next Question
+    UI->>Bloc: QuestionNavigated(nextIndex)
+    Bloc-->>UI: SessionActive(updated session)
+
+    Note over User,API: Timer Management & Auto-Submit
+
+    Timer->>Bloc: TimerTicked(remainingSeconds)
+    Bloc-->>UI: SessionActive(updated timer)
+    
+    alt Timer Expires
+        Timer->>Bloc: SessionExpired()
+        Bloc->>UseCase: SubmitExamUseCase.call()
+        UseCase->>Repo: submitExam(sessionId)
+        Repo->>Remote: submitExam(sessionId)
+        Remote->>API: POST /exam-sessions/{sessionId}/submit
+        API-->>Remote: ExamResult
+        Remote-->>Repo: ExamResult
+        Repo-->>UseCase: Either.right(ExamResult)
+        UseCase-->>Bloc: ExamResult
+        Bloc-->>UI: SessionCompleted(results)
+        UI->>UI: Show SessionExpiredDialog
+    else Manual Submit
+        User->>UI: Click Submit Exam
+        UI->>UI: Show ExamSubmissionDialog
+        User->>UI: Confirm submission
+        UI->>Bloc: ExamSubmitRequested()
+        Bloc->>UseCase: SubmitExamUseCase.call()
+        Note right of UseCase: Same submission flow as auto-submit
+        Bloc-->>UI: SessionCompleted(results)
+        UI->>UI: Navigate to results page
+    end
+
+## Proposed File Changes
+
+### mobile-app\lib\features\exam_session(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication
+- mobile-app\lib\features\exams
+
+Create the main exam session feature directory following the clean architecture pattern established by other features. This directory will contain the data, domain, and presentation layers for all exam session functionality including question display, answer submission, timer management, and progress tracking.
+
+### mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exams\domain\entities\exam.dart
+
+Create the Question entity class that represents individual exam questions. Include properties like id, type (multiple_choice, true_false), questionText, options (List<Option>), timeLimit, explanation, difficulty, and marks. Add helper methods like `isMultipleChoice`, `isTrueFalse`, `hasTimeLimit`, and `getCorrectOptions()`. The entity should be immutable and follow the existing entity patterns from the exam feature. Include proper equality comparison and toString methods.
+
+### mobile-app\lib\features\exam_session\domain\entities\option.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create the Option entity class for question options. Include properties like id, text, isCorrect (for result display), and order. This entity will be used within Question entities to represent answer choices. Follow the same immutable pattern as other entities in the codebase with proper equality comparison.
+
+### mobile-app\lib\features\exam_session\domain\entities\answer.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create the Answer entity class to represent user's answer to a question. Include properties like questionId, selectedOptionIds (List<String> to support multiple selection), timeSpent (in seconds), answeredAt (DateTime), and isCorrect (for local validation). Add helper methods like `isAnswered`, `getSelectedOptions()`, and `isMultipleSelection`. This entity will be used for tracking user responses and submitting to the API.
+
+### mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exams\domain\entities\exam.dart
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create the ExamSession entity class that represents an active exam session. Include properties like sessionId, examId, exam (Exam entity), questions (List<Question>), answers (Map<String, Answer> keyed by questionId), currentQuestionIndex, startedAt, expiresAt, remainingTimeSeconds, isCompleted, and settings (ExamSettings). Add helper methods like `getCurrentQuestion()`, `getNextQuestion()`, `getPreviousQuestion()`, `getProgress()`, `getAnsweredCount()`, `canNavigateBack()`, `canNavigateNext()`, `isTimeExpired()`, and `getAnswer(questionId)`. Include navigation and timing logic based on exam settings.
+
+### mobile-app\lib\features\exam_session\data\models\question_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exams\data\models\exam_model.dart
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create the QuestionModel class that extends the Question entity with JSON and Hive serialization. Use `@HiveType(typeId: 17)` and `@JsonSerializable` annotations. Implement `fromJson`, `toJson`, and `toEntity` methods following the pattern established in `ExamModel`. Add proper Hive field annotations for each property. Handle the nested options list properly in serialization. Include enum parsing for question types.
+
+### mobile-app\lib\features\exam_session\data\models\option_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\data\models\question_model.dart(NEW)
+- mobile-app\lib\features\exam_session\domain\entities\option.dart(NEW)
+
+Create the OptionModel class that extends the Option entity with JSON and Hive serialization. Use `@HiveType(typeId: 18)` and `@JsonSerializable` annotations. Implement the standard model methods (`fromJson`, `toJson`, `toEntity`) following the established patterns. Add proper Hive field annotations for caching option data locally.
+
+### mobile-app\lib\features\exam_session\data\models\answer_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\answer.dart(NEW)
+
+Create the AnswerModel class for serializing user answers. Use `@HiveType(typeId: 19)` and include JSON serialization methods. This model will be used for both local storage and API submission. Handle the selectedOptionIds list properly and include DateTime serialization for answeredAt field.
+
+### mobile-app\lib\features\exam_session\data\models\exam_session_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
+- mobile-app\lib\features\exams\data\models\exam_model.dart
+
+Create the ExamSessionModel class that extends the ExamSession entity with JSON and Hive serialization. Use `@HiveType(typeId: 20)` and `@JsonSerializable` annotations. Handle the complex nested structure including exam, questions list, and answers map. Implement proper JSON parsing for the session start API response format. Add methods for converting between the API response format and the domain entity. Include proper DateTime handling for session timing.
+
+### mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\data\datasources\auth_remote_datasource.dart
+- mobile-app\lib\core\network\dio_client.dart
+
+Create the ExamSessionRemoteDataSource interface and implementation for API communication. Implement methods like `startExamSession(examId)` that calls `POST /mobile/exams/{examId}/start`, `submitAnswer(sessionId, answerModel)` that calls `POST /mobile/exam-sessions/{sessionId}/answers`, and `submitExam(sessionId)` that calls `POST /mobile/exam-sessions/{sessionId}/submit`. Use the existing DioClient pattern from `AuthRemoteDataSource`. Handle API responses and convert them to models. Include proper error handling and follow the established remote data source patterns. Parse the complex session response with questions and settings.
+
+### mobile-app\lib\features\exam_session\data\datasources\exam_session_local_datasource.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\data\datasources\auth_local_datasource.dart
+- mobile-app\lib\core\storage\local_storage_service.dart
+
+Create the ExamSessionLocalDataSource interface and implementation for local session caching. Implement methods for caching active sessions, answers, and progress. Include methods like `cacheSession()`, `getCachedSession()`, `cacheAnswer()`, `getCachedAnswers()`, `updateSessionProgress()`, and `clearSession()`. Use the existing `LocalStorageService` pattern and follow the pattern from `AuthLocalDataSource`. This will be used for maintaining session state and potential offline support in future phases.
+
+### mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\data\repositories\auth_repository_impl.dart
+- mobile-app\lib\core\network\network_info.dart
+- mobile-app\lib\core\error\failures.dart
+
+Create the ExamSessionRepositoryImpl that implements the domain repository interface. Implement session management with proper error handling and conversion from models to entities. For `startSession()`, call remote data source and cache the session locally. For `submitAnswer()`, submit to remote and update local cache optimistically. For `submitExam()`, finalize the session remotely and clear local cache. Include proper error handling and follow the pattern established in `AuthRepositoryImpl` with comprehensive error handling and caching logic.
+
+### mobile-app\lib\features\exam_session\domain\repositories\exam_session_repository.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\domain\repositories\auth_repository.dart
+- mobile-app\lib\core\error\failures.dart
+
+Create the ExamSessionRepository interface that defines the contract for exam session operations. Include methods like `startSession(examId)` returning `Either<Failure, ExamSession>`, `submitAnswer(sessionId, answer)` returning `Either<Failure, void>`, `submitExam(sessionId)` returning `Either<Failure, ExamResult>`, `getSession(sessionId)` for retrieving cached sessions, and `updateSessionProgress(sessionId, progress)` for local updates. Follow the Either pattern established in the authentication repository for consistent error handling.
+
+### mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\usecases\usecase.dart
+- mobile-app\lib\features\authentication\domain\usecases\login_usecase.dart
+
+Create the StartExamSessionUseCase that handles starting a new exam session. Define `StartExamSessionParams` class with examId property. Implement the UseCase interface from the core layer and call the repository's startSession method. Include proper parameter validation and follow the established use case patterns from the authentication feature. Handle exam availability checks and user permissions.
+
+### mobile-app\lib\features\exam_session\domain\usecases\submit_answer_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\usecases\usecase.dart
+- mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(NEW)
+
+Create the SubmitAnswerUseCase for submitting individual question answers. Define `SubmitAnswerParams` class with sessionId, questionId, selectedOptionIds, and timeSpent properties. Implement the UseCase interface and call the repository's submitAnswer method. Include proper validation for answer format and session state. Handle optimistic updates and error recovery.
+
+### mobile-app\lib\features\exam_session\domain\usecases\submit_exam_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\usecases\usecase.dart
+- mobile-app\lib\features\exam_session\domain\repositories\exam_session_repository.dart(NEW)
+
+Create the SubmitExamUseCase for finalizing and submitting the complete exam session. Define `SubmitExamParams` class with sessionId property. Implement the UseCase interface and call the repository's submitExam method. Include validation to ensure all required questions are answered (if applicable) and handle final submission logic. This use case will be called when the user manually submits or when auto-submit triggers on timer expiration.
+
+### mobile-app\lib\core\utils\exam_timer.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\constants\app_constants.dart
+
+Create a dedicated ExamTimer utility class for managing exam session timing. Implement methods like `start()`, `pause()`, `resume()`, `stop()`, `getRemainingTime()`, `getElapsedTime()`, and `isExpired()`. Include callback support for timer updates and expiration events. Handle both overall exam timer and per-question timers if needed. Use Dart's Timer class internally and provide a stream of timer updates for reactive UI. Include proper disposal methods and error handling for timer edge cases.
+
+### mobile-app\lib\core\utils\exam_progress_tracker.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
+
+Create an ExamProgressTracker utility class for tracking exam completion progress. Implement methods like `updateProgress()`, `getCompletionPercentage()`, `getAnsweredCount()`, `getUnansweredCount()`, `getTimeSpentPerQuestion()`, and `getOverallTimeSpent()`. Include progress calculation logic and statistics tracking. This utility will be used by the exam session bloc to maintain progress state and provide data for progress indicators.
+
+### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
+- mobile-app\lib\core\utils\exam_timer.dart(NEW)
+
+Create the ExamSessionBloc for managing exam session state with comprehensive event handling. Implement events for starting session, navigating questions, selecting answers, submitting answers, timer updates, and exam completion. Include states for loading, session active, answer submitting, session completed, and error states. Use the exam timer utility and integrate with the use cases. Handle automatic submission on timer expiration, navigation restrictions based on exam settings, and optimistic answer updates. Follow the BLoC pattern established in `AuthBloc` with proper error handling and state management.
+
+### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_event.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\presentation\bloc\auth_event.dart
+
+Create the ExamSessionEvent classes for the exam session bloc. Include events like `SessionStartRequested(examId)`, `QuestionNavigated(index)`, `AnswerSelected(questionId, optionIds)`, `AnswerSubmitted(questionId)`, `TimerTicked(remainingSeconds)`, `SessionPaused()`, `SessionResumed()`, `ExamSubmitRequested()`, `SessionExpired()`, and `SessionError(error)`. Each event should include necessary parameters and follow the event pattern from the authentication feature. Include proper validation and type safety.
+
+### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\presentation\bloc\auth_state.dart
+
+Create the ExamSessionState classes for the exam session bloc. Include states like `SessionInitial`, `SessionLoading`, `SessionActive(session, remainingTime, progress)`, `AnswerSubmitting(questionId)`, `AnswerSubmitted(questionId)`, `SessionPaused(session, remainingTime)`, `SessionCompleted(sessionId, results)`, `SessionExpired(sessionId)`, and `SessionError(error)`. The active state should contain the current session, timer information, progress data, and current question index. Follow the state pattern from the authentication feature with proper data encapsulation.
+
+### mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\core\responsive\responsive_layout.dart
+- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+
+Create the ExamTakingPage that provides the main interface for taking exams. Implement a responsive layout with app bar containing timer and progress indicator, body with question display area, and bottom navigation for question navigation and submission. Use `BlocBuilder` to react to exam session state changes. Handle loading states, error states, and session completion. Implement proper back button handling based on exam settings (allowBackNavigation). Include confirmation dialogs for exam submission and navigation warnings. Use the existing responsive layout system to adapt for different screen sizes and integrate with the navigation scaffold appropriately.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\question_display_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_card.dart
+- mobile-app\lib\core\theme\app_text_styles.dart
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create a QuestionDisplayWidget that handles rendering different question types. Implement a factory pattern that delegates to specific question type widgets based on the question type (multiple_choice, true_false). Include question text display, option rendering, and answer selection handling. Pass selection callbacks up to the parent widget. Use the existing card widgets and follow Material 3 design guidelines. Include accessibility features and semantic labels for screen readers.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\multiple_choice_question_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\theme\app_dimensions.dart
+- mobile-app\lib\core\theme\app_colors.dart
+- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+
+Create a specialized widget for displaying multiple choice questions. Implement option tiles with radio buttons or checkboxes (depending on single vs multiple selection). Handle option selection state and visual feedback. Use the existing theme colors and dimensions for consistent styling. Include proper touch targets and accessibility support. Handle option shuffling if enabled in exam settings. Provide clear visual indication of selected options.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\true_false_question_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\core\theme\app_colors.dart
+
+Create a specialized widget for displaying true/false questions. Implement large, clear True/False buttons with proper visual feedback. Use distinctive colors and icons to make the choice clear. Handle selection state and provide immediate visual feedback. Follow Material 3 design guidelines and ensure good accessibility support. Include proper semantic labels for screen readers.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\theme\app_text_styles.dart
+- mobile-app\lib\core\theme\app_dimensions.dart
+
+Create an ExamTimerWidget that displays the remaining exam time with visual indicators. Implement countdown display with hours, minutes, and seconds. Include color changes as time runs low (green -> yellow -> red). Add progress ring or bar to show time progression visually. Handle timer updates from the bloc and display warnings when time is running out. Use the existing timer text styles from the theme. Include accessibility announcements for time warnings.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\exam_progress_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\theme\app_dimensions.dart
+- mobile-app\lib\core\theme\app_colors.dart
+
+Create an ExamProgressWidget that shows exam completion progress. Display current question number, total questions, answered count, and progress percentage. Include a linear progress indicator and question navigation dots/indicators. Show which questions have been answered and which are remaining. Use the existing progress dimensions from the theme. Include accessibility support for progress announcements.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\question_navigation_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\shared\widgets\app_dialog.dart
+
+Create a QuestionNavigationWidget for navigating between questions. Implement Previous/Next buttons with proper state management based on current question and exam settings. Include Submit Exam button when on the last question or when all questions are answered. Handle navigation restrictions (allowBackNavigation setting). Show confirmation dialogs for potentially destructive actions. Use the existing custom button components and follow established patterns.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\exam_session_app_bar.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
+- mobile-app\lib\features\exam_session\presentation\widgets\exam_progress_widget.dart(NEW)
+
+Create a specialized app bar for exam taking that includes timer, progress indicator, and exam information. Implement a clean, distraction-free design that shows essential information without cluttering the interface. Include exam title, current question indicator, timer widget, and progress widget. Handle different screen sizes responsively. Provide proper back button handling with confirmation dialogs if needed. Follow Material 3 app bar design guidelines.
+
+### mobile-app\lib\core\router\app_router.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart(NEW)
+- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+
+Update the AppRouter to replace the exam taking placeholder page with the actual ExamTakingPage. Import the new exam session page and bloc. Replace the `PlaceholderPage` in the exam taking route with a proper implementation that provides the ExamSessionBloc and passes the examId parameter. Update the route builder to handle BlocProvider creation and proper parameter passing. Ensure the route is properly protected and handles authentication requirements. Add proper error handling for invalid exam IDs.
+
+### mobile-app\lib\core\di\service_locator.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart(NEW)
+- mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(NEW)
+- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+
+Update the service locator to register all new exam session dependencies. Add registrations for exam session remote/local data sources, repository, use cases, and bloc. Follow the existing pattern from authentication and exam feature registration. Ensure proper dependency order and use appropriate registration types (singleton for repositories, factory for blocs). Include all the new services: ExamSessionRemoteDataSource, ExamSessionLocalDataSource, ExamSessionRepository, StartExamSessionUseCase, SubmitAnswerUseCase, SubmitExamUseCase, ExamTimer, ExamProgressTracker, and ExamSessionBloc. Register the timer and progress tracker utilities as factories since they may be used per session.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\widgets.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\presentation\widgets\question_display_widget.dart(NEW)
+- mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
+
+Create a barrel file for exam session widgets. Export `QuestionDisplayWidget`, `MultipleChoiceQuestionWidget`, `TrueFalseQuestionWidget`, `ExamTimerWidget`, `ExamProgressWidget`, `QuestionNavigationWidget`, and `ExamSessionAppBar` to provide easy access to exam session UI components. Include documentation comments for each exported widget explaining their purpose and usage in the exam taking flow.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\exam_submission_dialog.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_dialog.dart
+- mobile-app\lib\shared\widgets\custom_button.dart
+
+Create a specialized dialog for exam submission confirmation. Display exam summary including answered questions count, time spent, and warnings for unanswered questions. Include clear Submit and Cancel buttons with proper styling. Show different messages based on whether all questions are answered or if there are unanswered questions. Use the existing dialog components and follow Material 3 design guidelines. Include accessibility support and proper focus management.
+
+### mobile-app\lib\features\exam_session\presentation\widgets\session_expired_dialog.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_dialog.dart
+- mobile-app\lib\core\theme\app_colors.dart
+
+Create a dialog that appears when the exam session expires due to time running out. Display a clear message about session expiration and automatic submission. Include information about the submission status and next steps. Provide a button to view results or return to exam list. Use the existing dialog components and ensure the dialog cannot be dismissed accidentally. Include proper accessibility announcements for session expiration.

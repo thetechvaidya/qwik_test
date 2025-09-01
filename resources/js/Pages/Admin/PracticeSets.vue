@@ -160,7 +160,9 @@ const {
     onPage,
     onSort,
     onFilter,
-} = useServerTable(route('admin.practice-sets.index'), {
+} = useServerTable({
+    resourceKeys: ['practiceSets'],
+    routeName: 'admin.practice-sets.index',
     columns: [
         {
             label: 'Code',
@@ -214,7 +216,7 @@ const handleCopyClick = code => {
 }
 
 const goToAnalytics = id => {
-    router.visit(route('admin.practice-set.analytics', id))
+    router.visit(route('admin.practice-sets.analytics', id))
 }
 
 const editPracticeSet = id => {

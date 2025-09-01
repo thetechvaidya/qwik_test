@@ -1,7 +1,7 @@
 <template>
     <div class="comprehension-options">
         <div class="w-full flex flex-col mb-6">
-            <label class="pb-2 text-sm font-semibold text-gray-800">{{ __('Comprehension Passage') }}</label>
+            <label class="pb-2 text-sm font-semibold text-gray-800">{{ translate('Comprehension Passage') }}</label>
             <v-select
                 id="comprehension_id"
                 v-model="comprehensionId"
@@ -14,16 +14,21 @@
                 @search="searchComprehensions"
             >
                 <template #no-options="{ search, searching }">
-                    <span v-if="searching">{{ __('No results were found for this search') }}.</span>
-                    <em v-else class="opacity-50">{{ __('Start typing to search') }}.</em>
+                    <span v-if="searching">{{ translate('No results were found for this search') }}.</span>
+                    <em v-else class="opacity-50">{{ translate('Start typing to search') }}.</em>
                 </template>
             </v-select>
         </div>
     </div>
 </template>
 <script>
+import { useTranslate } from '@/composables/useTranslate';
 export default {
     name: 'ComprehensionOptions',
+    setup() {
+        const { __ } = useTranslate();
+        return { translate: __ };
+    },
     props: {
         parentComprehensions: Array,
         parentComprehensionId: Number,
@@ -36,13 +41,6 @@ export default {
         }
     },
     methods: {
-        __(key, replace = {}) {
-            let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
-            Object.keys(replace).forEach(function (key) {
-                translation = translation.replace(':' + key, replace[key])
-            })
-            return translation
-        },
         searchComprehensions(search, loading) {
             if (search !== '') {
                 let _this = this

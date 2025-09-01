@@ -8,11 +8,11 @@
                             <path class="heroicon-ui" d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm0-9a1 1 0 0 1 1 1v4a1 1 0 0 1-2 0v-4a1 1 0 0 1 1-1zm0-4a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
                         </svg>
                     </div>
-                    <p class="ltr:mr-2 rtl:ml-2 text-sm font-bold text-red-400">{{ __('Note') }}</p>
+                    <p class="ltr:mr-2 rtl:ml-2 text-sm font-bold text-red-400">{{ translate('Note') }}</p>
                 </div>
                 <div class="h-1 w-1 bg-gray-300 dark:bg-gray-700 rounded-full ltr:mr-2 rtl:ml-2 hidden xl:block"></div>
                 <p class="text-sm text-gray-600 dark:text-gray-400 pt-2 lg:pt-0 pb-2 lg:pb-0 w-4/5 lg:w-auto">
-                    {{ __('fib_instruction_note') }}
+                    {{ translate('fib_instruction_note') }}
                 </p>
             </div>
         </div>
@@ -42,10 +42,15 @@
 </template>
 <script>
     import ToggleSwitch from 'primevue/toggleswitch';
+    import { useTranslate } from '@/composables/useTranslate';
     export default {
         name: 'FIBOptions',
         components: {
             ToggleSwitch
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentPreferences: Object,

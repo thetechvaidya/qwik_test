@@ -44,15 +44,29 @@ const urls = computed(() => {
 
 // Methods
 const isActive = (url) => {
-    return window.location.href === url
+    if (!url || typeof window === 'undefined') return false
+    try {
+        return window.location.href === url
+    } catch (error) {
+        console.warn('Error checking active URL:', error)
+        return false
+    }
 }
 
 const isOpen = () => {
-    return urls.value.includes(window.location.href)
+    if (!urls.value || typeof window === 'undefined') return false
+    try {
+        return urls.value.includes(window.location.href)
+    } catch (error) {
+        console.warn('Error checking open state:', error)
+        return false
+    }
 }
 
 // Lifecycle
 onMounted(() => {
-    open.value = isOpen()
+    if (typeof window !== 'undefined') {
+        open.value = isOpen()
+    }
 })
 </script>

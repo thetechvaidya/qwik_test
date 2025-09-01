@@ -53,17 +53,29 @@ export default {
     data() {
         return {
             open: false,
+            isUnmounting: false,
         }
+    },
+    beforeUnmount() {
+        this.isUnmounting = true
+        this.open = false
     },
     methods: {
         toggle() {
+            if (this.isUnmounting) return
             this.open = !this.open
         },
         close() {
+            if (this.isUnmounting) return
             this.open = false
             this.$nextTick(() => {
-                if (this.$refs.trigger) {
-                    this.$refs.trigger.focus()
+                if (!this.isUnmounting && this.$refs.trigger && this.$refs.trigger.focus) {
+                    try {
+                        this.$refs.trigger.focus()
+                    } catch (error) {
+                        // Silently handle focus errors during component lifecycle transitions
+                        console.warn('ActionsDropdown: Focus error during component transition:', error)
+                    }
                 }
             })
         },

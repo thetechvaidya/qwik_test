@@ -14,7 +14,7 @@
                     }}</Link></li
                 >
                 <li class="mb-2"
-                    ><Link class="qt-link-success" :href="route('practice-sets.create')">{{
+                    ><Link class="qt-link-success" :href="route('admin.practice-sets.create')">{{
                         __('Create Practice Set')
                     }}</Link></li
                 >
@@ -22,7 +22,7 @@
                     ><Link class="qt-link-success" :href="route('quizzes.index')">{{ __('View Quizzes') }}</Link></li
                 >
                 <li class="mb-2"
-                    ><Link class="qt-link-success" :href="route('practice-sets.index')">{{
+                    ><Link class="qt-link-success" :href="route('admin.practice-sets.index')">{{
                         __('View Practice Sets')
                     }}</Link></li
                 >

@@ -73,12 +73,17 @@ export default {
     data() {
         return {
             confirmingPassword: false,
+            isUnmounting: false,
             form: {
                 password: '',
                 error: '',
                 processing: false,
             },
         }
+    },
+
+    beforeUnmount() {
+        this.isUnmounting = true
     },
 
     methods: {
@@ -89,7 +94,15 @@ export default {
                 } else {
                     this.confirmingPassword = true
 
-                    setTimeout(() => this.$refs.password.focus(), 250)
+                    setTimeout(() => {
+                        if (!this.isUnmounting && this.$refs.password && this.$refs.password.focus) {
+                            try {
+                                this.$refs.password.focus()
+                            } catch (error) {
+                                console.warn('ConfirmsPassword: Focus error during component transition:', error)
+                            }
+                        }
+                    }, 250)
                 }
             })
         },
@@ -109,7 +122,13 @@ export default {
                 .catch(error => {
                     this.form.processing = false
                     this.form.error = error.response.data.errors.password[0]
-                    this.$refs.password.focus()
+                    if (!this.isUnmounting && this.$refs.password && this.$refs.password.focus) {
+                        try {
+                            this.$refs.password.focus()
+                        } catch (error) {
+                            console.warn('ConfirmsPassword: Focus error during component transition:', error)
+                        }
+                    }
                 })
         },
 

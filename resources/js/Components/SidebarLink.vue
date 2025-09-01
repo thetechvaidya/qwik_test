@@ -26,18 +26,25 @@ const page = usePage()
 
 // Computed properties
 const active = computed(() => {
-    // Early return if url is not provided
-    if (!props.url) return false
+    // Early return if url is not provided or window is not available
+    if (!props.url || typeof window === 'undefined') return false
 
     let targetPath
     try {
         targetPath = new URL(props.url, window.location.origin).pathname.replace(/\/$/, '')
-    } catch {
+    } catch (error) {
+        console.warn('Error parsing URL:', error)
         return false
     }
 
-    // Normalize current path by removing query strings, hash, and trailing slashes
-    const currentPath = page.url.split('?')[0].split('#')[0].replace(/\/$/, '')
+    // Safely get current path
+    let currentPath
+    try {
+        currentPath = page.url ? page.url.split('?')[0].split('#')[0].replace(/\/$/, '') : ''
+    } catch (error) {
+        console.warn('Error getting current path:', error)
+        return false
+    }
 
     // Exact match first
     if (currentPath === targetPath) {

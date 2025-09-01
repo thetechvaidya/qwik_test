@@ -326,7 +326,7 @@ const create = () => {
                     detail: __('Practice Set created successfully'),
                     life: 3000,
                 })
-                router.get(route('practice-sets.index'))
+                router.get(route('admin.practice-sets.index'))
             }
         },
     })
@@ -342,7 +342,7 @@ const update = () => {
                     detail: __('Practice Set updated successfully'),
                     life: 3000,
                 })
-                router.get(route('practice-sets.index'))
+                router.get(route('admin.practice-sets.index'))
             }
         },
     })

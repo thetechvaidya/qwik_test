@@ -1,7 +1,7 @@
 <template>
     <div class="msa-options">
         <div v-for="(option, index) in options" :key="index" class="mb-4">
-            <div class="text-sm font-semibold mb-2">{{ __('Option') }} {{ index+1 }}</div>
+            <div class="text-sm font-semibold mb-2">{{ translate('Option') }} {{ index+1 }}</div>
             <TiptapEditor 
                 v-model="options[index].option" 
                 :config="{ 
@@ -13,7 +13,7 @@
             <div class="flex flex-col sm:flex-row bg-gray-50 border-b border-l border-r border-gray-300 sm:justify-between sm:items-center px-4 py-2">
                 <div class="flex gap-1 items-center">
                     <input :id="'option-'+index" v-model="correct_answer" type="radio" class="custom-control-input" :value="index+1" @change="selectAnswer">
-                    <label class="custom-control-label" :for="'option-'+index">{{ __('Correct Answer') }}</label>
+                    <label class="custom-control-label" :for="'option-'+index">{{ translate('Correct Answer') }}</label>
                 </div>
                 <div class="flex items-center sm:justify-end gap-2">
                     <!--<div class="flex gap-1 items-center">
@@ -22,23 +22,28 @@
                                      suffix=" %" :disabled="(correct_answer-1) === index" />
                     </div>-->
                     <div v-if="index > 1" class="text-sm bg-red-500 px-2 py-1 rounded text-white cursor-pointer hover:bg-red-600" @click="removeOption(index)">
-                        {{ __('Remove') }}
+                        {{ translate('Remove') }}
                     </div>
                 </div>
             </div>
 
         </div>
-        <button type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400" @click="addOption">{{ __('Add Option') }}</button>
+        <button type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400" @click="addOption">{{ translate('Add Option') }}</button>
     </div>
 </template>
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
     import InputNumber from 'primevue/inputnumber';
+    import { useTranslate } from '@/composables/useTranslate';
     export default {
         name: 'MSAOptions',
         components: {
             TiptapEditor,
             InputNumber
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentOptions: Array,

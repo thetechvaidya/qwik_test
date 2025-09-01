@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { Head, usePage, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import ArcValidationErrors from '@/Components/ValidationErrors.vue'
@@ -178,4 +178,21 @@ const submit = () => {
         },
     })
 }
+
+// Cleanup on component unmount to prevent DOM manipulation errors
+onBeforeUnmount(() => {
+    // Reset reactive state
+    file.value = null
+    formValidated.value = false
+    
+    // Clear file input if it exists
+    if (fileRef.value) {
+        fileRef.value.value = ''
+    }
+    
+    // Cancel any pending toasts
+    if (window.$toast && window.$toast.removeAllGroups) {
+        window.$toast.removeAllGroups()
+    }
+})
 </script>

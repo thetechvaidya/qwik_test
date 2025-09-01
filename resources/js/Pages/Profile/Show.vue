@@ -2,7 +2,7 @@
     <div>
         <app-layout v-if="!isAdmin">
             <template #header>
-                <h1 class="app-heading">{{ __('Profile') }}</h1>
+                <h1 class="app-heading">{{ translate('Profile') }}</h1>
             </template>
 
             <div class="py-8">
@@ -40,7 +40,7 @@
         <admin-layout v-if="isAdmin">
             <template #header>
                 <h4 class="page-heading">
-                    {{ __('Profile') }}
+                    {{ translate('Profile') }}
                 </h4>
             </template>
 
@@ -88,8 +88,13 @@ import LogoutOtherBrowserSessionsForm from './LogoutOtherBrowserSessionsForm'
 import TwoFactorAuthenticationForm from './TwoFactorAuthenticationForm'
 import UpdatePasswordForm from './UpdatePasswordForm'
 import UpdateProfileInformationForm from './UpdateProfileInformationForm'
+import { useTranslate } from '@/composables/useTranslate'
 
 export default {
+    setup() {
+        const { __ } = useTranslate();
+        return { translate: __ };
+    },
     components: {
         AppLayout,
         AdminLayout,
@@ -109,7 +114,7 @@ export default {
 
     computed: {
         title() {
-            return this.__('User Profile') + ' - ' + this.$page.props.general.app_name
+            return this.translate('User Profile') + ' - ' + this.$page.props.general.app_name
         },
         isAdmin() {
             return this.$page.props.isAdmin

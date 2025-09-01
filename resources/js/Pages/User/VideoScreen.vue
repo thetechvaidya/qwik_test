@@ -246,9 +246,11 @@ export default {
             return (index + 1) + (this.pagination.per_page * (this.pagination.current_page - 1));
         },
         stopPlayer() {
-            let id = 'player_'+this.videos[this.current_video].code;
-            if(this.$refs[id][0].$refs.player) {
-                this.$refs[id][0].$refs.player.player.stop();
+            if (this.videos && this.videos[this.current_video]) {
+                let id = 'player_'+this.videos[this.current_video].code;
+                if (this.$refs[id] && this.$refs[id][0] && this.$refs[id][0].$refs && this.$refs[id][0].$refs.player && this.$refs[id][0].$refs.player.player) {
+                    this.$refs[id][0].$refs.player.player.stop();
+                }
             }
         }
     },

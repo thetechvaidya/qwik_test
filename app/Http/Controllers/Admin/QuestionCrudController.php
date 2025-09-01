@@ -80,8 +80,6 @@ class QuestionCrudController extends Controller
      */
     public function create()
     {
-        Gate::authorize('create', Question::class);
-
         // Select MSA as default question type if no question type specified
         if (request()->has('question_type')) {
             $questionType = QuestionType::select(['id', 'code', 'name'])
@@ -136,7 +134,6 @@ class QuestionCrudController extends Controller
     public function show($id)
     {
         $question = Question::with(['questionType:id,name,code', 'difficultyLevel:id,name,code', 'skill:id,name'])->findOrFail($id);
-        Gate::authorize('view', $question);
         return response()->json(fractal($question, new QuestionPreviewTransformer())->toArray()['data'], 200);
     }
 
@@ -149,7 +146,6 @@ class QuestionCrudController extends Controller
     public function edit($id)
     {
         $question = Question::with('questionType')->findOrFail($id);
-        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Details', [
             'steps' => $this->repository->getSteps($question->id, 'details'),
             'questionType' => $question->questionType,
@@ -170,7 +166,6 @@ class QuestionCrudController extends Controller
     {
         try {
             $question = Question::findOrFail($id);
-            Gate::authorize('update', $question);
             $question->question = $request->question;
             $question->question_type_id = $request->question_type_id;
             $question->options = $request->options;
@@ -196,7 +191,6 @@ class QuestionCrudController extends Controller
     public function settings($id)
     {
         $question = Question::with(['tags', 'questionType', 'skill.section', 'topic.skill'])->findOrFail($id);
-        Gate::authorize('update', $question);
 
         return Inertia::render('Admin/Question/Settings', [
             'steps' => $this->repository->getSteps($question->id, 'settings'),
@@ -227,7 +221,6 @@ class QuestionCrudController extends Controller
     {
         try {
             $question = Question::findOrFail($id);
-            Gate::authorize('update', $question);
             $question->skill_id = $request->skill_id;
             $question->topic_id = $request->topic_id;
             $question->difficulty_level_id = $request->difficulty_level_id;
@@ -259,7 +252,6 @@ class QuestionCrudController extends Controller
     public function solution($id)
     {
         $question = Question::with('questionType')->findOrFail($id);
-        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Solution', [
             'steps' => $this->repository->getSteps($question->id, 'solution'),
             'questionType' => $question->questionType,
@@ -280,7 +272,6 @@ class QuestionCrudController extends Controller
     {
         try {
             $question = Question::findOrFail($id);
-            Gate::authorize('update', $question);
             $question->hint = $request->hint;
             $question->solution = $request->solution;
             $question->solution_video = $request->solution_has_video ? $request->solution_video : null;
@@ -304,7 +295,6 @@ class QuestionCrudController extends Controller
     public function attachment($id)
     {
         $question = Question::with('questionType')->findOrFail($id);
-        Gate::authorize('update', $question);
         return Inertia::render('Admin/Question/Attachment', [
             'steps' => $this->repository->getSteps($question->id, 'attachment'),
             'questionType' => $question->questionType,
@@ -326,7 +316,6 @@ class QuestionCrudController extends Controller
     {
         try {
             $question = Question::findOrFail($id);
-            Gate::authorize('update', $question);
             $question->has_attachment = $request->has_attachment;
             $question->attachment_type = $request->attachment_type;
             $question->comprehension_passage_id = $request->attachment_type == 'comprehension' ? $request->comprehension_id : null;
@@ -352,7 +341,6 @@ class QuestionCrudController extends Controller
     {
         try {
             $question = Question::withCount(['practiceSets', 'quizzes', 'exams'])->findOrFail($id);
-            Gate::authorize('delete', $question);
 
             if (!$question->canSecureDelete('practiceSets', 'quizzes', 'exams')) {
                 $associations = implode(", ", array_filter([

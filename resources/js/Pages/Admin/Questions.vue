@@ -11,13 +11,21 @@
                 </Link>
                 <ArcDropdown align="right" width="48">
                     <template #trigger>
-                        <button class="qt-btn qt-btn-success"> {{ __('New') }} {{ __('Question') }} </button>
+                        <button class="qt-btn qt-btn-success"> 
+                            {{ __('New') }} {{ __('Question') }} 
+                        </button>
                     </template>
                     <template #content>
+                        <div v-if="!questionTypes || questionTypes.length === 0" class="px-4 py-2 text-sm text-gray-500">
+                            No question types available
+                        </div>
                         <template v-for="questionType in questionTypes" :key="questionType.code">
-                            <ArcDropdownLink :href="route('questions.create', { question_type: questionType.code })">
+                            <button 
+                                class="dropdown-link w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                @click="createQuestion(questionType.code)"
+                            >
                                 {{ questionType.text }}
-                            </ArcDropdownLink>
+                            </button>
                         </template>
                     </template>
                 </ArcDropdown>
@@ -100,10 +108,7 @@
                                             <template #actions>
                                                 <button
                                                     class="action-item flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
-                                                    @click="
-                                                        showPreview = true;
-                                                        currentId = slotProps.data.id;
-                                                    "
+                                                    @click="openPreview(slotProps.data.id)"
                                                     ><i class="pi pi-eye text-blue-500"></i>{{ __('Preview') }}</button
                                                 >
                                                 <button class="action-item flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors" @click="editQuestion(slotProps.data.id)"><i class="pi pi-pencil text-green-500"></i>{{ __('Edit') }}</button>
@@ -128,11 +133,19 @@
                     </div>
 
                     <!-- Drawer Forms -->
-                    <Drawer v-model:visible="showPreview" position="right" class="p-drawer-md">
+                    <Drawer 
+                        v-model:visible="showPreview" 
+                        position="right" 
+                        class="p-drawer-md"
+                        :dismissable="true"
+                        :closeOnEscape="true"
+                        @hide="closePreview"
+                    >
                         <QuestionPreview
+                            v-if="showPreview && currentId && isComponentMounted"
                             :question-id="currentId"
                             :title="__('Question') + ' ' + __('Preview')"
-                            @close="showPreview = false"
+                            @close="closePreview"
                         />
                     </Drawer>
                 </div>
@@ -174,7 +187,7 @@ const props = defineProps({
 // Composables
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
-const { copyCode } = useCopy()
+const { copyToClipboard } = useCopy()
 const { renderMathInTable } = useMathRender()
 const { confirm, toast } = useConfirmToast()
 
@@ -282,8 +295,11 @@ const {
         filterPrefix: '',
     },
     onSuccess: async () => {
+        if (!isComponentMounted.value) return
         await nextTick()
-        await renderMathInTable(tableRoot.value)
+        if (tableRoot.value && isComponentMounted.value) {
+            await renderMathInTable(tableRoot.value)
+        }
     },
     onError: (_, message) =>
         toast({ severity: 'error', summary: __('Error'), detail: message || __('Failed to load data'), life: 3000 }),
@@ -293,6 +309,7 @@ const {
 const showPreview = ref(false)
 const currentId = ref(null)
 const tableRoot = ref(null)
+const isComponentMounted = ref(false)
 const title = computed(() => {
     return __('Questions') + ' - ' + pageProps.general.app_name
 });
@@ -309,11 +326,18 @@ const sanitizedAndValidatedQuestion = (question) => {
 
 // Performance Optimization: Lazy load images
 const lazyLoadImages = () => {
-    const images = tableRoot.value.querySelectorAll('img[data-src]');
-    images.forEach(img => {
-        img.src = img.dataset.src;
-        img.removeAttribute('data-src');
-    });
+    if (!tableRoot.value) return;
+    try {
+        const images = tableRoot.value.querySelectorAll('img[data-src]');
+        images.forEach(img => {
+            if (img && img.dataset && img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+        });
+    } catch (error) {
+        console.warn('Error in lazy loading images:', error);
+    }
 };
 
 // Audit Logging for Admin Actions
@@ -324,21 +348,81 @@ const logAdminAction = (action, details) => {
 
 // Initialize math rendering and lazy loading on mount and after data loads
 onMounted(() => {
-    renderMathInTable(tableRoot.value);
-    lazyLoadImages();
+    isComponentMounted.value = true
+    
+    nextTick(() => {
+        if (tableRoot.value && isComponentMounted.value) {
+            renderMathInTable(tableRoot.value);
+            lazyLoadImages();
+        }
+    });
 });
 
 watch(() => props.questions, () => {
+    if (!isComponentMounted.value) return
     nextTick(() => {
-        renderMathInTable(tableRoot.value);
-        lazyLoadImages();
+        if (tableRoot.value && isComponentMounted.value) {
+            renderMathInTable(tableRoot.value);
+            lazyLoadImages();
+        }
     });
 }, { deep: true });
 
+// Copy code functionality
+const copyCode = async (code) => {
+    if (!isComponentMounted.value || !code) return
+    try {
+        await copyToClipboard(code)
+        logAdminAction('copy_question_code', { code })
+        toast({ severity: 'success', summary: __('Success'), detail: __('Code copied to clipboard'), life: 2000 })
+    } catch (error) {
+        console.error('Error copying code:', error)
+        toast({ severity: 'error', summary: __('Error'), detail: __('Failed to copy code'), life: 3000 })
+    }
+}
+
 // Methods
+const openPreview = (id) => {
+    if (!isComponentMounted.value || !id) return
+    try {
+        currentId.value = id
+        showPreview.value = true
+        logAdminAction('preview_question', { questionId: id })
+    } catch (error) {
+        console.error('Error opening preview:', error)
+        toast({ severity: 'error', summary: __('Error'), detail: __('Failed to open preview'), life: 3000 })
+    }
+}
+
+const closePreview = () => {
+    try {
+        showPreview.value = false
+        currentId.value = null
+    } catch (error) {
+        console.warn('Error closing preview:', error)
+    }
+}
+
+const createQuestion = (questionType) => {
+    if (!isComponentMounted.value || !questionType) return
+    try {
+        logAdminAction('create_question_attempt', { questionType })
+        router.get(route('questions.create', { question_type: questionType }))
+    } catch (error) {
+        console.error('Error creating question:', error)
+        toast({ severity: 'error', summary: __('Error'), detail: __('Failed to create question'), life: 3000 })
+    }
+}
+
 const editQuestion = id => {
-    logAdminAction('edit_question', { questionId: id });
-    router.get(route('questions.edit', { question: id }));
+    if (!isComponentMounted.value) return
+    try {
+        logAdminAction('edit_question', { questionId: id });
+        router.get(route('questions.edit', { question: id }));
+    } catch (error) {
+        console.error('Error editing question:', error)
+        toast({ severity: 'error', summary: __('Error'), detail: __('Failed to edit question'), life: 3000 })
+    }
 };
 
 const deleteQuestion = async id => {
@@ -364,8 +448,12 @@ const deleteQuestion = async id => {
                 serverParams.page = prevPage - 1;
                 await loadItems(true);
             }
-            await nextTick();
-            await renderMathInTable(tableRoot.value);
+            if (isComponentMounted.value) {
+                await nextTick();
+                if (tableRoot.value) {
+                    await renderMathInTable(tableRoot.value);
+                }
+            }
         },
         onError: () => {
             toast({ severity: 'error', summary: __('Error'), detail: __('Failed to delete question'), life: 3000 });
@@ -375,13 +463,25 @@ const deleteQuestion = async id => {
 
 // Cleanup on component unmount to prevent DOM manipulation errors
 onBeforeUnmount(() => {
-    showPreview.value = false
-    currentId.value = null
-    tableRoot.value = null
-    
-    // Close any pending confirmation dialogs
-    if (window.PrimeVue && window.PrimeVue.confirmDialog) {
-        window.PrimeVue.confirmDialog.close()
+    try {
+        // Mark component as unmounted first
+        isComponentMounted.value = false
+        
+        // Clear reactive state
+        showPreview.value = false
+        currentId.value = null
+        
+        // Close any pending confirmation dialogs
+        if (window.PrimeVue && window.PrimeVue.confirmDialog) {
+            window.PrimeVue.confirmDialog.close()
+        }
+        
+        // Clear table reference last to prevent null access
+        if (tableRoot.value) {
+            tableRoot.value = null
+        }
+    } catch (error) {
+        console.warn('Error during component cleanup:', error)
     }
 })
 

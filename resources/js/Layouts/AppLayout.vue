@@ -288,7 +288,7 @@
             <Toast position="top-right" />
             <ConfirmDialog />
             <!--Modal Portal using Vue 3 Teleport-->
-            <teleport to="#modals">
+            <teleport to="#modals" :disabled="!modalTargetExists">
                 <!-- Modals will be rendered here -->
             </teleport>
         </div>
@@ -327,10 +327,30 @@ export default {
         return {
             showingNavigationDropdown: false,
             sidebar: false,
+            modalTargetExists: false,
+        }
+    },
+
+    mounted() {
+        this.checkModalTarget()
+        // Watch for DOM changes
+        this.modalObserver = new MutationObserver(() => {
+            this.checkModalTarget()
+        })
+        this.modalObserver.observe(document.body, { childList: true, subtree: true })
+    },
+
+    beforeUnmount() {
+        if (this.modalObserver) {
+            this.modalObserver.disconnect()
         }
     },
 
     methods: {
+        checkModalTarget() {
+            this.modalTargetExists = !!document.getElementById('modals')
+        },
+
         __(key) {
             return this.$page.props.translations?.[key] || key
         },

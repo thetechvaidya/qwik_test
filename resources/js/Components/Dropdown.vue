@@ -19,7 +19,6 @@
                 v-show="open"
                 class="absolute z-50 mt-2 shadow rounded"
                 :class="[widthClass, alignmentClasses]"
-                style="display: none;"
                 @click="open = false">
                 <div class="rounded-sm ring-1 ring-black ring-opacity-5" :class="contentClasses">
                     <slot name="content"></slot>

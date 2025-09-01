@@ -39,15 +39,20 @@
         </div>
         <button
             type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400"
-                @click="addOption">{{ __('Add Sequence Item') }}</button>
+                @click="addOption">{{ translate('Add Sequence Item') }}</button>
     </div>
 </template>
 <script>
     import TiptapEditor from "@/Components/TiptapEditor";
+    import { useTranslate } from '@/composables/useTranslate';
     export default {
         name: 'ORDOptions',
         components: {
             TiptapEditor,
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentOptions: Array,

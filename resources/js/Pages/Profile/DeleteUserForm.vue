@@ -87,14 +87,22 @@ export default {
         confirmUserDeletion() {
             this.confirmingUserDeletion = true
 
-            setTimeout(() => this.$refs.password.focus(), 250)
+            setTimeout(() => {
+                if (this.$refs.password && this.$refs.password.focus) {
+                    this.$refs.password.focus()
+                }
+            }, 250)
         },
 
         deleteUser() {
             this.form.delete(route('current-user.destroy'), {
                 preserveScroll: true,
                 onSuccess: () => this.closeModal(),
-                onError: () => this.$refs.password.focus(),
+                onError: () => {
+                    if (this.$refs.password && this.$refs.password.focus) {
+                        this.$refs.password.focus()
+                    }
+                },
                 onFinish: () => this.form.reset(),
             })
         },

@@ -49,17 +49,22 @@
             </div>
         </div>
         <button type="button" class="text-sm transition focus:outline-none duration-150 w-full my-2 p-4 border border-green-300 border-dashed hover:bg-green-100 hover:border-green-400"
-                @click="addOption">{{ __('Add Pair') }}</button>
+                @click="addOption">{{ translate('Add Pair') }}</button>
     </div>
 </template>
 
 <script>
 import TiptapEditor from "@/Components/TiptapEditor";
+import { useTranslate } from '@/composables/useTranslate';
 
 export default {
     name: 'MTFQuestionOptions',
     components: {
         TiptapEditor
+    },
+    setup() {
+        const { __ } = useTranslate();
+        return { translate: __ };
     },
     props: {
         parentOptions: {
@@ -74,13 +79,6 @@ export default {
         }
     },
     methods: {
-        __(key, replace = {}) {
-            let translation = this.$page.props.translations[key] ? this.$page.props.translations[key] : key
-            Object.keys(replace).forEach(function (key) {
-                translation = translation.replace(':' + key, replace[key])
-            })
-            return translation
-        },
         addOption: function () {
             if(this.options.length > 4) {
                 // Note: These components (this.$confirm, this.$toast) would need to be properly imported

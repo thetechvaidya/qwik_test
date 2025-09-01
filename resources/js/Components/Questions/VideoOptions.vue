@@ -2,21 +2,21 @@
     <div class="audio-options">
         <div class="w-full flex flex-col mb-6">
             <label class="pb-4 text-sm font-semibold text-gray-800">
-                {{ __('Video Type') }} (Supported YouTube, Vimeo & .mp4 files)
+                {{ translate('Video Type') }} (Supported YouTube, Vimeo & .mp4 files)
             </label>
             <SelectButton v-model="options.video_type" :options="videoFormats" option-label="name" option-value="value" data-key="value" @change="changePlayer"></SelectButton>
         </div>
         <div class="w-full flex flex-col mb-6">
             <label for="video_link" class="pb-2 text-sm font-semibold text-gray-800">
-                <span v-html="options.video_type === 'mp4' ? __('Video Link') : __('Video')+' ID'"></span>
+                <span v-html="options.video_type === 'mp4' ? translate('Video Link') : translate('Video')+' ID'"></span>
             </label>
             <div class="p-inputgroup">
-                <InputText id="video_link" v-model="options.link" :placeholder="options.video_type === 'mp4' ? __('Video Link') : __('Video')+' ID'" aria-describedby="video_link-help" @input="selectOptions" />
-                <Button type="button" icon="pi pi-play" :label="__('Preview')" @click="showPlayer" />
+                <InputText id="video_link" v-model="options.link" :placeholder="options.video_type === 'mp4' ? translate('Video Link') : translate('Video')+' ID'" aria-describedby="video_link-help" @input="selectOptions" />
+                <Button type="button" icon="pi pi-play" :label="translate('Preview')" @click="showPlayer" />
             </div>
         </div>
         <div v-if="player" class="my-4 flex justify-end">
-            <Button type="button" class="p-button-text" icon="pi pi-times" :label="__('Close')" @click="player = false" />
+            <Button type="button" class="p-button-text" icon="pi pi-times" :label="translate('Close')" @click="player = false" />
         </div>
 
         <div v-if="player && options.video_type === 'mp4'">
@@ -47,6 +47,7 @@
     import SelectButton from 'primevue/selectbutton';
     import Button from 'primevue/button';
     import VuePlyr from 'vue-plyr';
+    import { useTranslate } from '@/composables/useTranslate';
 
     export default {
         name: 'VideoOptions',
@@ -55,6 +56,10 @@
             SelectButton,
             VuePlyr,
             Button
+        },
+        setup() {
+            const { __ } = useTranslate();
+            return { translate: __ };
         },
         props: {
             parentOptions: Object,
