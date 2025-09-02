@@ -40,7 +40,7 @@ abstract class ExamSessionRemoteDataSource {
   Future<List<ExamSessionModel>> getActiveExamSessions();
 
   /// Abandon exam session
-  Future<void> abandonExamSession(String sessionId);
+  Future<void> abandonExamSession(String sessionId, {String? reason});
 
   /// Sync local answers with server
   Future<List<AnswerModel>> syncAnswers({
@@ -238,10 +238,13 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   }
 
   @override
-  Future<void> abandonExamSession(String sessionId) async {
+  Future<void> abandonExamSession(String sessionId, {String? reason}) async {
     try {
+      final requestData = reason != null ? {'reason': reason} : null;
+      
       final response = await _dio.post(
         ApiEndpoints.examSessionAbandon(sessionId),
+        data: requestData,
       );
 
       if (response.statusCode != 200) {

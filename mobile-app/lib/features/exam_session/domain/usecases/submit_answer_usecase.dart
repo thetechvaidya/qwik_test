@@ -14,7 +14,9 @@ class SubmitAnswerUseCase implements UseCase<Answer, SubmitAnswerParams> {
   Future<Either<Failure, Answer>> call(SubmitAnswerParams params) async {
     return await _repository.submitAnswer(
       sessionId: params.sessionId,
-      answer: params.answer,
+      questionId: params.questionId,
+      selectedOptionIds: params.selectedOptionIds,
+      timeSpent: params.timeSpent,
     );
   }
 }
@@ -22,11 +24,15 @@ class SubmitAnswerUseCase implements UseCase<Answer, SubmitAnswerParams> {
 /// Parameters for SubmitAnswerUseCase
 class SubmitAnswerParams {
   final String sessionId;
-  final Answer answer;
+  final String questionId;
+  final List<String> selectedOptionIds;
+  final int timeSpent;
 
   const SubmitAnswerParams({
     required this.sessionId,
-    required this.answer,
+    required this.questionId,
+    required this.selectedOptionIds,
+    required this.timeSpent,
   });
 
   @override
@@ -34,12 +40,14 @@ class SubmitAnswerParams {
     if (identical(this, other)) return true;
     return other is SubmitAnswerParams &&
         other.sessionId == sessionId &&
-        other.answer == answer;
+        other.questionId == questionId &&
+        other.selectedOptionIds == selectedOptionIds &&
+        other.timeSpent == timeSpent;
   }
 
   @override
-  int get hashCode => sessionId.hashCode ^ answer.hashCode;
+  int get hashCode => Object.hash(sessionId, questionId, selectedOptionIds, timeSpent);
 
   @override
-  String toString() => 'SubmitAnswerParams(sessionId: $sessionId, answer: $answer)';
+  String toString() => 'SubmitAnswerParams(sessionId: $sessionId, questionId: $questionId, selectedOptionIds: $selectedOptionIds, timeSpent: $timeSpent)';
 }

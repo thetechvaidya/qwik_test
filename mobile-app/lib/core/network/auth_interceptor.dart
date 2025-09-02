@@ -53,13 +53,17 @@ class AuthInterceptor extends Interceptor {
         return;
       }
 
-      // Get stored access token
-      final accessToken = await _tokenStorage.getAccessToken();
-      if (accessToken != null && accessToken.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $accessToken';
+      // Get stored auth token using AuthLocalDataSource
+      final authToken = await _authLocalDataSource.getAuthToken();
+      if (authToken != null && !authToken.isExpired) {
+        options.headers['Authorization'] = 'Bearer ${authToken.accessToken}';
         
         if (kDebugMode) {
           debugPrint('AuthInterceptor: Added token to request ${options.path}');
+        }
+      } else if (authToken?.isExpired == true) {
+        if (kDebugMode) {
+          debugPrint('AuthInterceptor: Token expired, will attempt refresh on next request');
         }
       }
 
@@ -77,10 +81,10 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    // Handle 401 Unauthorized errors
-    // Handle authentication-related errors: 401 (Unauthorized), 403 (Forbidden), 419 (Authentication Timeout)
+    // Handle authentication-related errors: 401 (Unauthorized), 419 (Authentication Timeout)
+    // Do not attempt refresh on 403 (Forbidden) as it indicates insufficient permissions
     final statusCode = err.response?.statusCode;
-    if (statusCode == 401 || statusCode == 403 || statusCode == 419) {
+    if (statusCode == 401 || statusCode == 419) {
       if (kDebugMode) {
         debugPrint('AuthInterceptor: Authentication error $statusCode detected for ${err.requestOptions.path}');
       }
@@ -156,12 +160,10 @@ class AuthInterceptor extends Interceptor {
       ApiEndpoints.register,
       ApiEndpoints.refreshToken,
       ApiEndpoints.logout,
-      ApiEndpoints.profile,
       ApiEndpoints.verifyEmail,
       ApiEndpoints.forgotPassword,
       ApiEndpoints.resetPassword,
-      ApiEndpoints.changePassword,
-      ApiEndpoints.updateProfile
+      ApiEndpoints.changePassword
     };
     return authPaths.any((a) => p.startsWith(a));
   }
@@ -187,9 +189,9 @@ class AuthInterceptor extends Interceptor {
       // Emit token refresh started event
       _eventBus.emit(const TokenRefreshStarted());
 
-      // Check if we have a refresh token
-      final refreshToken = await _tokenStorage.getRefreshToken();
-      if (refreshToken == null || refreshToken.isEmpty) {
+      // Check if we have a valid auth token with refresh capability
+      final authToken = await _authLocalDataSource.getAuthToken();
+      if (authToken == null || authToken.refreshToken.isEmpty) {
         if (kDebugMode) {
           debugPrint('AuthInterceptor: No refresh token available');
         }
@@ -270,11 +272,11 @@ class AuthInterceptor extends Interceptor {
       requestOptions.extra['hasRetried'] = true;
       requestOptions.extra['retryCount'] = retryCount + 1;
       
-      final newToken = await _tokenStorage.getAccessToken();
-      if (newToken != null && newToken.isNotEmpty) {
+      final authToken = await _authLocalDataSource.getAuthToken();
+      if (authToken != null && !authToken.isExpired) {
         // Rebuild Options with Authorization header
         final newHeaders = Map<String, dynamic>.from(requestOptions.headers);
-        newHeaders['Authorization'] = 'Bearer $newToken';
+        newHeaders['Authorization'] = 'Bearer ${authToken.accessToken}';
         
         if (kDebugMode) {
           debugPrint('AuthInterceptor: Retrying request with new token (attempt ${retryCount + 1})');

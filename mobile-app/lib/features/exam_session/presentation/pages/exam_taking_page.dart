@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/exam_session_bloc.dart';
+import '../../domain/entities/answer.dart';
 import '../widgets/exam_header_widget.dart';
 import '../widgets/question_content_widget.dart';
 import '../widgets/answer_options_widget.dart';
@@ -158,7 +159,7 @@ class _ExamTakingPageState extends State<ExamTakingPage>
           // Header with timer and progress
           ExamHeaderWidget(
             session: state.session,
-            timeRemaining: state.timeRemaining,
+            timeRemaining: state.remainingTimeSeconds,
             onPaletteToggle: _toggleQuestionPalette,
             onSubmit: () => _showSubmissionDialog(context, state),
           ),
@@ -187,14 +188,26 @@ class _ExamTakingPageState extends State<ExamTakingPage>
           NavigationControlsWidget(
             session: state.session,
             onPrevious: state.canNavigatePrevious
-                ? () => _examSessionBloc.add(const NavigateToPreviousQuestionEvent())
+                ? () => _examSessionBloc.add(const PreviousQuestionEvent())
                 : null,
             onNext: state.canNavigateNext
-                ? () => _examSessionBloc.add(const NavigateToNextQuestionEvent())
+                ? () => _examSessionBloc.add(const NextQuestionEvent())
                 : null,
-            onSkip: () => _examSessionBloc.add(const SkipQuestionEvent()),
-            onMarkForReview: () => _examSessionBloc.add(const MarkQuestionForReviewEvent()),
-            onClearAnswer: () => _examSessionBloc.add(const ClearAnswerEvent()),
+            onSkip: () => _examSessionBloc.add(SkipQuestionEvent(questionId: state.currentQuestion.id)),
+            onMarkForReview: () => _examSessionBloc.add(MarkForReviewEvent(
+                questionId: state.currentQuestion.id,
+                isMarked: !state.isCurrentQuestionMarkedForReview,
+            )),
+            onClearAnswer: () => _examSessionBloc.add(SubmitAnswerEvent(
+                answer: Answer(
+                  id: '',
+                  questionId: state.currentQuestion.id,
+                  selectedOptionIds: [],
+                  timeSpent: 0,
+                  answeredAt: DateTime.now(),
+                ),
+                autoNavigate: false,
+            )),
           ),
         ],
       ),
@@ -203,14 +216,6 @@ class _ExamTakingPageState extends State<ExamTakingPage>
 
   Widget _buildQuestionArea(BuildContext context, ExamSessionActive state) {
     final currentQuestion = state.currentQuestion;
-    if (currentQuestion == null) {
-      return const Center(
-        child: Text(
-          'No questions available',
-          style: AppTextStyles.bodyLarge,
-        ),
-      );
-    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -244,8 +249,8 @@ class _ExamTakingPageState extends State<ExamTakingPage>
           
           const SizedBox(height: 24),
           
-          // Question explanation (if available and enabled)
-          if (state.showExplanation && currentQuestion.explanation != null)
+          // Question explanation (if available)
+          if (currentQuestion.explanation != null)
             _buildExplanation(currentQuestion.explanation!),
         ],
       ),
@@ -428,7 +433,7 @@ class _ExamTakingPageState extends State<ExamTakingPage>
         answers: state.answers,
         onSubmit: () {
           Navigator.of(context).pop();
-          _examSessionBloc.add(const SubmitExamSessionEvent());
+          _examSessionBloc.add(const SubmitExamEvent());
         },
         onCancel: () => Navigator.of(context).pop(),
       ),

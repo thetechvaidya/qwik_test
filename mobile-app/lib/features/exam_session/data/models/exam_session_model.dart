@@ -21,7 +21,7 @@ class ExamSessionModel extends HiveObject {
 
   @HiveField(2)
   @JsonKey(name: 'exam')
-  final ExamModel? exam;
+  final ExamModel exam;
 
   @HiveField(3)
   @JsonKey(name: 'questions')
@@ -53,7 +53,7 @@ class ExamSessionModel extends HiveObject {
 
   @HiveField(10)
   @JsonKey(name: 'settings')
-  final Map<String, dynamic> settings;
+  final ExamSettingsModel settings;
 
   @HiveField(11)
   @JsonKey(name: 'metadata')
@@ -74,7 +74,7 @@ class ExamSessionModel extends HiveObject {
   ExamSessionModel({
     required this.sessionId,
     required this.examId,
-    this.exam,
+    required this.exam,
     this.questions = const [],
     this.answers = const [],
     this.currentQuestionIndex = 0,
@@ -82,7 +82,7 @@ class ExamSessionModel extends HiveObject {
     required this.expiresAt,
     required this.remainingTimeSeconds,
     this.status = 'active',
-    this.settings = const {},
+    required this.settings,
     this.metadata,
     this.pausedAt,
     this.totalPauseDuration = 0,
@@ -100,15 +100,15 @@ class ExamSessionModel extends HiveObject {
     return ExamSessionModel(
       sessionId: session.sessionId,
       examId: session.examId,
-      exam: session.exam != null ? ExamModel.fromEntity(session.exam!) : null,
+      exam: ExamModel.fromEntity(session.exam),
       questions: session.questions.map((q) => QuestionModel.fromEntity(q)).toList(),
-      answers: session.answers.map((a) => AnswerModel.fromEntity(a)).toList(),
+      answers: session.answers.values.map((a) => AnswerModel.fromEntity(a)).toList(),
       currentQuestionIndex: session.currentQuestionIndex,
       startedAt: session.startedAt,
       expiresAt: session.expiresAt,
       remainingTimeSeconds: session.remainingTimeSeconds,
       status: session.status.name,
-      settings: session.settings,
+      settings: ExamSettingsModel.fromEntity(session.settings),
       metadata: session.metadata,
       pausedAt: session.pausedAt,
       totalPauseDuration: session.totalPauseDuration,
@@ -121,15 +121,15 @@ class ExamSessionModel extends HiveObject {
     return ExamSession(
       sessionId: sessionId,
       examId: examId,
-      exam: exam?.toEntity(),
+      exam: exam.toEntity(),
       questions: questions.map((q) => q.toEntity()).toList(),
-      answers: answers.map((a) => a.toEntity()).toList(),
+      answers: { for (final a in answers) a.questionId: a.toEntity() },
       currentQuestionIndex: currentQuestionIndex,
       startedAt: startedAt,
       expiresAt: expiresAt,
       remainingTimeSeconds: remainingTimeSeconds,
       status: _parseExamSessionStatus(status),
-      settings: settings,
+      settings: settings.toEntity(),
       metadata: metadata,
       pausedAt: pausedAt,
       totalPauseDuration: totalPauseDuration,
@@ -140,6 +140,8 @@ class ExamSessionModel extends HiveObject {
   /// Parse exam session status from string
   ExamSessionStatus _parseExamSessionStatus(String status) {
     switch (status.toLowerCase()) {
+      case 'not_started':
+        return ExamSessionStatus.notStarted;
       case 'active':
         return ExamSessionStatus.active;
       case 'paused':
@@ -148,8 +150,8 @@ class ExamSessionModel extends HiveObject {
         return ExamSessionStatus.completed;
       case 'expired':
         return ExamSessionStatus.expired;
-      case 'abandoned':
-        return ExamSessionStatus.abandoned;
+      case 'submitted':
+        return ExamSessionStatus.submitted;
       default:
         return ExamSessionStatus.active;
     }

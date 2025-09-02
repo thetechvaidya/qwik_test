@@ -209,65 +209,6 @@ class AppTheme {
         space: 1,
       ),
       
-      // Navigation Bar Theme
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.darkColorScheme.surface,
-        indicatorColor: AppColors.darkColorScheme.secondaryContainer,
-        indicatorShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        surfaceTintColor: AppColors.darkColorScheme.surfaceTint,
-        elevation: 3,
-        shadowColor: AppColors.darkColorScheme.shadow,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return AppTextStyles.labelSmall.copyWith(
-              color: AppColors.darkColorScheme.onSecondaryContainer,
-            );
-          }
-          return AppTextStyles.labelSmall.copyWith(
-            color: AppColors.darkColorScheme.onSurfaceVariant,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return IconThemeData(
-              color: AppColors.darkColorScheme.onSecondaryContainer,
-              size: 24,
-            );
-          }
-          return IconThemeData(
-            color: AppColors.darkColorScheme.onSurfaceVariant,
-            size: 24,
-          );
-        }),
-      ),
-      
-      // Navigation Rail Theme
-      navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: AppColors.darkColorScheme.surface,
-        indicatorColor: AppColors.darkColorScheme.secondaryContainer,
-        indicatorShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        labelType: NavigationRailLabelType.all,
-        selectedLabelTextStyle: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.darkColorScheme.onSecondaryContainer,
-        ),
-        unselectedLabelTextStyle: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.darkColorScheme.onSurfaceVariant,
-        ),
-        selectedIconTheme: IconThemeData(
-          color: AppColors.darkColorScheme.onSecondaryContainer,
-          size: 24,
-        ),
-        unselectedIconTheme: IconThemeData(
-          color: AppColors.darkColorScheme.onSurfaceVariant,
-          size: 24,
-        ),
-      ),
-      
       // Text Theme
       textTheme: TextTheme(
         displayLarge: AppTextStyles.displayLarge,

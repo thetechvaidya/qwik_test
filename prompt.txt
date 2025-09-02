@@ -2,459 +2,651 @@ I have created the following plan after thorough exploration and analysis of the
 
 ### Observations
 
-The codebase has excellent foundations for implementing offline exam functionality. Key findings:
+The codebase has excellent foundations for implementing user profile and settings functionality. Key findings:
 
-1. **Existing offline infrastructure** - ExamSessionLocalDataSource already has methods for caching sessions, answers, and tracking sync status with `getUnsyncedAnswers()` and `markAnswersAsSynced()`
-2. **Comprehensive storage system** - Hive is fully configured with LocalStorageService and dedicated boxes for exams, sessions, and user data
-3. **Network layer ready** - NetworkInfo with connectivity_plus, DioClient with AuthInterceptor, and documented API endpoints for `/offline/sync` and `/offline/upload`
-4. **Clean architecture established** - Consistent patterns across features with proper DI, Either/Failure handling, and BLoC state management
-5. **API endpoints documented** - Clear request/response structures for syncing data and uploading offline sessions
-6. **Missing components identified** - No background sync service, connectivity monitoring, offline download functionality, or conflict resolution mechanisms exist yet
+1. **Complete API documentation** - User profile, settings, and account management endpoints are fully documented with request/response structures
+2. **Biometric infrastructure ready** - SecureTokenStorage already integrates local_auth with methods for enabling/disabling biometric protection
+3. **Storage system prepared** - LocalStorageService has dedicated boxes for user data and settings with proper error handling
+4. **Router structure exists** - Routes for /profile, /profile/edit, and /settings are defined with placeholder pages ready for replacement
+5. **Clean architecture established** - Authentication feature provides clear patterns for entities, repositories, use cases, and blocs
+6. **Firebase services integrated** - Analytics, Crashlytics, and FCM are ready for user identification and notification management
+7. **Theme system partial** - AppTheme exists with light/dark modes, and main.dart has commented ThemeBloc stub ready for activation
+8. **Navigation scaffold ready** - Profile and Settings destinations are already defined in NavigationDestinations
 
-The foundation is solid and ready for offline enhancements without requiring major architectural changes.
+Missing components that need creation: user profile entities and models, settings management system, theme bloc implementation, and the actual UI pages to replace placeholders.
 
 ### Approach
 
-The implementation will create a comprehensive offline exam system by:
+The implementation will create a comprehensive user profile and settings system by:
 
-1. **Building offline exam download functionality** that allows users to download exams with questions for offline use, storing them in dedicated Hive boxes
-2. **Creating a background sync service** using WorkManager for Android and BGTaskScheduler for iOS to automatically upload offline sessions when connectivity is restored
-3. **Implementing connectivity monitoring** with a stream-based service that triggers sync operations and manages online/offline state transitions
-4. **Adding conflict resolution mechanisms** that handle duplicate submissions and data conflicts between offline and online sessions
-5. **Enhancing existing exam session flow** to seamlessly work in offline mode while maintaining the same user experience
-6. **Integrating with existing infrastructure** by extending current repositories, data sources, and BLoC patterns without breaking existing functionality
+1. **Building Profile Management Feature** following the established clean architecture with entities, repositories, and blocs for user profile display and editing
+2. **Creating Settings Management System** with theme preferences, notification controls, and offline settings using local and remote storage
+3. **Implementing Biometric Authentication** by extending the existing SecureTokenStorage integration with app-level security controls
+4. **Adding Account Management Features** including password change, account deletion, and security settings with proper confirmation flows
+5. **Integrating with existing infrastructure** by leveraging the current authentication system, Firebase services, and navigation structure
+6. **Building responsive UI components** that follow Material 3 design guidelines and work across different screen sizes
 
-The approach leverages the existing Hive storage, network layer, and clean architecture while adding minimal new dependencies and maintaining consistency with established patterns.
+The approach leverages existing infrastructure (authentication, network, storage, navigation) while adding minimal new dependencies and maintaining consistency with established patterns.
 
 ### Reasoning
 
-I explored the mobile app codebase structure and examined key files including the existing Hive storage setup with LocalStorageService, ExamSessionLocalDataSource with sync tracking methods, NetworkInfo implementation, API documentation with offline endpoints, exam session management with local caching, service locator DI patterns, and clean architecture implementation across features. I also reviewed the comprehensive API documentation that defines the `/offline/sync` and `/offline/upload` endpoints with clear request/response structures. This exploration revealed a well-structured foundation with existing offline capabilities that need to be enhanced with download functionality, background sync, and conflict resolution.
+I explored the mobile app codebase structure and examined key files including the existing authentication system with AuthBloc and SecureTokenStorage, API documentation with comprehensive user profile and settings endpoints, router configuration with placeholder pages for profile and settings, LocalStorageService with dedicated settings box, Firebase services integration, and the clean architecture patterns established across features. I also reviewed the existing biometric authentication support in SecureTokenStorage and the navigation structure with placeholder routes ready for implementation. This exploration revealed a well-structured foundation with all necessary infrastructure in place for profile and settings implementation.
 
 ## Mermaid Diagram
 
 sequenceDiagram
     participant User as User
-    participant UI as ExamDetailPage
-    participant OfflineBloc as OfflineBloc
-    participant DownloadUseCase as DownloadExamUseCase
-    participant OfflineRepo as OfflineRepository
-    participant RemoteDS as OfflineRemoteDataSource
-    participant LocalDS as OfflineLocalDataSource
-    participant ConnectivitySvc as ConnectivityService
-    participant SyncManager as SyncManager
-    participant BackgroundSvc as BackgroundSyncService
+    participant ProfilePage as ProfilePage
+    participant ProfileBloc as ProfileBloc
+    participant SettingsPage as SettingsPage
+    participant SettingsBloc as SettingsBloc
+    participant ThemeBloc as ThemeBloc
+    participant SecureStorage as SecureTokenStorage
+    participant FCMService as FCMService
     participant API as Backend API
 
-    Note over User,API: Offline Exam Download Flow
+    Note over User,API: Profile Management Flow
 
-    User->>UI: Tap "Download for Offline"
-    UI->>OfflineBloc: OfflineExamDownloadRequested(examId)
-    OfflineBloc->>DownloadUseCase: call(DownloadExamParams)
-    DownloadUseCase->>OfflineRepo: downloadExamForOffline(examId)
+    User->>ProfilePage: Navigate to Profile
+    ProfilePage->>ProfileBloc: ProfileLoadRequested()
+    ProfileBloc->>API: GET /mobile/user/profile
+    API-->>ProfileBloc: UserProfile data
+    ProfileBloc-->>ProfilePage: ProfileLoaded(userProfile)
     
-    alt Network Available
-        OfflineRepo->>RemoteDS: downloadExamWithQuestions(examId)
-        RemoteDS->>API: GET /exams/{id}/offline
-        API-->>RemoteDS: ExamWithQuestions data
-        RemoteDS-->>OfflineRepo: OfflineExamModel
-        OfflineRepo->>LocalDS: cacheOfflineExam(exam)
-        LocalDS-->>OfflineRepo: Success
-        OfflineRepo-->>DownloadUseCase: Either.right(OfflineExam)
-    else Network Unavailable
-        OfflineRepo-->>DownloadUseCase: Either.left(NetworkFailure)
-    end
+    User->>ProfilePage: Tap Edit Profile
+    ProfilePage->>ProfilePage: Navigate to EditProfilePage
+    User->>ProfilePage: Update profile fields
+    User->>ProfilePage: Upload new avatar
+    ProfilePage->>ProfileBloc: AvatarUploadRequested(imageFile)
+    ProfileBloc->>API: POST /mobile/user/avatar
+    API-->>ProfileBloc: New avatar URL
+    ProfileBloc-->>ProfilePage: AvatarUploadSuccess(avatarUrl)
     
-    DownloadUseCase-->>OfflineBloc: Download result
-    OfflineBloc-->>UI: ExamDownloaded(examId)
+    User->>ProfilePage: Save changes
+    ProfilePage->>ProfileBloc: ProfileUpdateRequested(profileData)
+    ProfileBloc->>API: PUT /mobile/user/profile
+    API-->>ProfileBloc: Updated profile
+    ProfileBloc-->>ProfilePage: ProfileUpdateSuccess
+    ProfileBloc->>AuthBloc: Update cached user info
 
-    Note over User,API: Offline Exam Session Flow
+    Note over User,API: Settings Management Flow
 
-    User->>UI: Start Offline Exam
-    UI->>ExamSessionBloc: SessionStartRequested(examId)
-    ExamSessionBloc->>ConnectivitySvc: isConnected()
-    ConnectivitySvc-->>ExamSessionBloc: false (offline)
+    User->>SettingsPage: Navigate to Settings
+    SettingsPage->>SettingsBloc: SettingsLoadRequested()
+    SettingsBloc->>API: GET /mobile/settings/user
+    API-->>SettingsBloc: UserSettings data
+    SettingsBloc-->>SettingsPage: SettingsLoaded(userSettings)
+
+    User->>SettingsPage: Change theme to dark
+    SettingsPage->>ThemeBloc: ThemeChanged(ThemeMode.dark)
+    ThemeBloc->>LocalStorage: Save theme preference
+    ThemeBloc-->>MaterialApp: Apply dark theme
+    SettingsPage->>SettingsBloc: SettingUpdated('theme', 'dark')
+    SettingsBloc->>API: PUT /mobile/settings/user
     
-    ExamSessionBloc->>OfflineRepo: getOfflineExam(examId)
-    OfflineRepo->>LocalDS: getCachedOfflineExam(examId)
-    LocalDS-->>OfflineRepo: OfflineExamModel
-    OfflineRepo-->>ExamSessionBloc: OfflineExam with questions
-    
-    ExamSessionBloc->>ExamSessionBloc: Create offline session (local ID)
-    ExamSessionBloc->>LocalDS: cacheExamSession(offlineSession)
-    ExamSessionBloc-->>UI: SessionActive(offline session)
+    User->>SettingsPage: Toggle push notifications
+    SettingsPage->>SettingsBloc: NotificationToggled('push', true)
+    SettingsBloc->>FCMService: subscribeToTopic('exam_reminders')
+    FCMService-->>SettingsBloc: Subscription successful
+    SettingsBloc->>API: PUT /mobile/settings/user
+    API-->>SettingsBloc: Settings updated
+    SettingsBloc-->>SettingsPage: SettingsUpdateSuccess
 
-    Note over User,API: Answer Submission in Offline Mode
+    Note over User,API: Biometric Authentication Flow
 
-    User->>UI: Submit Answer
-    UI->>ExamSessionBloc: AnswerSelected(questionId, options)
-    ExamSessionBloc->>LocalDS: cacheAnswer(sessionId, answer)
-    Note right of LocalDS: Answer marked as unsynced
-    ExamSessionBloc-->>UI: AnswerSubmitted(questionId)
+    User->>SettingsPage: Enable biometric auth
+    SettingsPage->>SettingsBloc: BiometricToggled(true)
+    SettingsBloc->>SecureStorage: enableBiometricProtection()
+    SecureStorage->>LocalAuth: Request biometric authentication
+    LocalAuth-->>SecureStorage: Authentication successful
+    SecureStorage-->>SettingsBloc: Biometric enabled
+    SettingsBloc-->>SettingsPage: BiometricEnabled
 
-    Note over User,API: Background Sync When Online
+    Note over User,API: Account Security Flow
 
-    ConnectivitySvc->>ConnectivitySvc: Detect connectivity restored
-    ConnectivitySvc->>BackgroundSvc: onConnectivityChanged(true)
-    BackgroundSvc->>SyncManager: syncPendingData()
-    
-    SyncManager->>LocalDS: getUnsyncedSessions()
-    LocalDS-->>SyncManager: List of offline sessions
-    
-    loop For each offline session
-        SyncManager->>RemoteDS: uploadOfflineSession(session)
-        RemoteDS->>API: POST /offline/upload
-        
-        alt Upload Success
-            API-->>RemoteDS: Success + server session ID
-            RemoteDS-->>SyncManager: Upload successful
-            SyncManager->>LocalDS: markSessionAsSynced(sessionId)
-        else Upload Conflict
-            API-->>RemoteDS: 409 Conflict
-            RemoteDS-->>SyncManager: Conflict detected
-            SyncManager->>LocalDS: markSessionAsConflicted(sessionId)
-        else Upload Error
-            API-->>RemoteDS: Error response
-            RemoteDS-->>SyncManager: Upload failed
-            SyncManager->>SyncManager: Schedule retry with backoff
-        end
-    end
+    User->>SettingsPage: Change password
+    SettingsPage->>SettingsPage: Show ChangePasswordDialog
+    User->>SettingsPage: Enter old and new passwords
+    SettingsPage->>SettingsBloc: PasswordChangeRequested(oldPwd, newPwd)
+    SettingsBloc->>API: PUT /mobile/user/password
+    API-->>SettingsBloc: Password changed
+    SettingsBloc-->>SettingsPage: PasswordChangeSuccess
 
-    SyncManager->>RemoteDS: syncOfflineData(lastSyncTimestamp)
-    RemoteDS->>API: GET /offline/sync?last_sync=timestamp
-    API-->>RemoteDS: Updated exams, categories, user progress
-    RemoteDS-->>SyncManager: Sync data
-    SyncManager->>LocalDS: updateCachedData(syncData)
-    SyncManager->>LocalDS: updateLastSyncTimestamp()
-
-    Note over User,API: Conflict Resolution Flow
-
-    alt Conflict Detected
-        SyncManager->>OfflineBloc: ConflictDetected(sessionId)
-        OfflineBloc-->>UI: SyncConflict(conflicts)
-        UI->>UI: Show ConflictResolutionDialog
-        User->>UI: Choose resolution (keep local/use server)
-        UI->>OfflineBloc: ConflictResolutionRequested(choice)
-        OfflineBloc->>SyncManager: resolveConflict(sessionId, choice)
-        SyncManager->>RemoteDS: submitConflictResolution()
-        RemoteDS->>API: POST /offline/resolve-conflict
-        API-->>RemoteDS: Resolution accepted
-        SyncManager->>LocalDS: markConflictResolved(sessionId)
-    end
+    User->>SettingsPage: Delete account
+    SettingsPage->>SettingsPage: Show DeleteAccountDialog
+    User->>SettingsPage: Confirm deletion with password
+    SettingsPage->>SettingsBloc: AccountDeleteRequested(password)
+    SettingsBloc->>API: DELETE /mobile/user/account
+    API-->>SettingsBloc: Account deleted
+    SettingsBloc->>LocalStorage: Clear all data
+    SettingsBloc->>AuthBloc: Logout user
+    AuthBloc-->>App: Navigate to login
 
 ## Proposed File Changes
 
 ### mobile-app\pubspec.yaml(MODIFY)
 
-Add background task dependencies for offline sync functionality. Add `workmanager: ^0.5.2` for Android background tasks and iOS background processing. Add `connectivity_plus: ^5.0.2` if not already present for enhanced connectivity monitoring. These dependencies will enable background synchronization of offline exam sessions when connectivity is restored.
+Add image handling dependencies for profile avatar functionality. Add `image_picker: ^1.1.2` and `image_cropper: ^8.1.0` if not already present (they appear to be included). These packages will enable users to select and crop profile images from camera or gallery. Ensure all dependencies are at their latest stable versions for security and compatibility.
 
-### mobile-app\lib\core\services\connectivity_service.dart(NEW)
-
-References: 
-
-- mobile-app\lib\core\network\network_info.dart
-
-Create a connectivity monitoring service that provides a stream of connectivity changes and current connection status. Implement methods like `isConnected`, `connectionStream`, `waitForConnection()`, and `onConnectivityChanged`. This service will wrap the connectivity_plus package and provide a centralized way to monitor network status throughout the app. Include proper error handling and connection state caching to avoid excessive connectivity checks.
-
-### mobile-app\lib\core\services\background_sync_service.dart(NEW)
+### mobile-app\lib\features\profile\domain\entities\user_profile.dart(NEW)
 
 References: 
 
-- mobile-app\lib\core\services\connectivity_service.dart(NEW)
+- mobile-app\lib\features\authentication\domain\entities\user.dart
 
-Create a background sync service using WorkManager that handles automatic synchronization of offline data when connectivity is restored. Implement methods for registering background tasks, handling sync operations, and managing sync schedules. Include platform-specific implementations for Android (WorkManager) and iOS (BGTaskScheduler). The service should integrate with the SyncManager to perform actual data synchronization and handle background execution constraints on both platforms.
+Create the UserProfile entity that represents user profile information. Include properties like id, name, email, avatar, bio, location, website, socialLinks (Map<String, String>), stats (UserStats), subscription (SubscriptionInfo), preferences (UserPreferences), createdAt, and updatedAt. Add helper methods like `getDisplayName()`, `hasAvatar()`, `getAvatarUrl()`, and `getSocialLink(platform)`. The entity should be immutable and follow the existing entity patterns from the authentication feature. Include proper equality comparison and toString methods.
 
-### mobile-app\lib\features\offline\domain\entities\offline_exam.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exams\domain\entities\exam.dart
-- mobile-app\lib\features\exam_session\domain\entities\question.dart
-
-Create the OfflineExam entity that represents an exam downloaded for offline use. Include properties like examId, exam (Exam entity), questions (List<Question>), downloadedAt, expiresAt, fileSize, and isExpired. Add helper methods like `isExpired()`, `getDaysUntilExpiry()`, and `getStorageSize()`. This entity will be used to track which exams are available offline and manage their lifecycle including expiration and storage management.
-
-### mobile-app\lib\features\offline\domain\entities\sync_status.dart(NEW)
+### mobile-app\lib\features\profile\domain\entities\user_stats.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart
+- mobile-app\lib\features\profile\domain\entities\user_profile.dart(NEW)
 
-Create the SyncStatus entity that tracks synchronization state for offline sessions and data. Include properties like sessionId, status (pending, syncing, completed, failed, conflict), lastSyncAttempt, retryCount, errorMessage, and conflictData. Add helper methods like `canRetry()`, `isConflicted()`, `needsResolution()`, and `getNextRetryTime()`. This entity will be used to manage the sync lifecycle and handle various sync scenarios including conflicts and failures.
+Create the UserStats entity for user performance statistics. Include properties like totalExamsTaken, totalPoints, averageScore, rank, streakDays, certificatesEarned, and any other statistics from the API response. Add computed properties for performance ratings, progress indicators, and achievement levels. This entity will be used within UserProfile and for displaying user achievements and progress.
 
-### mobile-app\lib\features\offline\domain\entities\offline_session_upload.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exam_session\domain\entities\answer.dart
-
-Create the OfflineSessionUpload entity that represents the payload for uploading offline exam sessions to the server. Include properties like offlineSessionId, examId, answers, startedAt, completedAt, timeSpent, deviceInfo, and metadata. Add helper methods for validation and payload preparation. This entity will be used when constructing the request payload for the `/offline/upload` API endpoint.
-
-### mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
+### mobile-app\lib\features\profile\domain\entities\subscription_info.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exams\data\models\exam_model.dart
-- mobile-app\lib\features\offline\domain\entities\offline_exam.dart(NEW)
+- mobile-app\lib\features\profile\domain\entities\user_profile.dart(NEW)
 
-Create the OfflineExamModel that extends the OfflineExam entity with JSON and Hive serialization. Use `@HiveType(typeId: 21)` and `@JsonSerializable` annotations. Implement `fromJson`, `toJson`, and `toEntity` methods following the established patterns. Handle the nested exam and questions data properly in serialization. Include proper Hive field annotations for caching offline exam data locally.
+Create the SubscriptionInfo entity for user subscription details. Include properties like status, plan, expiresAt, autoRenew, and any subscription-related information. Add helper methods like `isActive()`, `isPremium()`, `getDaysUntilExpiry()`, and `isExpiringSoon()`. This entity will be used to display subscription status and manage premium features access.
 
-### mobile-app\lib\features\offline\data\models\sync_status_model.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\offline\domain\entities\sync_status.dart(NEW)
-
-Create the SyncStatusModel with JSON and Hive serialization for tracking sync states. Use `@HiveType(typeId: 22)` and include proper enum handling for sync status values. Implement the standard model methods and handle DateTime serialization for sync timestamps. This model will be used to persist sync status information locally and track sync progress.
-
-### mobile-app\lib\features\offline\data\models\offline_session_upload_model.dart(NEW)
+### mobile-app\lib\features\settings\domain\entities\user_settings.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\offline\domain\entities\offline_session_upload.dart(NEW)
+- mobile-app\lib\features\profile\domain\entities\user_profile.dart(NEW)
 
-Create the OfflineSessionUploadModel for serializing upload payloads. Use `@JsonSerializable` annotation and implement proper JSON serialization for the `/offline/upload` API endpoint. Handle the complex nested structure of session data, answers, and metadata. Include validation methods to ensure the payload meets API requirements before upload.
+Create the UserSettings entity that represents user preferences and settings. Include properties for notifications (NotificationSettings), privacy (PrivacySettings), preferences (AppPreferences), and security (SecuritySettings). Add helper methods for checking specific settings like `isNotificationEnabled(type)`, `getThemeMode()`, and `isBiometricEnabled()`. The entity should be immutable and follow the existing entity patterns.
 
-### mobile-app\lib\features\offline\data\datasources\offline_remote_datasource.dart(NEW)
+### mobile-app\lib\features\settings\domain\entities\notification_settings.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\entities\user_settings.dart(NEW)
+
+Create the NotificationSettings entity for managing notification preferences. Include properties like email, push, examReminders, achievementAlerts, studyReminders, and any other notification types. Add helper methods for checking specific notification types and converting to FCM topic subscriptions. This entity will be used to manage push notification preferences and sync with Firebase messaging.
+
+### mobile-app\lib\features\settings\domain\entities\app_preferences.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\entities\user_settings.dart(NEW)
+
+Create the AppPreferences entity for app-specific settings. Include properties like theme (light/dark/system), language, timezone, offlineSettings (OfflinePreferences), and any other app preferences. Add helper methods for theme management, locale settings, and offline configuration. This entity will be used to manage app behavior and user experience preferences.
+
+### mobile-app\lib\features\settings\domain\entities\offline_preferences.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\entities\app_preferences.dart(NEW)
+
+Create the OfflinePreferences entity for offline-specific settings. Include properties like maxOfflineExams, autoDownloadEnabled, wifiOnlyDownload, autoSyncEnabled, and storage management preferences. Add helper methods for validating offline settings and calculating storage requirements. This entity will be used by the offline system to manage download and sync behavior.
+
+### mobile-app\lib\features\profile\data\models\user_profile_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\data\models\auth_token_model.dart
+- mobile-app\lib\features\profile\domain\entities\user_profile.dart(NEW)
+
+Create the UserProfileModel that extends the UserProfile entity with JSON serialization. Use `@JsonSerializable` annotation and implement `fromJson`, `toJson`, and `toEntity` methods following the pattern established in `AuthTokenModel`. Handle the complex nested structure including stats, subscription, and preferences. Add proper error handling for missing or malformed data fields. Include Hive annotations for local caching of profile data.
+
+### mobile-app\lib\features\profile\data\models\user_stats_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\domain\entities\user_stats.dart(NEW)
+
+Create the UserStatsModel with JSON serialization for user statistics data. Handle the stats section from the profile API response. Include proper type conversion for numeric fields and validation for reasonable stat values. Add default fallbacks for missing data and ensure all statistics are properly parsed from the API response.
+
+### mobile-app\lib\features\settings\data\models\user_settings_model.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\entities\user_settings.dart(NEW)
+
+Create the UserSettingsModel with JSON serialization for user settings data. Handle the complex nested structure from the settings API response including notifications, privacy, and preferences. Include proper parsing for boolean flags, enum values, and nested objects. Add Hive annotations for local caching of settings data and ensure backward compatibility with existing settings storage.
+
+### mobile-app\lib\features\profile\data\datasources\profile_remote_datasource.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\datasources\auth_remote_datasource.dart
 - mobile-app\lib\core\network\dio_client.dart
 
-Create the OfflineRemoteDataSource for API communication with offline sync endpoints. Implement methods like `downloadExamForOffline(examId)` that fetches exam with questions, `syncOfflineData(lastSyncTimestamp)` that calls `GET /offline/sync`, and `uploadOfflineSessions(sessions)` that calls `POST /offline/upload`. Use the existing DioClient pattern and handle API responses properly. Include error handling for network failures and server errors during sync operations.
+Create the ProfileRemoteDataSource for API communication. Implement methods like `getUserProfile()` that calls `GET /mobile/user/profile`, `updateUserProfile(profileData)` that calls `PUT /mobile/user/profile`, and `uploadAvatar(imageFile)` that calls `POST /mobile/user/avatar` with multipart form data. Use the existing DioClient pattern from `AuthRemoteDataSource`. Handle API responses and convert them to models. Include proper error handling for network failures and server errors.
 
-### mobile-app\lib\features\offline\data\datasources\offline_local_datasource.dart(NEW)
+### mobile-app\lib\features\profile\data\datasources\profile_local_datasource.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\datasources\auth_local_datasource.dart
-- mobile-app\lib\core\storage\local_storage_service.dart(MODIFY)
+- mobile-app\lib\core\storage\local_storage_service.dart
 
-Create the OfflineLocalDataSource for managing offline exam storage and sync status tracking. Implement methods like `cacheOfflineExam()`, `getCachedOfflineExams()`, `removeOfflineExam()`, `saveSyncStatus()`, `getSyncStatus()`, `updateLastSyncTimestamp()`, and `getOfflineExamQuestions()`. Use dedicated Hive boxes for offline exams and sync metadata. Include cache management methods for handling storage limits and expiration of offline content.
+Create the ProfileLocalDataSource for local profile caching using Hive. Implement methods for caching user profile data, avatar URLs, and profile update timestamps. Include methods like `cacheUserProfile()`, `getCachedUserProfile()`, `clearProfileCache()`, and `updateProfileField()`. Use the existing `LocalStorageService` pattern and follow the pattern from `AuthLocalDataSource`. Handle cache expiration and provide offline access to profile data.
 
-### mobile-app\lib\features\offline\data\repositories\offline_repository_impl.dart(NEW)
+### mobile-app\lib\features\settings\data\datasources\settings_remote_datasource.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\data\datasources\profile_remote_datasource.dart(NEW)
+- mobile-app\lib\core\network\dio_client.dart
+
+Create the SettingsRemoteDataSource for settings API communication. Implement methods like `getUserSettings()` that calls `GET /mobile/settings/user`, `updateUserSettings(settingsData)` that calls `PUT /mobile/settings/user`, `getAppConfig()` that calls `GET /mobile/settings/app-config`, and account management methods like `changePassword()`, `deleteAccount()`. Use the existing DioClient pattern and handle API responses properly. Include error handling for settings validation and server errors.
+
+### mobile-app\lib\features\settings\data\datasources\settings_local_datasource.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\data\datasources\profile_local_datasource.dart(NEW)
+- mobile-app\lib\core\storage\local_storage_service.dart
+
+Create the SettingsLocalDataSource for local settings storage using Hive. Implement methods for caching user settings, app preferences, and configuration data. Include methods like `cacheUserSettings()`, `getCachedUserSettings()`, `updateSetting()`, `getThemeMode()`, `setThemeMode()`, and `clearSettingsCache()`. Use the existing `LocalStorageService` settings box and provide immediate access to settings for app behavior control. Handle settings migration and default values.
+
+### mobile-app\lib\features\profile\data\repositories\profile_repository_impl.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\repositories\auth_repository_impl.dart
 - mobile-app\lib\core\network\network_info.dart
 
-Create the OfflineRepositoryImpl that implements the domain repository interface. Implement offline/online strategy for exam downloads, sync operations, and conflict resolution. For `downloadExamForOffline()`, fetch from remote and cache locally with questions. For `syncPendingData()`, upload offline sessions and download updated data. Include proper error handling, conversion from models to entities, and integration with connectivity monitoring. Handle storage limits and cache expiration policies.
+Create the ProfileRepositoryImpl that implements the domain repository interface. Implement online/offline strategy using NetworkInfo to check connectivity. For `getUserProfile()`, try remote first, cache results, and fallback to cached data on network failure. For `updateUserProfile()`, use optimistic updates by updating local cache immediately and syncing with remote. Include proper error handling and conversion from models to entities. Follow the pattern established in `AuthRepositoryImpl` with comprehensive error handling and caching logic.
 
-### mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
+### mobile-app\lib\features\settings\data\repositories\settings_repository_impl.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\data\repositories\profile_repository_impl.dart(NEW)
+- mobile-app\lib\core\network\network_info.dart
+
+Create the SettingsRepositoryImpl for settings management. Implement dual storage strategy with immediate local updates and background remote sync. For settings changes, update local storage immediately for instant UI response, then sync with remote API. Include proper error handling for sync failures and conflict resolution. Handle theme changes, notification preferences, and offline settings with appropriate service integrations (FCMService for notifications, OfflineBloc for offline preferences).
+
+### mobile-app\lib\features\profile\domain\repositories\profile_repository.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\domain\repositories\auth_repository.dart
 - mobile-app\lib\core\error\failures.dart
 
-Create the OfflineRepository interface that defines the contract for offline operations. Include methods like `downloadExamForOffline(examId)` returning `Either<Failure, OfflineExam>`, `getOfflineExams()` returning `Either<Failure, List<OfflineExam>>`, `removeOfflineExam(examId)`, `syncPendingData()` returning `Either<Failure, SyncResult>`, `uploadOfflineSessions()`, and `resolveConflicts()`. Follow the Either pattern for consistent error handling and define clear contracts for offline data management.
+Create the ProfileRepository interface that defines the contract for profile operations. Include methods like `getUserProfile()` returning `Either<Failure, UserProfile>`, `updateUserProfile(profile)` returning `Either<Failure, UserProfile>`, `uploadAvatar(imageFile)` returning `Either<Failure, String>`, and `refreshProfile()` for manual refresh. Follow the Either pattern established in the authentication repository for consistent error handling.
 
-### mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
+### mobile-app\lib\features\settings\domain\repositories\settings_repository.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\domain\repositories\profile_repository.dart(NEW)
+- mobile-app\lib\core\error\failures.dart
+
+Create the SettingsRepository interface for settings operations. Include methods like `getUserSettings()` returning `Either<Failure, UserSettings>`, `updateUserSettings(settings)`, `getAppConfig()`, `changePassword(oldPassword, newPassword)`, `deleteAccount(password)`, and `getThemeMode()` / `setThemeMode(mode)`. Follow the Either pattern for consistent error handling and define clear contracts for settings management.
+
+### mobile-app\lib\features\profile\domain\usecases\get_user_profile_usecase.dart(NEW)
 
 References: 
 
 - mobile-app\lib\core\usecases\usecase.dart
 - mobile-app\lib\features\authentication\domain\usecases\login_usecase.dart
 
-Create the DownloadExamForOfflineUseCase that handles downloading exams for offline use. Define `DownloadExamParams` class with examId and optional parameters like includeExplanations. Implement the UseCase interface and call the repository's downloadExamForOffline method. Include validation for storage limits, network connectivity, and exam availability. Handle progress tracking for large downloads and provide feedback to the UI.
+Create the GetUserProfileUseCase that handles fetching user profile information. Implement the NoParamsUseCase interface since profile fetching doesn't require parameters. Call the repository's getUserProfile method and handle the response appropriately. Include proper error handling and follow the established use case patterns from the authentication feature.
 
-### mobile-app\lib\features\offline\domain\usecases\sync_offline_data_usecase.dart(NEW)
+### mobile-app\lib\features\profile\domain\usecases\update_user_profile_usecase.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
+- mobile-app\lib\features\profile\domain\usecases\get_user_profile_usecase.dart(NEW)
 - mobile-app\lib\core\usecases\usecase.dart
 
-Create the SyncOfflineDataUseCase for synchronizing offline data with the server. Implement the NoParamsUseCase interface since sync doesn't require parameters. Call the repository's syncPendingData method and handle the sync process including uploading offline sessions and downloading updated data. Include proper error handling for network failures, server errors, and conflict scenarios.
+Create the UpdateUserProfileUseCase for updating user profile information. Define `UpdateUserProfileParams` class with profile data properties. Implement the UseCase interface and call the repository's updateUserProfile method. Include proper parameter validation and error handling following the established patterns. Handle partial updates and field validation.
 
-### mobile-app\lib\features\offline\domain\usecases\get_offline_exams_usecase.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\offline\domain\usecases\sync_offline_data_usecase.dart(NEW)
-
-Create the GetOfflineExamsUseCase for retrieving locally stored offline exams. Implement the NoParamsUseCase interface and call the repository's getOfflineExams method. Include filtering for expired exams and sorting by download date. This use case will be used by the UI to display available offline exams and manage offline content.
-
-### mobile-app\lib\features\offline\domain\usecases\remove_offline_exam_usecase.dart(NEW)
+### mobile-app\lib\features\profile\domain\usecases\upload_avatar_usecase.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\offline\domain\usecases\get_offline_exams_usecase.dart(NEW)
+- mobile-app\lib\features\profile\domain\usecases\update_user_profile_usecase.dart(NEW)
 
-Create the RemoveOfflineExamUseCase for deleting offline exams from local storage. Define `RemoveOfflineExamParams` class with examId property. Implement the UseCase interface and call the repository's removeOfflineExam method. Include validation to ensure the exam exists and handle cleanup of associated data like cached questions and progress. Provide storage space reclamation information to the UI.
+Create the UploadAvatarUseCase for handling profile picture uploads. Define `UploadAvatarParams` class with image file property. Implement the UseCase interface and call the repository's uploadAvatar method. Include proper file validation (size, format), error handling, and progress tracking if needed. Handle image compression and format conversion as required by the API.
 
-### mobile-app\lib\core\services\sync_manager.dart(NEW)
-
-References: 
-
-- mobile-app\lib\core\services\connectivity_service.dart(NEW)
-- mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
-
-Create a centralized SyncManager service that orchestrates all offline synchronization operations. Implement methods like `syncPendingData()`, `uploadOfflineSessions()`, `downloadUpdatedData()`, `handleSyncConflicts()`, and `scheduleBackgroundSync()`. Include retry logic with exponential backoff, conflict detection and resolution, and progress tracking. The service should coordinate between OfflineRepository, ConnectivityService, and BackgroundSyncService to provide a unified sync experience.
-
-### mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
+### mobile-app\lib\features\settings\domain\usecases\get_user_settings_usecase.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
-- mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
+- mobile-app\lib\features\profile\domain\usecases\get_user_profile_usecase.dart(NEW)
 
-Create the OfflineBloc for managing offline functionality state. Implement events for downloading exams, syncing data, removing offline content, and handling connectivity changes. Include states for downloading, syncing, offline content loaded, sync completed, and error states. Use the offline use cases and integrate with ConnectivityService for real-time connectivity updates. Handle progress tracking for downloads and sync operations. Follow the BLoC pattern established in other features.
+Create the GetUserSettingsUseCase for fetching user settings. Implement the NoParamsUseCase interface and call the repository's getUserSettings method. Include proper error handling and default settings fallback. This use case will be used by the settings UI to display current preferences and by the app initialization to configure behavior.
 
-### mobile-app\lib\features\offline\presentation\bloc\offline_event.dart(NEW)
+### mobile-app\lib\features\settings\domain\usecases\update_user_settings_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\usecases\get_user_settings_usecase.dart(NEW)
+
+Create the UpdateUserSettingsUseCase for updating user settings. Define `UpdateUserSettingsParams` class with settings data properties. Implement the UseCase interface and call the repository's updateUserSettings method. Include validation for settings values, integration with FCMService for notification preferences, and proper error handling. Handle both individual setting updates and bulk updates.
+
+### mobile-app\lib\features\settings\domain\usecases\change_password_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\usecases\update_user_settings_usecase.dart(NEW)
+
+Create the ChangePasswordUseCase for handling password changes. Define `ChangePasswordParams` class with oldPassword and newPassword properties. Implement the UseCase interface and call the repository's changePassword method. Include proper password validation, security checks, and error handling. Handle authentication token refresh after successful password change if required by the API.
+
+### mobile-app\lib\features\settings\domain\usecases\delete_account_usecase.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\domain\usecases\change_password_usecase.dart(NEW)
+
+Create the DeleteAccountUseCase for handling account deletion. Define `DeleteAccountParams` class with password confirmation property. Implement the UseCase interface and call the repository's deleteAccount method. Include proper confirmation validation, security checks, and complete data cleanup. Handle logout and local data clearing after successful account deletion.
+
+### mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart(MODIFY)
+- mobile-app\lib\features\profile\domain\usecases\get_user_profile_usecase.dart(NEW)
+
+Create the ProfileBloc for managing user profile state. Implement events for loading profile, updating profile, uploading avatar, and refreshing data. Include states for loading, loaded with data, updating, error, and avatar uploading states. Use the profile use cases and integrate with Firebase Analytics for profile interaction tracking. Follow the BLoC pattern established in `AuthBloc` with proper error handling and state management. Handle optimistic updates for better user experience.
+
+### mobile-app\lib\features\profile\presentation\bloc\profile_event.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\presentation\bloc\auth_event.dart
 
-Create the OfflineEvent classes for the offline bloc. Include events like `OfflineExamDownloadRequested(examId)`, `OfflineDataSyncRequested()`, `OfflineExamRemoveRequested(examId)`, `OfflineExamsLoadRequested()`, `ConnectivityChanged(isConnected)`, `SyncProgressUpdated(progress)`, and `ConflictResolutionRequested(sessionId)`. Each event should include necessary parameters and follow the event pattern from other features. Include proper validation and type safety.
+Create the ProfileEvent classes for the profile bloc. Include events like `ProfileLoadRequested`, `ProfileUpdateRequested(profileData)`, `AvatarUploadRequested(imageFile)`, `ProfileRefreshRequested`, and `ProfileFieldUpdated(field, value)`. Each event should include necessary parameters and follow the event pattern from the authentication feature. Include proper validation and type safety for profile data.
 
-### mobile-app\lib\features\offline\presentation\bloc\offline_state.dart(NEW)
+### mobile-app\lib\features\profile\presentation\bloc\profile_state.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\presentation\bloc\auth_state.dart
 
-Create the OfflineState classes for the offline bloc. Include states like `OfflineInitial`, `OfflineLoading`, `OfflineExamsLoaded(exams, isConnected)`, `ExamDownloading(examId, progress)`, `ExamDownloaded(examId)`, `DataSyncing(progress)`, `DataSynced(timestamp)`, `SyncConflict(conflicts)`, and `OfflineError(error)`. The states should contain relevant data like offline exams list, connectivity status, download/sync progress, and error information. Follow the state pattern from other features.
+Create the ProfileState classes for the profile bloc. Include states like `ProfileInitial`, `ProfileLoading`, `ProfileLoaded(userProfile)`, `ProfileUpdating`, `ProfileUpdateSuccess`, `AvatarUploading(progress)`, `AvatarUploadSuccess(avatarUrl)`, and `ProfileError(error)`. The loaded state should contain the current user profile data. Follow the state pattern from the authentication feature with proper data encapsulation.
 
-### mobile-app\lib\features\offline\presentation\pages\offline_exams_page.dart(NEW)
+### mobile-app\lib\features\settings\presentation\bloc\settings_bloc.dart(NEW)
 
 References: 
 
-- mobile-app\lib\shared\widgets\custom_button.dart
-- mobile-app\lib\core\responsive\responsive_layout.dart
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
+- mobile-app\lib\features\settings\domain\usecases\get_user_settings_usecase.dart(NEW)
 
-Create the OfflineExamsPage that displays downloaded offline exams and provides management functionality. Implement a list view showing offline exams with download date, expiry status, and storage size. Include actions for removing offline exams, manual sync, and downloading new exams. Use BlocBuilder to react to offline state changes and handle loading, error, and loaded states. Include pull-to-refresh for manual sync and connectivity status indicators.
+Create the SettingsBloc for managing user settings state. Implement events for loading settings, updating individual settings, changing theme, toggling notifications, and managing account security. Include states for loading, loaded, updating, and error states. Use the settings use cases and integrate with FCMService for notification management and SecureTokenStorage for biometric settings. Handle immediate local updates with background sync for better user experience.
 
-### mobile-app\lib\features\offline\presentation\widgets\offline_exam_card.dart(NEW)
+### mobile-app\lib\features\settings\presentation\bloc\settings_event.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\bloc\profile_event.dart(NEW)
+
+Create the SettingsEvent classes for the settings bloc. Include events like `SettingsLoadRequested`, `SettingUpdated(key, value)`, `ThemeChanged(themeMode)`, `NotificationToggled(type, enabled)`, `BiometricToggled(enabled)`, `PasswordChangeRequested(oldPassword, newPassword)`, and `AccountDeleteRequested(password)`. Each event should include necessary parameters and follow the event pattern from other features.
+
+### mobile-app\lib\features\settings\presentation\bloc\settings_state.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\bloc\profile_state.dart(NEW)
+
+Create the SettingsState classes for the settings bloc. Include states like `SettingsInitial`, `SettingsLoading`, `SettingsLoaded(userSettings)`, `SettingsUpdating(settingKey)`, `SettingsUpdateSuccess`, `PasswordChanging`, `PasswordChangeSuccess`, `AccountDeleting`, `AccountDeleteSuccess`, and `SettingsError(error)`. The loaded state should contain the current user settings. Follow the state pattern from other features with proper data encapsulation.
+
+### mobile-app\lib\core\theme\theme_bloc.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\theme\app_theme.dart
+- mobile-app\lib\core\storage\local_storage_service.dart
+
+Create the ThemeBloc for managing app theme state. Implement events for theme changes (light, dark, system) and states for different theme modes. The bloc should read initial theme from local storage, listen for theme change events from SettingsBloc, and persist theme changes to local storage. Include proper integration with the existing AppTheme and ensure theme changes are applied immediately throughout the app. Handle system theme changes and provide smooth theme transitions.
+
+### mobile-app\lib\core\theme\theme_event.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\presentation\bloc\settings_event.dart(NEW)
+
+Create the ThemeEvent classes for the theme bloc. Include events like `ThemeChanged(themeMode)`, `ThemeInitialized`, and `SystemThemeChanged(brightness)`. Each event should include necessary parameters for theme management. Follow the event pattern from other features and ensure proper type safety for theme mode values.
+
+### mobile-app\lib\core\theme\theme_state.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\presentation\bloc\settings_state.dart(NEW)
+
+Create the ThemeState classes for the theme bloc. Include states like `ThemeInitial`, `ThemeLoaded(themeMode)`, and `ThemeChanged(themeMode)`. The states should contain the current theme mode (light, dark, system) and any additional theme-related data. Follow the state pattern from other features with proper data encapsulation and equality comparison.
+
+### mobile-app\lib\features\profile\presentation\pages\profile_page.dart(NEW)
 
 References: 
 
 - mobile-app\lib\shared\widgets\app_card.dart
-- mobile-app\lib\features\exams\presentation\widgets\exam_card.dart
+- mobile-app\lib\shared\widgets\stats_card.dart
+- mobile-app\lib\core\responsive\responsive_layout.dart
 
-Create a widget for displaying offline exam information in a card format. Include exam title, download date, expiry status, storage size, and action buttons for removal or taking the exam. Use color coding for expiry status (green for valid, yellow for expiring soon, red for expired). Include progress indicators for download/sync operations and proper accessibility support. Follow the existing card design patterns.
+Create the main profile page that displays user profile information including avatar, name, bio, stats, and subscription status. Implement a scrollable layout with sections for profile header, statistics cards, achievements, and recent activity. Use BlocBuilder to react to profile state changes and handle loading, error, and loaded states. Include pull-to-refresh functionality and navigation to edit profile page. Use the responsive layout system to adapt for different screen sizes and integrate with Firebase Analytics for page view tracking.
 
-### mobile-app\lib\features\offline\presentation\widgets\download_progress_widget.dart(NEW)
-
-References: 
-
-- mobile-app\lib\core\theme\app_dimensions.dart
-- mobile-app\lib\shared\widgets\loading_widget.dart
-
-Create a widget that displays download progress for offline exams. Include a progress bar, percentage indicator, download speed, and estimated time remaining. Add cancel download functionality and proper error handling for failed downloads. Use the existing progress styling from the theme and include accessibility announcements for progress updates.
-
-### mobile-app\lib\features\offline\presentation\widgets\sync_status_widget.dart(NEW)
+### mobile-app\lib\features\profile\presentation\pages\edit_profile_page.dart(NEW)
 
 References: 
 
-- mobile-app\lib\core\theme\app_colors.dart
+- mobile-app\lib\shared\widgets\custom_text_field.dart
 - mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
 
-Create a widget that displays sync status and connectivity information. Show current connectivity state, last sync time, pending sync operations, and sync progress. Include manual sync button and conflict resolution indicators. Use appropriate icons and colors for different sync states (synced, pending, syncing, error, conflict). Provide clear feedback about sync operations and any required user actions.
+Create the edit profile page that allows users to modify their profile information. Implement form fields for name, bio, location, website, and social links using CustomTextField components. Include avatar upload functionality with image picker and cropper integration. Add form validation, save/cancel buttons, and proper error handling. Use BlocBuilder to react to profile update states and show loading indicators during updates. Include confirmation dialogs for unsaved changes and proper navigation handling.
 
-### mobile-app\lib\features\offline\presentation\widgets\conflict_resolution_dialog.dart(NEW)
+### mobile-app\lib\features\settings\presentation\pages\settings_page.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_card.dart
+- mobile-app\lib\features\settings\presentation\bloc\settings_bloc.dart(NEW)
+- mobile-app\lib\core\responsive\responsive_layout.dart
+
+Create the main settings page with organized sections for different setting categories. Implement sections for Appearance (theme, language), Notifications (push, email, reminders), Privacy (profile visibility, data sharing), Offline (download preferences, storage), Security (biometric auth, password change), and Account (subscription, delete account). Use BlocBuilder to react to settings state changes and provide immediate feedback for setting toggles. Include proper navigation to sub-pages and integration with Firebase Analytics for settings interaction tracking.
+
+### mobile-app\lib\features\profile\presentation\widgets\profile_header_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_card.dart
+- mobile-app\lib\core\theme\app_text_styles.dart
+
+Create a widget for displaying the profile header with avatar, name, bio, and basic stats. Include avatar display with fallback to initials, user name and bio text, and quick stats like total exams and points. Add edit button that navigates to edit profile page. Use proper image loading with cached_network_image for avatar display and handle loading states. Include accessibility support and semantic labels for screen readers.
+
+### mobile-app\lib\features\profile\presentation\widgets\avatar_upload_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
+
+Create a widget for avatar upload functionality. Include current avatar display, upload button, and image picker integration. Implement image selection from camera or gallery, image cropping functionality, and upload progress indication. Add proper error handling for image selection and upload failures. Use the existing image picker and cropper packages and integrate with the ProfileBloc for avatar upload operations. Include proper file size and format validation.
+
+### mobile-app\lib\features\profile\presentation\widgets\profile_stats_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\stats_card.dart
+- mobile-app\lib\core\theme\app_dimensions.dart
+
+Create a widget for displaying user statistics in an organized grid or card layout. Show stats like total exams taken, average score, current streak, total points, rank, and certificates earned. Use the existing stats card component and ensure responsive design for different screen sizes. Include proper formatting for numbers and percentages, and add visual indicators for achievements and progress. Include accessibility support for stat announcements.
+
+### mobile-app\lib\features\settings\presentation\widgets\settings_section_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_card.dart
+- mobile-app\lib\core\theme\app_text_styles.dart
+
+Create a reusable widget for settings sections with title, description, and list of setting items. Include proper spacing, dividers, and consistent styling. Support different setting item types like toggles, selections, and navigation items. Use the existing card components and follow Material 3 design guidelines. Include accessibility support and semantic grouping for settings sections.
+
+### mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\presentation\widgets\settings_section_widget.dart(NEW)
+- mobile-app\lib\core\theme\app_dimensions.dart
+
+Create a reusable widget for individual setting items. Support different types like toggle switches, selection lists, navigation items, and action buttons. Include proper icons, titles, descriptions, and current values. Handle tap interactions and state changes with proper feedback. Use consistent styling and spacing throughout. Include accessibility support with proper semantic labels and actions.
+
+### mobile-app\lib\features\settings\presentation\widgets\theme_selector_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\theme\theme_bloc.dart(NEW)
+- mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+
+Create a widget for theme selection with options for light, dark, and system themes. Include visual previews of each theme option, current selection indicator, and immediate theme switching. Use radio buttons or segmented control for theme selection and integrate with ThemeBloc for theme changes. Include proper accessibility support and theme preview functionality.
+
+### mobile-app\lib\features\settings\presentation\widgets\biometric_setting_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\storage\secure_token_storage.dart
+- mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+
+Create a widget for biometric authentication settings. Include toggle for enabling/disabling biometric auth, current status display, and available biometric types information. Integrate with SecureTokenStorage for biometric management and handle biometric availability checks. Include proper error handling for biometric setup failures and clear explanations of biometric functionality. Add security warnings and setup instructions.
+
+### mobile-app\lib\features\settings\presentation\widgets\notification_settings_widget.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\services\fcm_service.dart(NEW)
+- mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+
+Create a widget for managing notification preferences. Include toggles for different notification types (push, email, exam reminders, achievements), current permission status, and system settings navigation. Integrate with FCMService for push notification management and handle permission requests. Include clear explanations of each notification type and proper error handling for permission failures.
+
+### mobile-app\lib\features\settings\presentation\widgets\account_security_widget.dart(NEW)
 
 References: 
 
 - mobile-app\lib\shared\widgets\app_dialog.dart
-- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\features\settings\presentation\bloc\settings_bloc.dart(NEW)
 
-Create a dialog for handling sync conflicts when offline and online data differ. Display conflict details including local vs server data, timestamps, and differences. Provide options for resolving conflicts (keep local, use server, merge, or manual resolution). Include clear explanations of the conflict and consequences of each resolution option. Use the existing dialog components and follow Material 3 design guidelines.
+Create a widget for account security settings including password change, account deletion, and security options. Include buttons for password change (opens dialog), account deletion (with confirmation), and security status display. Add proper confirmation dialogs with password verification and clear warnings for destructive actions. Include integration with SettingsBloc for security operations and proper error handling.
 
-### mobile-app\lib\features\exams\presentation\widgets\download_for_offline_button.dart(NEW)
-
-References: 
-
-- mobile-app\lib\shared\widgets\custom_button.dart
-- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
-
-Create a button widget for downloading exams for offline use. Display download status (not downloaded, downloading, downloaded, expired) with appropriate icons and text. Handle download initiation, progress display, and completion feedback. Include storage size information and download time estimates. Integrate with the OfflineBloc for state management and provide proper user feedback during download operations.
-
-### mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(MODIFY)
+### mobile-app\lib\features\settings\presentation\widgets\offline_settings_widget.dart(NEW)
 
 References: 
 
-- mobile-app\lib\core\network\network_info.dart
-- mobile-app\lib\core\services\sync_manager.dart(NEW)
+- mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart
 
-Enhance the ExamSessionRepositoryImpl to support offline exam sessions. Modify the `startSession()` method to detect offline mode using NetworkInfo and create local offline sessions when no connectivity is available. Update session management to handle offline session IDs and sync status tracking. Integrate with the SyncManager to automatically upload offline sessions when connectivity is restored. Add methods for managing offline session lifecycle and conflict resolution.
+Create a widget for offline preferences including max offline exams, auto-download settings, and WiFi-only options. Include current storage usage display, download limits configuration, and sync preferences. Integrate with offline system for storage management and provide clear explanations of offline functionality. Include storage cleanup options and download management features.
 
-### mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(MODIFY)
-
-References: 
-
-- mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
-- mobile-app\lib\core\network\network_info.dart
-
-Enhance the StartExamSessionUseCase to support offline exam sessions. Modify the use case to check for offline exam availability when network is not available. Add logic to validate that the exam is downloaded for offline use before allowing offline session creation. Include proper error handling for cases where offline exam is not available or expired. Integrate with offline repository to access cached exam questions.
-
-### mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
+### mobile-app\lib\features\settings\presentation\dialogs\change_password_dialog.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exams\presentation\widgets\download_for_offline_button.dart(NEW)
-- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
+- mobile-app\lib\shared\widgets\app_dialog.dart
+- mobile-app\lib\shared\widgets\custom_text_field.dart
 
-Enhance the ExamDetailPage to include offline download functionality. Add the DownloadForOfflineButton widget to the exam actions section. Display offline availability status and storage requirements. Include connectivity-aware UI that shows different options based on online/offline status. Integrate with OfflineBloc to handle download operations and provide real-time feedback on download progress and completion.
+Create a dialog for password change functionality. Include form fields for current password, new password, and confirm password with proper validation. Add password strength indicator, show/hide password toggles, and form validation. Integrate with SettingsBloc for password change operations and handle loading states and error messages. Include proper security warnings and password requirements display.
+
+### mobile-app\lib\features\settings\presentation\dialogs\delete_account_dialog.dart(NEW)
+
+References: 
+
+- mobile-app\lib\shared\widgets\app_dialog.dart
+- mobile-app\lib\core\theme\app_colors.dart
+
+Create a dialog for account deletion confirmation. Include clear warnings about data loss, password confirmation field, and final confirmation checkbox. Add proper styling with warning colors and icons. Integrate with SettingsBloc for account deletion and handle the complete logout and data cleanup flow. Include information about data retention policies and recovery options if applicable.
 
 ### mobile-app\lib\core\router\app_router.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\features\offline\presentation\pages\offline_exams_page.dart(NEW)
-- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
+- mobile-app\lib\features\profile\presentation\pages\profile_page.dart(NEW)
+- mobile-app\lib\features\settings\presentation\pages\settings_page.dart(NEW)
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
 
-Add new routes for offline functionality. Include routes for `/offline-exams` (OfflineExamsPage) and any other offline-related pages. Update the navigation destinations to include offline management if it should be accessible from the main navigation. Ensure proper route protection and parameter handling for offline-related routes. Add route transitions and proper BlocProvider setup for offline pages.
+Update the router to replace placeholder pages with actual profile and settings implementations. Import the new profile and settings pages (ProfilePage, EditProfilePage, SettingsPage). Replace the PlaceholderPage instances in the profile and settings routes with proper implementations. Update the route builders to provide necessary BlocProviders for ProfileBloc and SettingsBloc. Ensure proper error handling for invalid parameters and integrate with Firebase Analytics for route tracking. Add proper navigation guards for edit profile page to ensure user is authenticated.
 
 ### mobile-app\lib\core\di\service_locator.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\core\services\connectivity_service.dart(NEW)
-- mobile-app\lib\core\services\sync_manager.dart(NEW)
-- mobile-app\lib\features\offline\data\repositories\offline_repository_impl.dart(NEW)
+- mobile-app\lib\features\profile\data\datasources\profile_remote_datasource.dart(NEW)
+- mobile-app\lib\features\profile\data\repositories\profile_repository_impl.dart(NEW)
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
 
-Register all new offline-related dependencies in the service locator. Add registrations for ConnectivityService, BackgroundSyncService, SyncManager, OfflineRemoteDataSource, OfflineLocalDataSource, OfflineRepository, all offline use cases, and OfflineBloc. Register WorkManager and connectivity services as singletons. Ensure proper dependency order and use appropriate registration types (singleton for services, factory for blocs). Include all new services and utilities for offline functionality.
+Register all new profile and settings dependencies in the dependency injection container. Add registrations for profile and settings remote/local data sources, repositories, use cases, and blocs. Register ThemeBloc as a singleton since it should be shared across the app. Follow the existing pattern from authentication and other feature registrations. Ensure proper dependency order and use appropriate registration types (singleton for repositories and services, factory for blocs). Include all new services: ProfileRemoteDataSource, ProfileLocalDataSource, ProfileRepository, SettingsRemoteDataSource, SettingsLocalDataSource, SettingsRepository, all use cases, and all blocs.
 
 ### mobile-app\lib\main.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
-- mobile-app\lib\core\services\background_sync_service.dart(NEW)
+- mobile-app\lib\core\theme\theme_bloc.dart(NEW)
+- mobile-app\lib\core\theme\app_theme.dart
 
-Initialize offline functionality in the main function. Register Hive adapters for new offline models (OfflineExamModel, SyncStatusModel, etc.) with appropriate typeIds (21, 22, etc.). Initialize WorkManager for background sync tasks with proper configuration for both Android and iOS. Set up background task registration and configure platform-specific background execution settings. Initialize the SyncManager and ConnectivityService during app startup.
+Integrate ThemeBloc with the main app and enable theme switching functionality. Uncomment and properly configure the ThemeBloc provider in the MultiBlocProvider. Update the MaterialApp.router to use BlocBuilder for theme changes, listening to ThemeBloc state and applying theme changes dynamically. Initialize ThemeBloc with the current theme from local storage during app startup. Ensure proper theme persistence and system theme detection integration.
 
-### mobile-app\lib\core\storage\local_storage_service.dart(MODIFY)
-
-References: 
-
-- mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
-
-Enhance the LocalStorageService to support offline functionality. Add new box operations for offline exams, sync status, and offline metadata. Include methods like `saveOfflineExam()`, `getOfflineExams()`, `saveSyncStatus()`, `getSyncStatus()`, `updateLastSyncTimestamp()`, and `getLastSyncTimestamp()`. Add cache management methods for handling storage limits and cleanup of expired offline content. Ensure proper error handling and follow existing patterns.
-
-### mobile-app\lib\shared\navigation\navigation_destinations.dart(MODIFY)
+### mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\shared\navigation\navigation_item.dart
+- mobile-app\lib\features\profile\presentation\bloc\profile_bloc.dart(NEW)
+- mobile-app\lib\core\services\firebase_service.dart
 
-Add offline management to the navigation destinations if it should be accessible from the main navigation. Include appropriate icons and labels for offline functionality. Consider adding it to a settings or profile section rather than main navigation to avoid cluttering the primary navigation. Ensure the navigation item properly integrates with the existing navigation structure and responsive design.
+Integrate profile updates with the authentication system. Add profile refresh functionality when user profile is updated, ensuring the cached user information in AuthBloc is synchronized with profile changes. Add event handling for profile updates and integrate with Firebase services for user identification updates. Include proper error handling and ensure authentication state remains consistent when profile changes occur. Add integration with CrashReportingService to update user context when profile information changes.
 
-### mobile-app\lib\features\offline\presentation\widgets\widgets.dart(NEW)
+### mobile-app\lib\core\services\fcm_service.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\offline\presentation\widgets\offline_exam_card.dart(NEW)
-- mobile-app\lib\features\offline\presentation\widgets\sync_status_widget.dart(NEW)
+- mobile-app\lib\features\settings\presentation\bloc\settings_bloc.dart(NEW)
+- mobile-app\lib\core\constants\firebase_constants.dart
 
-Create a barrel file for offline feature widgets. Export OfflineExamCard, DownloadProgressWidget, SyncStatusWidget, ConflictResolutionDialog, and DownloadForOfflineButton to provide easy access to offline-specific UI components. Include documentation comments for each exported widget explaining their purpose and usage in the offline functionality.
+Enhance FCMService to support notification preference management. Add methods for subscribing and unsubscribing from notification topics based on user preferences. Include methods like `subscribeToTopic(topic)`, `unsubscribeFromTopic(topic)`, and `updateNotificationPreferences(preferences)`. Integrate with the settings system to automatically manage topic subscriptions when notification preferences change. Include proper error handling and topic validation.
 
-### mobile-app\android\app\src\main\AndroidManifest.xml(MODIFY)
+### mobile-app\lib\core\constants\settings_constants.dart(NEW)
 
-Add Android-specific permissions and configurations for background sync functionality. Include WAKE_LOCK permission for background tasks, RECEIVE_BOOT_COMPLETED for auto-start after device reboot, and FOREGROUND_SERVICE permission if needed for long-running sync operations. Configure WorkManager and background task constraints. Add network security config if needed for API communication during background sync.
+References: 
 
-### mobile-app\ios\Runner\Info.plist(MODIFY)
+- mobile-app\lib\core\constants\app_constants.dart
 
-Add iOS-specific configurations for background processing. Include BGTaskSchedulerPermittedIdentifiers for background sync tasks, UIBackgroundModes for background-processing and background-fetch capabilities. Configure background execution time limits and background app refresh settings. Add any required privacy usage descriptions for background data access if needed.
+Create constants for settings management including setting keys, default values, and validation rules. Define constants for theme modes, notification types, offline preferences, and security settings. Include constants for local storage keys, API endpoints, and setting validation limits. Add documentation for each constant explaining its usage and ensure consistency across the settings implementation.
+
+### mobile-app\lib\core\utils\image_utils.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\widgets\avatar_upload_widget.dart(NEW)
+
+Create utility functions for image handling including image compression, format conversion, and validation. Include helper methods for avatar image processing, file size validation, and image optimization for upload. Add utilities for generating image thumbnails, handling different image formats, and managing image cache. Include proper error handling and platform-specific image processing optimizations.
+
+### mobile-app\lib\core\utils\validation_utils.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\pages\edit_profile_page.dart(NEW)
+- mobile-app\lib\features\settings\presentation\dialogs\change_password_dialog.dart(NEW)
+
+Create validation utilities for profile and settings data. Include validators for email, password strength, URL validation, social media handles, and profile field validation. Add utilities for settings value validation, theme mode validation, and notification preference validation. Include proper error messages and internationalization support for validation feedback.
+
+### mobile-app\lib\shared\widgets\widgets.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\widgets\profile_header_widget.dart(NEW)
+- mobile-app\lib\features\settings\presentation\widgets\settings_section_widget.dart(NEW)
+
+Update the widgets barrel file to export any new shared widgets created for profile and settings functionality. Add exports for reusable components that might be used across different features. Update the documentation comments to include descriptions of the new widgets and their use cases in the profile and settings features.
+
+### mobile-app\lib\features\profile\presentation\widgets\widgets.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\profile\presentation\widgets\profile_header_widget.dart(NEW)
+- mobile-app\lib\features\profile\presentation\widgets\avatar_upload_widget.dart(NEW)
+
+Create a barrel file for profile feature widgets. Export ProfileHeaderWidget, AvatarUploadWidget, and ProfileStatsWidget to provide easy access to profile-specific UI components. Include documentation comments for each exported widget explaining their purpose and usage in the profile feature.
+
+### mobile-app\lib\features\settings\presentation\widgets\widgets.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\settings\presentation\widgets\settings_section_widget.dart(NEW)
+- mobile-app\lib\features\settings\presentation\widgets\setting_item_widget.dart(NEW)
+
+Create a barrel file for settings feature widgets. Export SettingsSectionWidget, SettingItemWidget, ThemeSelectorWidget, BiometricSettingWidget, NotificationSettingsWidget, AccountSecurityWidget, and OfflineSettingsWidget to provide easy access to settings-specific UI components. Include documentation comments for each exported widget explaining their purpose and usage in the settings feature.

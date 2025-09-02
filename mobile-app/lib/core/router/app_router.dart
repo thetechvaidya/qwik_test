@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import '../../features/authentication/presentation/pages/splash_page.dart';
 import '../../features/authentication/presentation/pages/login_page.dart';
 import '../../features/authentication/presentation/pages/register_page.dart';
+import '../../features/authentication/presentation/pages/session_expired_page.dart';
 import '../../features/authentication/presentation/bloc/auth_bloc.dart';
 import '../../features/authentication/presentation/bloc/auth_state.dart' as states;
 import '../../features/authentication/presentation/bloc/auth_event.dart' as events;
@@ -95,6 +96,7 @@ class AppRouter {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String sessionExpired = '/session-expired';
   
   // Main app routes (matching NavigationDestinations)
   static const String home = '/home';
@@ -154,6 +156,11 @@ class AppRouter {
         path: forgotPassword,
         name: 'forgot-password',
         builder: (context, state) => const PlaceholderPage(title: 'Forgot Password'),
+      ),
+      GoRoute(
+        path: sessionExpired,
+        name: 'session-expired',
+        builder: (context, state) => const SessionExpiredPage(),
       ),
 
       // Shell route for main app navigation
@@ -353,11 +360,11 @@ class AppRouter {
   /// Handle session expiration scenarios
   static String? _handleSessionExpired(String currentPath) {
     if (kDebugMode) {
-      debugPrint('Route Guard: Session expired, redirecting to login');
+      debugPrint('Route Guard: Session expired, redirecting to session expired page');
     }
     
-    // Always redirect to login on session expiration
-    return login;
+    // Redirect to session expired page instead of directly to login
+    return sessionExpired;
   }
   
   /// Handle token refresh states

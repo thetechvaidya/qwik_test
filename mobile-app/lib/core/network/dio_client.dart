@@ -28,6 +28,7 @@ class DioClient {
       baseUrl: '${AppConstants.baseUrl}${AppConstants.mobileApiPrefix}',
       connectTimeout: AppConstants.connectionTimeout,
       receiveTimeout: AppConstants.receiveTimeout,
+      sendTimeout: AppConstants.sendTimeout, // Add sendTimeout for v5 compatibility
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

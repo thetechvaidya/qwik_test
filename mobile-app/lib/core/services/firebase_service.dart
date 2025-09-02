@@ -61,11 +61,15 @@ class FirebaseService {
   }
   
   /// Track screen view
-  Future<void> trackScreenView(String screenName, {String? screenClass}) async {
+  Future<void> trackScreenView(String screenName, {
+    String? screenClass,
+    Map<String, Object>? parameters,
+  }) async {
     try {
       await _analytics.logScreenView(
         screenName: screenName,
         screenClass: screenClass ?? screenName,
+        parameters: parameters,
       );
     } catch (e) {
       if (kDebugMode) {

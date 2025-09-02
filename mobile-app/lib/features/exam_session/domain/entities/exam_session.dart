@@ -10,7 +10,8 @@ enum ExamSessionStatus {
   paused,
   completed,
   expired,
-  submitted;
+  submitted,
+  abandoned;
 
   String get displayName {
     switch (this) {
@@ -26,6 +27,8 @@ enum ExamSessionStatus {
         return 'Expired';
       case ExamSessionStatus.submitted:
         return 'Submitted';
+      case ExamSessionStatus.abandoned:
+        return 'Abandoned';
     }
   }
 }

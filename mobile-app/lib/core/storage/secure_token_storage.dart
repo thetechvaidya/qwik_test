@@ -228,7 +228,13 @@ class SecureTokenStorage {
       final accessToken = await getAccessToken();
       if (accessToken == null || accessToken.isEmpty) return false;
       
-      // Use AuthUtils for standardized token validation
+      // First try to use stored expiration timestamp
+      final storedExpiration = await getTokenExpirationTime();
+      if (storedExpiration != null) {
+        return DateTime.now().isBefore(storedExpiration);
+      }
+      
+      // Fallback to JWT decoding for opaque tokens
       return !AuthUtils.isTokenExpired(accessToken);
     } catch (e) {
       return false;
@@ -366,7 +372,15 @@ class SecureTokenStorage {
         return true; // No token means refresh is needed
       }
       
-      // Use AuthUtils for standardized token refresh check (10 minutes threshold)
+      // First try to use stored expiration timestamp
+      final storedExpiration = await getTokenExpirationTime();
+      if (storedExpiration != null) {
+        final now = DateTime.now();
+        final timeUntilExpiration = storedExpiration.difference(now);
+        return timeUntilExpiration <= const Duration(minutes: 10);
+      }
+      
+      // Fallback to JWT decoding for opaque tokens
       return AuthUtils.needsRefresh(accessToken, threshold: const Duration(minutes: 10));
     } catch (e) {
       // Any error in checking expiration should default to requiring refresh

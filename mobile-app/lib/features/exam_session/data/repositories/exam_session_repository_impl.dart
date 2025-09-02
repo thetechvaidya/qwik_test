@@ -276,10 +276,13 @@ class ExamSessionRepositoryImpl implements ExamSessionRepository {
   }
 
   @override
-  Future<Either<Failure, void>> abandonExamSession(String sessionId) async {
+  Future<Either<Failure, void>> abandonExamSession({
+    required String sessionId,
+    String? reason,
+  }) async {
     try {
       if (await _networkInfo.isConnected) {
-        await _remoteDataSource.abandonExamSession(sessionId);
+        await _remoteDataSource.abandonExamSession(sessionId, reason: reason);
       }
       
       // Remove from local cache

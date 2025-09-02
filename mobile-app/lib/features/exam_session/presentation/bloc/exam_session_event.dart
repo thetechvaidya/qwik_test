@@ -107,12 +107,10 @@ class ResumeExamSessionEvent extends ExamSessionEvent {
 
 /// Event to submit the entire exam
 class SubmitExamEvent extends ExamSessionEvent {
-  final bool forceSubmit;
-
-  const SubmitExamEvent({this.forceSubmit = false});
+  const SubmitExamEvent();
 
   @override
-  List<Object?> get props => [forceSubmit];
+  List<Object?> get props => [];
 }
 
 /// Event to abandon the exam session

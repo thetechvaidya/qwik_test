@@ -52,6 +52,18 @@ class QuestionModel extends HiveObject {
   @JsonKey(name: 'video_url')
   final String? videoUrl;
 
+  @HiveField(11)
+  @JsonKey(name: 'order')
+  final int order;
+
+  @HiveField(12)
+  @JsonKey(name: 'is_required')
+  final bool isRequired;
+
+  @HiveField(13)
+  @JsonKey(name: 'metadata')
+  final Map<String, dynamic>? metadata;
+
   QuestionModel({
     required this.id,
     required this.type,
@@ -64,6 +76,9 @@ class QuestionModel extends HiveObject {
     this.imageUrl,
     this.audioUrl,
     this.videoUrl,
+    required this.order,
+    this.isRequired = true,
+    this.metadata,
   });
 
   /// Convert from JSON
@@ -86,6 +101,9 @@ class QuestionModel extends HiveObject {
       imageUrl: question.imageUrl,
       audioUrl: question.audioUrl,
       videoUrl: question.videoUrl,
+      order: question.order,
+      isRequired: question.isRequired,
+      metadata: question.metadata,
     );
   }
 
@@ -103,6 +121,9 @@ class QuestionModel extends HiveObject {
       imageUrl: imageUrl,
       audioUrl: audioUrl,
       videoUrl: videoUrl,
+      order: order,
+      isRequired: isRequired,
+      metadata: metadata,
     );
   }
 
@@ -115,14 +136,6 @@ class QuestionModel extends HiveObject {
         return QuestionType.singleChoice;
       case 'true_false':
         return QuestionType.trueFalse;
-      case 'fill_in_blank':
-        return QuestionType.fillInBlank;
-      case 'essay':
-        return QuestionType.essay;
-      case 'matching':
-        return QuestionType.matching;
-      case 'ordering':
-        return QuestionType.ordering;
       default:
         return QuestionType.singleChoice;
     }

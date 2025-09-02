@@ -14,7 +14,6 @@ class SubmitExamUseCase implements UseCase<ExamSession, SubmitExamParams> {
   Future<Either<Failure, ExamSession>> call(SubmitExamParams params) async {
     return await _repository.submitExamSession(
       sessionId: params.sessionId,
-      forceSubmit: params.forceSubmit,
     );
   }
 }
@@ -22,24 +21,21 @@ class SubmitExamUseCase implements UseCase<ExamSession, SubmitExamParams> {
 /// Parameters for SubmitExamUseCase
 class SubmitExamParams {
   final String sessionId;
-  final bool forceSubmit;
 
   const SubmitExamParams({
     required this.sessionId,
-    this.forceSubmit = false,
   });
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is SubmitExamParams &&
-        other.sessionId == sessionId &&
-        other.forceSubmit == forceSubmit;
+        other.sessionId == sessionId;
   }
 
   @override
-  int get hashCode => sessionId.hashCode ^ forceSubmit.hashCode;
+  int get hashCode => sessionId.hashCode;
 
   @override
-  String toString() => 'SubmitExamParams(sessionId: $sessionId, forceSubmit: $forceSubmit)';
+  String toString() => 'SubmitExamParams(sessionId: $sessionId)';
 }

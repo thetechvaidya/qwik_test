@@ -226,7 +226,9 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
       final result = await _submitAnswerUseCase(
         SubmitAnswerParams(
           sessionId: currentState.session.sessionId,
-          answer: event.answer,
+          questionId: event.answer.questionId,
+          selectedOptionIds: event.answer.selectedOptionIds,
+          timeSpent: event.answer.timeSpent,
         ),
       );
 
@@ -376,7 +378,6 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
       final result = await _submitExamUseCase(
         SubmitExamParams(
           sessionId: currentState.session.sessionId,
-          forceSubmit: event.forceSubmit,
         ),
       );
 
@@ -500,7 +501,7 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
     Emitter<ExamSessionState> emit,
   ) {
     _timer?.cancel();
-    add(const SubmitExamEvent(forceSubmit: true));
+    add(const SubmitExamEvent());
   }
 
   /// Retry after error

@@ -82,7 +82,7 @@ class AnswerModel extends HiveObject {
       questionId: questionId,
       selectedOptionIds: selectedOptionIds,
       timeSpent: timeSpent,
-      answeredAt: answeredAt,
+      answeredAt: answeredAt ?? DateTime.now(),
       isCorrect: isCorrect,
       score: score,
       isSkipped: isSkipped,

@@ -39,7 +39,10 @@ abstract class ExamSessionRepository {
   Future<Either<Failure, List<ExamSession>>> getActiveExamSessions();
 
   /// Abandon exam session
-  Future<Either<Failure, void>> abandonExamSession(String sessionId);
+  Future<Either<Failure, void>> abandonExamSession({
+    required String sessionId,
+    String? reason,
+  });
 
   /// Sync local answers with server
   Future<Either<Failure, List<Answer>>> syncAnswers({

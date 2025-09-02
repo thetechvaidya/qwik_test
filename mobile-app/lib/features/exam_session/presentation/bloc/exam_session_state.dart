@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/answer.dart';
+import 'package:collection/collection.dart';
 import '../../domain/entities/exam_session.dart';
 import '../../domain/entities/question.dart';
+import '../../domain/entities/answer.dart';
 
 /// Base class for all exam session states
 abstract class ExamSessionState extends Equatable {
