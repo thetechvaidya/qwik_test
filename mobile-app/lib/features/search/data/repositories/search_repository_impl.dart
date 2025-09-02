@@ -3,8 +3,10 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/data/models/paginated_response.dart';
 import '../../domain/entities/search_history.dart';
 import '../../domain/entities/search_suggestion.dart';
+import '../../domain/entities/search_result.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../datasources/search_local_datasource.dart';
 import '../datasources/search_remote_datasource.dart';
@@ -27,6 +29,34 @@ class SearchRepositoryImpl implements SearchRepository {
         _localDataSource = localDataSource,
         _networkInfo = networkInfo,
         _uuid = uuid ?? const Uuid();
+
+  @override
+  Future<Either<Failure, PaginatedResponse<SearchResult>>> search({
+    required String query,
+    String? type,
+    String? categoryId,
+    String? difficulty,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      if (await _networkInfo.isConnected) {
+        final results = await _remoteDataSource.search(
+          query: query,
+          type: type,
+          categoryId: categoryId,
+          difficulty: difficulty,
+          page: page,
+          limit: limit,
+        );
+        return Right(results);
+      } else {
+        return const Left(NetworkFailure(message: 'No internet connection'));
+      }
+    } catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
 
   @override
   Future<Either<Failure, void>> saveSearchHistory({
@@ -256,6 +286,27 @@ class SearchRepositoryImpl implements SearchRepository {
       ).catchError((e) {
         // Silently handle errors for analytics
         print('Search analytics failed: $e');
+      });
+    }
+  }
+
+  @override
+  Future<void> trackSearchAnalytics({
+    required String query,
+    required int resultCount,
+    String? categoryId,
+    Map<String, dynamic>? filters,
+  }) async {
+    // Fire and forget - don't wait for completion or handle errors
+    if (await _networkInfo.isConnected) {
+      _remoteDataSource.trackSearchAnalytics(
+        query: query,
+        resultCount: resultCount,
+        categoryId: categoryId,
+        filters: filters,
+      ).catchError((e) {
+        // Silently handle errors for analytics
+        print('Search analytics tracking failed: $e');
       });
     }
   }

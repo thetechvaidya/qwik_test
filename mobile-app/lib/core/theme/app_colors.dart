@@ -41,6 +41,7 @@ class AppColors {
   // Common Colors
   static const Color primary = primaryBlue;
   static const Color background = Color(0xFFFAFAFA);
+  static const Color surface = Colors.white;
   static const Color white = Colors.white;
   static const Color black = Colors.black;
   static const Color textPrimary = neutral900;

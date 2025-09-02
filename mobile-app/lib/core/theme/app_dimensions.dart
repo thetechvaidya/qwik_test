@@ -7,6 +7,7 @@ class AppDimensions {
   static const double spacingXs = 4.0;
   static const double spacingSm = 8.0;
   static const double spacingMd = 12.0;
+  static const double spacingMedium = 12.0; // Alias for spacingMd
   static const double spacingLg = 16.0;
   static const double spacingXl = 20.0;
   static const double spacing2xl = 24.0;
@@ -42,6 +43,8 @@ class AppDimensions {
   static const double radius2xl = 20.0;
   static const double radius3xl = 24.0;
   static const double radiusFull = 999.0;
+  static const double dialogBorderRadius = 16.0;
+  static const double chipBorderRadius = 8.0;
 
   // Icon sizes
   static const double iconXs = 12.0;

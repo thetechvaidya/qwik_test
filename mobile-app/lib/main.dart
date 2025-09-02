@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/di/service_locator.dart' as di;
+import 'core/services/firebase_service.dart';
 import 'features/authentication/presentation/bloc/auth_bloc.dart';
 import 'features/authentication/presentation/bloc/auth_event.dart';
 import 'core/router/app_router.dart';
@@ -12,6 +14,14 @@ import 'core/constants/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+    await FirebaseService.instance.initialize();
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+  }
 
   // Initialize Hive
   await Hive.initFlutter();

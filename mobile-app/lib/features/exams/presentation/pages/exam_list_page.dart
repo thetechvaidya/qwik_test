@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/error_widget.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
@@ -369,12 +370,7 @@ class _ExamListPageState extends State<ExamListPage> {
   }
 
   void _navigateToExamDetail(BuildContext context, String examId) {
-    // Navigate to exam detail page
-    // Implementation depends on your navigation strategy
-    Navigator.pushNamed(
-      context,
-      '/exam-detail',
-      arguments: {'examId': examId},
-    );
+    // Navigate to exam detail page using GoRouter
+    AppRouter.pushExamDetail(context, examId);
   }
 }

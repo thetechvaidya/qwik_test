@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
-import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_endpoints.dart';
 import '../models/exam_session_model.dart';
 import '../models/question_model.dart';
 import '../models/answer_model.dart';
@@ -51,11 +51,11 @@ abstract class ExamSessionRemoteDataSource {
 
 /// Implementation of exam session remote data source
 class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
-  final ApiClient _apiClient;
+  final Dio _dio;
 
   ExamSessionRemoteDataSourceImpl({
-    required ApiClient apiClient,
-  }) : _apiClient = apiClient;
+    required Dio dio,
+  }) : _dio = dio;
 
   @override
   Future<ExamSessionModel> startExamSession({
@@ -68,8 +68,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         if (settings != null) 'settings': settings,
       };
 
-      final response = await _apiClient.post(
-        '/exam-sessions',
+      final response = await _dio.post(
+        ApiEndpoints.examSessions,
         data: requestData,
       );
 
@@ -91,7 +91,7 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   @override
   Future<ExamSessionModel> getExamSession(String sessionId) async {
     try {
-      final response = await _apiClient.get('/exam-sessions/$sessionId');
+      final response = await _dio.get(ApiEndpoints.examSessionDetail(sessionId));
 
       if (response.statusCode == 200) {
         return ExamSessionModel.fromJson(response.data['data']);
@@ -111,7 +111,7 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   @override
   Future<List<QuestionModel>> getSessionQuestions(String sessionId) async {
     try {
-      final response = await _apiClient.get('/exam-sessions/$sessionId/questions');
+      final response = await _dio.get(ApiEndpoints.examSessionQuestions(sessionId));
 
       if (response.statusCode == 200) {
         final List<dynamic> questionsJson = response.data['data'];
@@ -146,8 +146,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         'answered_at': DateTime.now().toIso8601String(),
       };
 
-      final response = await _apiClient.post(
-        '/exam-sessions/$sessionId/answers',
+      final response = await _dio.post(
+        ApiEndpoints.examSessionAnswers(sessionId),
         data: requestData,
       );
 
@@ -172,8 +172,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
     Map<String, dynamic>? updates,
   }) async {
     try {
-      final response = await _apiClient.patch(
-        '/exam-sessions/$sessionId',
+      final response = await _dio.patch(
+        ApiEndpoints.examSessionDetail(sessionId),
         data: updates ?? {},
       );
 
@@ -195,8 +195,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   @override
   Future<ExamSessionModel> submitExamSession(String sessionId) async {
     try {
-      final response = await _apiClient.post(
-        '/exam-sessions/$sessionId/submit',
+      final response = await _dio.post(
+        ApiEndpoints.examSessionSubmit(sessionId),
       );
 
       if (response.statusCode == 200) {
@@ -217,7 +217,7 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   @override
   Future<List<ExamSessionModel>> getActiveExamSessions() async {
     try {
-      final response = await _apiClient.get('/exam-sessions/active');
+      final response = await _dio.get(ApiEndpoints.activeExamSessions);
 
       if (response.statusCode == 200) {
         final List<dynamic> sessionsJson = response.data['data'];
@@ -240,8 +240,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
   @override
   Future<void> abandonExamSession(String sessionId) async {
     try {
-      final response = await _apiClient.post(
-        '/exam-sessions/$sessionId/abandon',
+      final response = await _dio.post(
+        ApiEndpoints.examSessionAbandon(sessionId),
       );
 
       if (response.statusCode != 200) {
@@ -267,8 +267,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         'answers': answers.map((answer) => answer.toJson()).toList(),
       };
 
-      final response = await _apiClient.post(
-        '/exam-sessions/$sessionId/sync-answers',
+      final response = await _dio.post(
+        ApiEndpoints.examSessionSyncAnswers(sessionId),
         data: requestData,
       );
 

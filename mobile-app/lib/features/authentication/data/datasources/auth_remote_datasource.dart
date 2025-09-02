@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/network/api_endpoints.dart';
 import '../models/auth_response_model.dart';
 import '../models/login_request_model.dart';
 import '../models/register_request_model.dart';
@@ -59,7 +60,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthResponseModel> login(LoginRequestModel request) async {
     try {
       final response = await _dio.post(
-        '/auth/login',
+        ApiEndpoints.login,
         data: request.toJson(),
       );
 
@@ -86,7 +87,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthResponseModel> register(RegisterRequestModel request) async {
     try {
       final response = await _dio.post(
-        '/auth/register',
+        ApiEndpoints.register,
         data: request.toJson(),
       );
 
@@ -112,7 +113,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> logout() async {
     try {
-      final response = await _dio.post('/auth/logout');
+      final response = await _dio.post(ApiEndpoints.logout);
 
       if (response.statusCode != 200) {
         throw DioException(
@@ -134,7 +135,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getCurrentUser() async {
     try {
-      final response = await _dio.get('/auth/user');
+      final response = await _dio.get(ApiEndpoints.profile);
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -164,7 +165,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthTokenModel> refreshToken(String refreshToken) async {
     try {
       final response = await _dio.post(
-        '/auth/refresh',
+        ApiEndpoints.refreshToken,
         data: {'refresh_token': refreshToken},
       );
 
@@ -196,7 +197,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> verifyEmail(String token) async {
     try {
       final response = await _dio.post(
-        '/auth/verify-email',
+        ApiEndpoints.verifyEmail,
         data: {'token': token},
       );
 
@@ -221,7 +222,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> requestPasswordReset(String email) async {
     try {
       final response = await _dio.post(
-        '/auth/password/reset-request',
+        ApiEndpoints.forgotPassword,
         data: {'email': email},
       );
 
@@ -251,7 +252,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/auth/password/reset',
+        ApiEndpoints.resetPassword,
         data: {
           'token': token,
           'email': email,
@@ -285,7 +286,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     try {
       final response = await _dio.post(
-        '/auth/password/change',
+        ApiEndpoints.changePassword,
         data: {
           'current_password': currentPassword,
           'new_password': newPassword,
@@ -323,7 +324,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (avatar != null) data['avatar'] = avatar;
 
       final response = await _dio.put(
-        '/auth/profile',
+        ApiEndpoints.updateProfile,
         data: data,
       );
 

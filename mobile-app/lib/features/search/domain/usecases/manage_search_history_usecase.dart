@@ -114,22 +114,3 @@ class GetSearchHistoryParams {
   @override
   String toString() => 'GetSearchHistoryParams(limit: $limit)';
 }
-
-/// Parameters for removing search history item
-class RemoveSearchHistoryParams {
-  final String id;
-
-  const RemoveSearchHistoryParams({required this.id});
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is RemoveSearchHistoryParams && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
-
-  @override
-  String toString() => 'RemoveSearchHistoryParams(id: $id)';
-}

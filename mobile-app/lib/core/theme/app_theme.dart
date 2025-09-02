@@ -25,7 +25,7 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.lightColorScheme.surface,
         elevation: 2,
         shadowColor: AppColors.lightColorScheme.shadow.withAlpha(25),
@@ -193,7 +193,7 @@ class AppTheme {
           color: AppColors.lightColorScheme.onSurfaceVariant,
           size: 24,
         ),
-      )
+      ),
       
       // Progress Indicator Theme
       progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -207,17 +207,6 @@ class AppTheme {
         color: AppColors.lightColorScheme.outlineVariant,
         thickness: 1,
         space: 1,
-      ),
-      
-      // Bottom Navigation Bar Theme
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.darkColorScheme.surface,
-        selectedItemColor: AppColors.darkColorScheme.primary,
-        unselectedItemColor: AppColors.darkColorScheme.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-        selectedLabelStyle: AppTextStyles.labelSmall,
-        unselectedLabelStyle: AppTextStyles.labelSmall,
       ),
       
       // Navigation Bar Theme
@@ -279,20 +268,6 @@ class AppTheme {
         ),
       ),
       
-      // Progress Indicator Theme
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: AppColors.darkColorScheme.primary,
-        linearTrackColor: AppColors.darkColorScheme.surfaceContainerHighest,
-        circularTrackColor: AppColors.darkColorScheme.surfaceContainerHighest,
-      ),
-      
-      // Divider Theme
-      dividerTheme: DividerThemeData(
-        color: AppColors.darkColorScheme.outlineVariant,
-        thickness: 1,
-        space: 1,
-      ),
-      
       // Text Theme
       textTheme: TextTheme(
         displayLarge: AppTextStyles.displayLarge,
@@ -334,7 +309,7 @@ class AppTheme {
       ),
       
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.darkColorScheme.surface,
         elevation: 2,
         shadowColor: AppColors.darkColorScheme.shadow.withAlpha(76),

@@ -13,8 +13,14 @@ class GetExamsUseCase implements UseCase<PaginatedResponse<Exam>, GetExamsParams
 
   @override
   Future<Either<Failure, PaginatedResponse<Exam>>> call(GetExamsParams params) async {
+    // Create pagination params from either pagination object or page/limit
+    final paginationParams = params.pagination ?? PaginationParams(
+      page: params.page ?? 1,
+      limit: params.limit ?? 20,
+    );
+    
     return await _repository.getExams(
-      pagination: params.pagination,
+      pagination: paginationParams,
       categoryId: params.categoryId,
       subcategoryId: params.subcategoryId,
       difficulty: params.difficulty,
@@ -29,7 +35,7 @@ class GetExamsUseCase implements UseCase<PaginatedResponse<Exam>, GetExamsParams
 
 /// Parameters for GetExamsUseCase
 class GetExamsParams {
-  final PaginationParams pagination;
+  final PaginationParams? pagination;
   final String? categoryId;
   final String? subcategoryId;
   final String? difficulty;
@@ -38,9 +44,11 @@ class GetExamsParams {
   final bool? isActive;
   final String? sortBy;
   final String? sortOrder;
+  final int? page;
+  final int? limit;
 
   const GetExamsParams({
-    required this.pagination,
+    this.pagination,
     this.categoryId,
     this.subcategoryId,
     this.difficulty,
@@ -49,6 +57,8 @@ class GetExamsParams {
     this.isActive,
     this.sortBy,
     this.sortOrder,
+    this.page,
+    this.limit,
   });
 
   /// Create a copy with updated parameters
@@ -62,6 +72,8 @@ class GetExamsParams {
     bool? isActive,
     String? sortBy,
     String? sortOrder,
+    int? page,
+    int? limit,
   }) {
     return GetExamsParams(
       pagination: pagination ?? this.pagination,
@@ -73,6 +85,8 @@ class GetExamsParams {
       isActive: isActive ?? this.isActive,
       sortBy: sortBy ?? this.sortBy,
       sortOrder: sortOrder ?? this.sortOrder,
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
     );
   }
 

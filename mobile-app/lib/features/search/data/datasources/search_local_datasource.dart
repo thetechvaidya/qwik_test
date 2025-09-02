@@ -5,6 +5,9 @@ import '../models/search_suggestion_model.dart';
 
 /// Abstract interface for search local data source
 abstract class SearchLocalDataSource {
+  /// Initialize the data source
+  Future<void> init();
+
   /// Save search query to history
   Future<void> saveSearchHistory(SearchHistoryModel searchHistory);
 
@@ -47,15 +50,13 @@ class SearchLocalDataSourceImpl implements SearchLocalDataSource {
   late Box<SearchSuggestionModel> _searchSuggestionsBox;
   late Box<dynamic> _metadataBox;
 
-  SearchLocalDataSourceImpl() {
-    _initializeBoxes();
-  }
+  SearchLocalDataSourceImpl();
 
   /// Initialize Hive boxes
-  void _initializeBoxes() {
-    _searchHistoryBox = Hive.box<SearchHistoryModel>(_searchHistoryBoxName);
-    _searchSuggestionsBox = Hive.box<SearchSuggestionModel>(_searchSuggestionsBoxName);
-    _metadataBox = Hive.box('metadata');
+  Future<void> init() async {
+    _searchHistoryBox = await Hive.openBox<SearchHistoryModel>(_searchHistoryBoxName);
+    _searchSuggestionsBox = await Hive.openBox<SearchSuggestionModel>(_searchSuggestionsBoxName);
+    _metadataBox = await Hive.openBox('metadata');
   }
 
   @override

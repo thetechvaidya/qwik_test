@@ -6,6 +6,7 @@ import '../storage/secure_token_storage.dart';
 import '../events/auth_event_bus.dart';
 import '../../features/authentication/data/datasources/auth_local_datasource.dart';
 import '../../features/authentication/domain/repositories/auth_repository.dart';
+import 'api_endpoints.dart';
 
 /// Dio interceptor for handling authentication tokens
 class AuthInterceptor extends Interceptor {
@@ -151,16 +152,16 @@ class AuthInterceptor extends Interceptor {
   bool _isAuthEndpoint(String path) {
     final p = path.startsWith('/') ? path : '/$path';
     final authPaths = {
-      '/auth/login',
-      '/auth/register',
-      '/auth/refresh',
-      '/auth/logout',
-      '/auth/me',
-      '/auth/verify-email',
-      '/auth/password/reset-request',
-      '/auth/password/reset',
-      '/auth/password/change',
-      '/auth/profile'
+      ApiEndpoints.login,
+      ApiEndpoints.register,
+      ApiEndpoints.refreshToken,
+      ApiEndpoints.logout,
+      ApiEndpoints.profile,
+      ApiEndpoints.verifyEmail,
+      ApiEndpoints.forgotPassword,
+      ApiEndpoints.resetPassword,
+      ApiEndpoints.changePassword,
+      ApiEndpoints.updateProfile
     };
     return authPaths.any((a) => p.startsWith(a));
   }

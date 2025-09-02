@@ -17,10 +17,10 @@ import 'go_router_refresh_stream.dart';
 import '../../shared/navigation/navigation_scaffold.dart';
 import '../../shared/navigation/navigation_destinations.dart';
 // import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-// import '../../features/exam/presentation/pages/exam_list_page.dart';
-// import '../../features/exam/presentation/pages/exam_detail_page.dart';
-// import '../../features/exam/presentation/pages/exam_taking_page.dart';
-// import '../../features/exam/presentation/pages/exam_result_page.dart';
+import '../../features/exams/presentation/pages/exam_list_page.dart';
+import '../../features/exams/presentation/pages/exam_detail_page.dart';
+// import '../../features/exams/presentation/pages/exam_taking_page.dart';
+// import '../../features/exams/presentation/pages/exam_result_page.dart';
 // import '../../features/profile/presentation/pages/profile_page.dart';
 // import '../../features/profile/presentation/pages/edit_profile_page.dart';
 // import '../../features/settings/presentation/pages/settings_page.dart';
@@ -171,7 +171,7 @@ class AppRouter {
           GoRoute(
             path: exams,
             name: 'exams',
-            builder: (context, state) => const PlaceholderPage(title: 'Exams'),
+            builder: (context, state) => const ExamListPage(),
             routes: [
               // Nested exam routes
               GoRoute(
@@ -179,7 +179,7 @@ class AppRouter {
                 name: 'exam-detail',
                 builder: (context, state) {
                   final examId = state.pathParameters['examId']!;
-                  return PlaceholderPage(title: 'Exam Detail - $examId');
+                  return ExamDetailPage(examId: examId);
                 },
                 routes: [
                   GoRoute(

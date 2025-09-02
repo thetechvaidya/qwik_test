@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:equatable/equatable.dart';
 import '../error/failures.dart';
 
@@ -46,8 +47,8 @@ class PaginatedResponse<T> extends Equatable {
 
   /// Create empty response
   factory PaginatedResponse.empty() {
-    return const PaginatedResponse<T>(
-      data: [],
+    return PaginatedResponse<T>(
+      data: const [],
       currentPage: 1,
       lastPage: 1,
       total: 0,
@@ -198,8 +199,26 @@ class PaginationState extends Equatable {
 class PaginationController {
   PaginationState _state = PaginationState.initial();
   
+  /// Page size for pagination
+  final int pageSize;
+  
+  /// Callback for loading more data
+  final VoidCallback? onLoadMore;
+  
+  /// Constructor
+  PaginationController({
+    this.pageSize = 15,
+    this.onLoadMore,
+  });
+  
   /// Current pagination state
   PaginationState get state => _state;
+  
+  /// Current page number
+  int get currentPage => _state.currentPage;
+  
+  /// Check if reached maximum pages
+  bool get hasReachedMax => _state.hasReachedMax;
 
   /// Update the pagination state
   void updateState(PaginationState newState) {
@@ -209,6 +228,35 @@ class PaginationController {
   /// Reset pagination to initial state
   void reset() {
     _state = PaginationState.initial();
+  }
+  
+  /// Go to next page
+  void nextPage() {
+    if (canLoadMore()) {
+      onLoadMore?.call();
+    }
+  }
+  
+  /// Go to previous page
+  void previousPage() {
+    if (_state.currentPage > 1) {
+      // This would typically trigger a load previous page event
+      // Implementation depends on specific use case
+    }
+  }
+  
+  /// Update controller state from API response
+  void updateFromResponse(PaginatedResponse response) {
+    _state = PaginationState.success(
+      currentPage: response.currentPage,
+      hasReachedMax: !response.hasMorePages,
+    );
+  }
+  
+  /// Dispose resources
+  void dispose() {
+    // Clean up any resources if needed
+    // Currently no resources to dispose
   }
 
   /// Check if can load more pages

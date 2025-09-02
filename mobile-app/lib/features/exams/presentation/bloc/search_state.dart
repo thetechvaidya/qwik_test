@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/search_suggestion.dart';
+import '../../../search/domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_history.dart';
 
 /// Base class for all search-related states

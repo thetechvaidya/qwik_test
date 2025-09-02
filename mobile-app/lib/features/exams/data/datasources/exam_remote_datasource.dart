@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
-import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/utils/pagination_utils.dart';
 import '../models/exam_model.dart';
 import '../models/category_model.dart';
+
+// UserExamProgressModel is defined in exam_model.dart, so it's already imported
 
 /// Abstract interface for exam remote data source
 abstract class ExamRemoteDataSource {
@@ -62,11 +64,11 @@ abstract class ExamRemoteDataSource {
 
 /// Implementation of exam remote data source
 class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
-  final ApiClient _apiClient;
+  final Dio _dio;
 
   ExamRemoteDataSourceImpl({
-    required ApiClient apiClient,
-  }) : _apiClient = apiClient;
+    required Dio dio,
+  }) : _dio = dio;
 
   @override
   Future<PaginatedResponse<ExamModel>> getExams({
@@ -93,8 +95,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
         if (sortOrder != null) 'sort_order': sortOrder,
       };
 
-      final response = await _apiClient.get(
-        '/exams',
+      final response = await _dio.get(
+        ApiEndpoints.exams,
         queryParameters: queryParams,
       );
 
@@ -119,7 +121,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<ExamModel> getExamById(String examId) async {
     try {
-      final response = await _apiClient.get('/exams/$examId');
+      final response = await _dio.get(ApiEndpoints.examDetail(examId));
 
       if (response.statusCode == 200) {
         return ExamModel.fromJson(response.data['data']);
@@ -146,8 +148,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
       if (parentId != null) queryParams['parent_id'] = parentId;
       if (activeOnly != null) queryParams['active_only'] = activeOnly;
 
-      final response = await _apiClient.get(
-        '/categories',
+      final response = await _dio.get(
+        ApiEndpoints.categories,
         queryParameters: queryParams,
       );
 
@@ -172,7 +174,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<CategoryModel> getCategoryById(String categoryId) async {
     try {
-      final response = await _apiClient.get('/categories/$categoryId');
+      final response = await _dio.get(ApiEndpoints.categoryDetail(categoryId));
 
       if (response.statusCode == 200) {
         return CategoryModel.fromJson(response.data['data']);
@@ -206,8 +208,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
         if (type != null) 'type': type,
       };
 
-      final response = await _apiClient.get(
-        '/exams/search',
+      final response = await _dio.get(
+        ApiEndpoints.search,
         queryParameters: queryParams,
       );
 
@@ -232,8 +234,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<List<ExamModel>> getFeaturedExams({int limit = 10}) async {
     try {
-      final response = await _apiClient.get(
-        '/exams/featured',
+      final response = await _dio.get(
+        ApiEndpoints.featuredExams,
         queryParameters: {'limit': limit},
       );
 
@@ -256,8 +258,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<List<ExamModel>> getRecentExams({int limit = 10}) async {
     try {
-      final response = await _apiClient.get(
-        '/exams/recent',
+      final response = await _dio.get(
+        ApiEndpoints.recentExams,
         queryParameters: {'limit': limit},
       );
 
@@ -280,8 +282,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<List<ExamModel>> getPopularExams({int limit = 10}) async {
     try {
-      final response = await _apiClient.get(
-        '/exams/popular',
+      final response = await _dio.get(
+        ApiEndpoints.popularExams,
         queryParameters: {'limit': limit},
       );
 
@@ -304,7 +306,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   @override
   Future<UserExamProgressModel?> getUserExamProgress(String examId) async {
     try {
-      final response = await _apiClient.get('/exams/$examId/progress');
+      final response = await _dio.get(ApiEndpoints.userExamAttempts(examId));
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
@@ -333,8 +335,8 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
     Map<String, dynamic> progressData,
   ) async {
     try {
-      final response = await _apiClient.post(
-        '/exams/$examId/progress',
+      final response = await _dio.post(
+        ApiEndpoints.userExamAttempts(examId),
         data: progressData,
       );
 

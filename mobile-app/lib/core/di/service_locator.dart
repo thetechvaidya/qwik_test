@@ -40,9 +40,14 @@ import '../../features/search/data/datasources/search_local_datasource.dart';
 import '../../features/search/data/datasources/search_remote_datasource.dart';
 import '../../features/search/data/repositories/search_repository_impl.dart';
 import '../../features/search/domain/repositories/search_repository.dart';
+import '../../features/search/domain/usecases/search_usecase.dart';
 import '../../features/search/domain/usecases/search_exams_usecase.dart';
 import '../../features/search/domain/usecases/get_search_suggestions_usecase.dart';
 import '../../features/search/domain/usecases/manage_search_history_usecase.dart';
+import '../../features/search/domain/usecases/get_search_history_usecase.dart';
+import '../../features/search/domain/usecases/clear_search_history_usecase.dart';
+import '../../features/search/domain/usecases/remove_search_history_usecase.dart';
+import '../../features/search/domain/usecases/report_search_analytics_usecase.dart';
 import '../../features/search/presentation/bloc/search_bloc.dart';
 
 // Pagination utilities
@@ -150,10 +155,12 @@ Future<void> initializeDependencies() async {
   );
 
   // Exam data sources
-  sl.registerLazySingleton<ExamLocalDataSource>(
-    () => ExamLocalDataSourceImpl(
-      hiveBox: sl<Box<dynamic>>(),
-    ),
+  sl.registerLazySingletonAsync<ExamLocalDataSource>(
+    () async {
+      final dataSource = ExamLocalDataSourceImpl();
+      await dataSource.init();
+      return dataSource;
+    },
   );
   sl.registerLazySingleton<ExamRemoteDataSource>(
     () => ExamRemoteDataSourceImpl(
@@ -171,10 +178,12 @@ Future<void> initializeDependencies() async {
   );
 
   // Search data sources
-  sl.registerLazySingleton<SearchLocalDataSource>(
-    () => SearchLocalDataSourceImpl(
-      hiveBox: sl<Box<dynamic>>(),
-    ),
+  sl.registerLazySingletonAsync<SearchLocalDataSource>(
+    () async {
+      final dataSource = SearchLocalDataSourceImpl();
+      await dataSource.init();
+      return dataSource;
+    },
   );
   sl.registerLazySingleton<SearchRemoteDataSource>(
     () => SearchRemoteDataSourceImpl(
@@ -212,6 +221,11 @@ Future<void> initializeDependencies() async {
   );
 
   // Search use cases
+  sl.registerLazySingleton<SearchUseCase>(
+    () => SearchUseCase(
+      searchRepository: sl<SearchRepository>(),
+    ),
+  );
   sl.registerLazySingleton<SearchExamsUseCase>(
     () => SearchExamsUseCase(
       examRepository: sl<ExamRepository>(),
@@ -219,7 +233,7 @@ Future<void> initializeDependencies() async {
     ),
   );
   sl.registerLazySingleton<GetSearchSuggestionsUseCase>(
-    () => GetSearchSuggestionsUseCase(sl<SearchRepository>()),
+    () => GetSearchSuggestionsUseCase(repository: sl<SearchRepository>()),
   );
   sl.registerLazySingleton<ManageSearchHistoryUseCase>(
     () => ManageSearchHistoryUseCase(sl<SearchRepository>()),
@@ -232,6 +246,9 @@ Future<void> initializeDependencies() async {
   );
   sl.registerLazySingleton<RemoveSearchHistoryUseCase>(
     () => RemoveSearchHistoryUseCase(sl<SearchRepository>()),
+  );
+  sl.registerLazySingleton<ReportSearchAnalyticsUseCase>(
+    () => ReportSearchAnalyticsUseCase(repository: sl<SearchRepository>()),
   );
 
   // Pagination controller
@@ -256,6 +273,7 @@ Future<void> initializeDependencies() async {
   // Search BLoC
   sl.registerFactory<SearchBloc>(
     () => SearchBloc(
+      searchUseCase: sl<SearchUseCase>(),
       getSearchSuggestionsUseCase: sl<GetSearchSuggestionsUseCase>(),
       manageSearchHistoryUseCase: sl<ManageSearchHistoryUseCase>(),
       getSearchHistoryUseCase: sl<GetSearchHistoryUseCase>(),
@@ -263,6 +281,9 @@ Future<void> initializeDependencies() async {
       removeSearchHistoryUseCase: sl<RemoveSearchHistoryUseCase>(),
     ),
   );
+
+  // Wait for all async registrations to complete
+  await sl.allReady();
 }
 
 /// Clean up resources when the app is disposed

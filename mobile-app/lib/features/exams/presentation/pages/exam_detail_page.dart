@@ -705,7 +705,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
         return Icons.school_outlined;
       case ExamType.mock:
         return Icons.quiz_outlined;
-      case ExamType.certification:
+      case ExamType.live:
         return Icons.workspace_premium_outlined;
       case ExamType.assessment:
         return Icons.assessment_outlined;

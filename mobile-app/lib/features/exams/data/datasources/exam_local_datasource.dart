@@ -6,6 +6,9 @@ import '../models/category_model.dart';
 
 /// Abstract interface for exam local data source
 abstract class ExamLocalDataSource {
+  /// Initialize the data source
+  Future<void> init();
+
   /// Cache paginated exams
   Future<void> cacheExams(
     List<ExamModel> exams, {

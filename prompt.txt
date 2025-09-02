@@ -2,413 +2,459 @@ I have created the following plan after thorough exploration and analysis of the
 
 ### Observations
 
-The codebase has excellent foundations for implementing exam session functionality. Key strengths include:
+The codebase has excellent foundations for implementing offline exam functionality. Key findings:
 
-1. **Comprehensive exam infrastructure** - entities, models, repositories, and blocs already exist
-2. **Robust authentication and network layer** - DioClient with AuthInterceptor handles authenticated API calls
-3. **Well-defined API endpoints** - clear documentation for session start, answer submission, and exam completion
-4. **Material 3 UI system** - theme, responsive layout, and shared components ready for use
-5. **Clean architecture patterns** - consistent structure across features with proper separation of concerns
-6. **Hive storage setup** - ready for caching with available typeIds (17-20+)
-7. **Router placeholders** - `/exams/:examId/take` route already defined, just needs implementation
+1. **Existing offline infrastructure** - ExamSessionLocalDataSource already has methods for caching sessions, answers, and tracking sync status with `getUnsyncedAnswers()` and `markAnswersAsSynced()`
+2. **Comprehensive storage system** - Hive is fully configured with LocalStorageService and dedicated boxes for exams, sessions, and user data
+3. **Network layer ready** - NetworkInfo with connectivity_plus, DioClient with AuthInterceptor, and documented API endpoints for `/offline/sync` and `/offline/upload`
+4. **Clean architecture established** - Consistent patterns across features with proper DI, Either/Failure handling, and BLoC state management
+5. **API endpoints documented** - Clear request/response structures for syncing data and uploading offline sessions
+6. **Missing components identified** - No background sync service, connectivity monitoring, offline download functionality, or conflict resolution mechanisms exist yet
 
-Missing components that need creation: timer utilities, question/answer entities and models, session management bloc, and question display UI components.
+The foundation is solid and ready for offline enhancements without requiring major architectural changes.
 
 ### Approach
 
-The implementation will create a complete exam session lifecycle system following the established clean architecture patterns. The approach focuses on:
+The implementation will create a comprehensive offline exam system by:
 
-1. **Creating exam session domain entities** for Question, Option, Answer, and ExamSession with proper type safety
-2. **Building session management infrastructure** with timer utilities, progress tracking, and state management
-3. **Implementing API integration** for session start, answer submission, and exam completion using existing DioClient
-4. **Creating responsive UI components** for question display, answer selection, and navigation with Material 3 design
-5. **Adding timer and progress management** with automatic submission and real-time updates
-6. **Integrating with existing router** by replacing placeholder pages with functional exam taking screens
+1. **Building offline exam download functionality** that allows users to download exams with questions for offline use, storing them in dedicated Hive boxes
+2. **Creating a background sync service** using WorkManager for Android and BGTaskScheduler for iOS to automatically upload offline sessions when connectivity is restored
+3. **Implementing connectivity monitoring** with a stream-based service that triggers sync operations and manages online/offline state transitions
+4. **Adding conflict resolution mechanisms** that handle duplicate submissions and data conflicts between offline and online sessions
+5. **Enhancing existing exam session flow** to seamlessly work in offline mode while maintaining the same user experience
+6. **Integrating with existing infrastructure** by extending current repositories, data sources, and BLoC patterns without breaking existing functionality
 
-The solution leverages existing infrastructure (authentication, network, storage, navigation) while adding minimal new dependencies and maintaining consistency with established patterns.
+The approach leverages the existing Hive storage, network layer, and clean architecture while adding minimal new dependencies and maintaining consistency with established patterns.
 
 ### Reasoning
 
-I explored the mobile app codebase comprehensively, examining the authentication system, network layer with DioClient and AuthInterceptor, existing exam feature structure, router configuration, shared UI components, dependency injection patterns, and API documentation. I also checked Hive typeId allocation (found 17+ available), confirmed no existing question/session code, reviewed timer-related theme elements, and verified the UseCase patterns. This exploration revealed a well-structured foundation ready for exam session implementation.
+I explored the mobile app codebase structure and examined key files including the existing Hive storage setup with LocalStorageService, ExamSessionLocalDataSource with sync tracking methods, NetworkInfo implementation, API documentation with offline endpoints, exam session management with local caching, service locator DI patterns, and clean architecture implementation across features. I also reviewed the comprehensive API documentation that defines the `/offline/sync` and `/offline/upload` endpoints with clear request/response structures. This exploration revealed a well-structured foundation with existing offline capabilities that need to be enhanced with download functionality, background sync, and conflict resolution.
 
 ## Mermaid Diagram
 
 sequenceDiagram
     participant User as User
-    participant UI as ExamTakingPage
-    participant Bloc as ExamSessionBloc
-    participant Timer as ExamTimer
-    participant UseCase as StartExamSessionUseCase
-    participant Repo as ExamSessionRepository
-    participant Remote as ExamSessionRemoteDataSource
+    participant UI as ExamDetailPage
+    participant OfflineBloc as OfflineBloc
+    participant DownloadUseCase as DownloadExamUseCase
+    participant OfflineRepo as OfflineRepository
+    participant RemoteDS as OfflineRemoteDataSource
+    participant LocalDS as OfflineLocalDataSource
+    participant ConnectivitySvc as ConnectivityService
+    participant SyncManager as SyncManager
+    participant BackgroundSvc as BackgroundSyncService
     participant API as Backend API
 
-    Note over User,API: Exam Session Lifecycle Implementation
+    Note over User,API: Offline Exam Download Flow
 
-    User->>UI: Navigate to /exams/:examId/take
-    UI->>Bloc: SessionStartRequested(examId)
-    Bloc->>UseCase: call(StartExamSessionParams)
-    UseCase->>Repo: startSession(examId)
-    Repo->>Remote: startExamSession(examId)
-    Remote->>API: POST /mobile/exams/{examId}/start
-    API-->>Remote: ExamSessionModel with questions
-    Remote-->>Repo: ExamSessionModel
-    Repo-->>UseCase: Either.right(ExamSession)
-    UseCase-->>Bloc: ExamSession entity
-    Bloc->>Timer: start(session.expiresAt)
-    Bloc-->>UI: SessionActive(session, timer, progress)
-
-    Note over User,API: Question Navigation & Answer Submission
-
-    UI->>UI: Display QuestionDisplayWidget
-    User->>UI: Select answer option
-    UI->>Bloc: AnswerSelected(questionId, optionIds)
-    Bloc->>Bloc: Update local answer state
-    Bloc-->>UI: AnswerSubmitting(questionId)
+    User->>UI: Tap "Download for Offline"
+    UI->>OfflineBloc: OfflineExamDownloadRequested(examId)
+    OfflineBloc->>DownloadUseCase: call(DownloadExamParams)
+    DownloadUseCase->>OfflineRepo: downloadExamForOffline(examId)
     
-    Bloc->>UseCase: SubmitAnswerUseCase.call()
-    UseCase->>Repo: submitAnswer(sessionId, answer)
-    Repo->>Remote: submitAnswer(sessionId, answerModel)
-    Remote->>API: POST /exam-sessions/{sessionId}/answers
-    API-->>Remote: Success response
-    Remote-->>Repo: Success
-    Repo-->>UseCase: Either.right(void)
-    UseCase-->>Bloc: Success
-    Bloc-->>UI: AnswerSubmitted(questionId)
-
-    User->>UI: Click Next Question
-    UI->>Bloc: QuestionNavigated(nextIndex)
-    Bloc-->>UI: SessionActive(updated session)
-
-    Note over User,API: Timer Management & Auto-Submit
-
-    Timer->>Bloc: TimerTicked(remainingSeconds)
-    Bloc-->>UI: SessionActive(updated timer)
+    alt Network Available
+        OfflineRepo->>RemoteDS: downloadExamWithQuestions(examId)
+        RemoteDS->>API: GET /exams/{id}/offline
+        API-->>RemoteDS: ExamWithQuestions data
+        RemoteDS-->>OfflineRepo: OfflineExamModel
+        OfflineRepo->>LocalDS: cacheOfflineExam(exam)
+        LocalDS-->>OfflineRepo: Success
+        OfflineRepo-->>DownloadUseCase: Either.right(OfflineExam)
+    else Network Unavailable
+        OfflineRepo-->>DownloadUseCase: Either.left(NetworkFailure)
+    end
     
-    alt Timer Expires
-        Timer->>Bloc: SessionExpired()
-        Bloc->>UseCase: SubmitExamUseCase.call()
-        UseCase->>Repo: submitExam(sessionId)
-        Repo->>Remote: submitExam(sessionId)
-        Remote->>API: POST /exam-sessions/{sessionId}/submit
-        API-->>Remote: ExamResult
-        Remote-->>Repo: ExamResult
-        Repo-->>UseCase: Either.right(ExamResult)
-        UseCase-->>Bloc: ExamResult
-        Bloc-->>UI: SessionCompleted(results)
-        UI->>UI: Show SessionExpiredDialog
-    else Manual Submit
-        User->>UI: Click Submit Exam
-        UI->>UI: Show ExamSubmissionDialog
-        User->>UI: Confirm submission
-        UI->>Bloc: ExamSubmitRequested()
-        Bloc->>UseCase: SubmitExamUseCase.call()
-        Note right of UseCase: Same submission flow as auto-submit
-        Bloc-->>UI: SessionCompleted(results)
-        UI->>UI: Navigate to results page
+    DownloadUseCase-->>OfflineBloc: Download result
+    OfflineBloc-->>UI: ExamDownloaded(examId)
+
+    Note over User,API: Offline Exam Session Flow
+
+    User->>UI: Start Offline Exam
+    UI->>ExamSessionBloc: SessionStartRequested(examId)
+    ExamSessionBloc->>ConnectivitySvc: isConnected()
+    ConnectivitySvc-->>ExamSessionBloc: false (offline)
+    
+    ExamSessionBloc->>OfflineRepo: getOfflineExam(examId)
+    OfflineRepo->>LocalDS: getCachedOfflineExam(examId)
+    LocalDS-->>OfflineRepo: OfflineExamModel
+    OfflineRepo-->>ExamSessionBloc: OfflineExam with questions
+    
+    ExamSessionBloc->>ExamSessionBloc: Create offline session (local ID)
+    ExamSessionBloc->>LocalDS: cacheExamSession(offlineSession)
+    ExamSessionBloc-->>UI: SessionActive(offline session)
+
+    Note over User,API: Answer Submission in Offline Mode
+
+    User->>UI: Submit Answer
+    UI->>ExamSessionBloc: AnswerSelected(questionId, options)
+    ExamSessionBloc->>LocalDS: cacheAnswer(sessionId, answer)
+    Note right of LocalDS: Answer marked as unsynced
+    ExamSessionBloc-->>UI: AnswerSubmitted(questionId)
+
+    Note over User,API: Background Sync When Online
+
+    ConnectivitySvc->>ConnectivitySvc: Detect connectivity restored
+    ConnectivitySvc->>BackgroundSvc: onConnectivityChanged(true)
+    BackgroundSvc->>SyncManager: syncPendingData()
+    
+    SyncManager->>LocalDS: getUnsyncedSessions()
+    LocalDS-->>SyncManager: List of offline sessions
+    
+    loop For each offline session
+        SyncManager->>RemoteDS: uploadOfflineSession(session)
+        RemoteDS->>API: POST /offline/upload
+        
+        alt Upload Success
+            API-->>RemoteDS: Success + server session ID
+            RemoteDS-->>SyncManager: Upload successful
+            SyncManager->>LocalDS: markSessionAsSynced(sessionId)
+        else Upload Conflict
+            API-->>RemoteDS: 409 Conflict
+            RemoteDS-->>SyncManager: Conflict detected
+            SyncManager->>LocalDS: markSessionAsConflicted(sessionId)
+        else Upload Error
+            API-->>RemoteDS: Error response
+            RemoteDS-->>SyncManager: Upload failed
+            SyncManager->>SyncManager: Schedule retry with backoff
+        end
+    end
+
+    SyncManager->>RemoteDS: syncOfflineData(lastSyncTimestamp)
+    RemoteDS->>API: GET /offline/sync?last_sync=timestamp
+    API-->>RemoteDS: Updated exams, categories, user progress
+    RemoteDS-->>SyncManager: Sync data
+    SyncManager->>LocalDS: updateCachedData(syncData)
+    SyncManager->>LocalDS: updateLastSyncTimestamp()
+
+    Note over User,API: Conflict Resolution Flow
+
+    alt Conflict Detected
+        SyncManager->>OfflineBloc: ConflictDetected(sessionId)
+        OfflineBloc-->>UI: SyncConflict(conflicts)
+        UI->>UI: Show ConflictResolutionDialog
+        User->>UI: Choose resolution (keep local/use server)
+        UI->>OfflineBloc: ConflictResolutionRequested(choice)
+        OfflineBloc->>SyncManager: resolveConflict(sessionId, choice)
+        SyncManager->>RemoteDS: submitConflictResolution()
+        RemoteDS->>API: POST /offline/resolve-conflict
+        API-->>RemoteDS: Resolution accepted
+        SyncManager->>LocalDS: markConflictResolved(sessionId)
     end
 
 ## Proposed File Changes
 
-### mobile-app\lib\features\exam_session(NEW)
+### mobile-app\pubspec.yaml(MODIFY)
+
+Add background task dependencies for offline sync functionality. Add `workmanager: ^0.5.2` for Android background tasks and iOS background processing. Add `connectivity_plus: ^5.0.2` if not already present for enhanced connectivity monitoring. These dependencies will enable background synchronization of offline exam sessions when connectivity is restored.
+
+### mobile-app\lib\core\services\connectivity_service.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\authentication
-- mobile-app\lib\features\exams
+- mobile-app\lib\core\network\network_info.dart
 
-Create the main exam session feature directory following the clean architecture pattern established by other features. This directory will contain the data, domain, and presentation layers for all exam session functionality including question display, answer submission, timer management, and progress tracking.
+Create a connectivity monitoring service that provides a stream of connectivity changes and current connection status. Implement methods like `isConnected`, `connectionStream`, `waitForConnection()`, and `onConnectivityChanged`. This service will wrap the connectivity_plus package and provide a centralized way to monitor network status throughout the app. Include proper error handling and connection state caching to avoid excessive connectivity checks.
 
-### mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exams\domain\entities\exam.dart
-
-Create the Question entity class that represents individual exam questions. Include properties like id, type (multiple_choice, true_false), questionText, options (List<Option>), timeLimit, explanation, difficulty, and marks. Add helper methods like `isMultipleChoice`, `isTrueFalse`, `hasTimeLimit`, and `getCorrectOptions()`. The entity should be immutable and follow the existing entity patterns from the exam feature. Include proper equality comparison and toString methods.
-
-### mobile-app\lib\features\exam_session\domain\entities\option.dart(NEW)
+### mobile-app\lib\core\services\background_sync_service.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+- mobile-app\lib\core\services\connectivity_service.dart(NEW)
 
-Create the Option entity class for question options. Include properties like id, text, isCorrect (for result display), and order. This entity will be used within Question entities to represent answer choices. Follow the same immutable pattern as other entities in the codebase with proper equality comparison.
+Create a background sync service using WorkManager that handles automatic synchronization of offline data when connectivity is restored. Implement methods for registering background tasks, handling sync operations, and managing sync schedules. Include platform-specific implementations for Android (WorkManager) and iOS (BGTaskScheduler). The service should integrate with the SyncManager to perform actual data synchronization and handle background execution constraints on both platforms.
 
-### mobile-app\lib\features\exam_session\domain\entities\answer.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
-
-Create the Answer entity class to represent user's answer to a question. Include properties like questionId, selectedOptionIds (List<String> to support multiple selection), timeSpent (in seconds), answeredAt (DateTime), and isCorrect (for local validation). Add helper methods like `isAnswered`, `getSelectedOptions()`, and `isMultipleSelection`. This entity will be used for tracking user responses and submitting to the API.
-
-### mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
+### mobile-app\lib\features\offline\domain\entities\offline_exam.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\exams\domain\entities\exam.dart
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+- mobile-app\lib\features\exam_session\domain\entities\question.dart
 
-Create the ExamSession entity class that represents an active exam session. Include properties like sessionId, examId, exam (Exam entity), questions (List<Question>), answers (Map<String, Answer> keyed by questionId), currentQuestionIndex, startedAt, expiresAt, remainingTimeSeconds, isCompleted, and settings (ExamSettings). Add helper methods like `getCurrentQuestion()`, `getNextQuestion()`, `getPreviousQuestion()`, `getProgress()`, `getAnsweredCount()`, `canNavigateBack()`, `canNavigateNext()`, `isTimeExpired()`, and `getAnswer(questionId)`. Include navigation and timing logic based on exam settings.
+Create the OfflineExam entity that represents an exam downloaded for offline use. Include properties like examId, exam (Exam entity), questions (List<Question>), downloadedAt, expiresAt, fileSize, and isExpired. Add helper methods like `isExpired()`, `getDaysUntilExpiry()`, and `getStorageSize()`. This entity will be used to track which exams are available offline and manage their lifecycle including expiration and storage management.
 
-### mobile-app\lib\features\exam_session\data\models\question_model.dart(NEW)
+### mobile-app\lib\features\offline\domain\entities\sync_status.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart
+
+Create the SyncStatus entity that tracks synchronization state for offline sessions and data. Include properties like sessionId, status (pending, syncing, completed, failed, conflict), lastSyncAttempt, retryCount, errorMessage, and conflictData. Add helper methods like `canRetry()`, `isConflicted()`, `needsResolution()`, and `getNextRetryTime()`. This entity will be used to manage the sync lifecycle and handle various sync scenarios including conflicts and failures.
+
+### mobile-app\lib\features\offline\domain\entities\offline_session_upload.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\exam_session\domain\entities\answer.dart
+
+Create the OfflineSessionUpload entity that represents the payload for uploading offline exam sessions to the server. Include properties like offlineSessionId, examId, answers, startedAt, completedAt, timeSpent, deviceInfo, and metadata. Add helper methods for validation and payload preparation. This entity will be used when constructing the request payload for the `/offline/upload` API endpoint.
+
+### mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\exams\data\models\exam_model.dart
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+- mobile-app\lib\features\offline\domain\entities\offline_exam.dart(NEW)
 
-Create the QuestionModel class that extends the Question entity with JSON and Hive serialization. Use `@HiveType(typeId: 17)` and `@JsonSerializable` annotations. Implement `fromJson`, `toJson`, and `toEntity` methods following the pattern established in `ExamModel`. Add proper Hive field annotations for each property. Handle the nested options list properly in serialization. Include enum parsing for question types.
+Create the OfflineExamModel that extends the OfflineExam entity with JSON and Hive serialization. Use `@HiveType(typeId: 21)` and `@JsonSerializable` annotations. Implement `fromJson`, `toJson`, and `toEntity` methods following the established patterns. Handle the nested exam and questions data properly in serialization. Include proper Hive field annotations for caching offline exam data locally.
 
-### mobile-app\lib\features\exam_session\data\models\option_model.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exam_session\data\models\question_model.dart(NEW)
-- mobile-app\lib\features\exam_session\domain\entities\option.dart(NEW)
-
-Create the OptionModel class that extends the Option entity with JSON and Hive serialization. Use `@HiveType(typeId: 18)` and `@JsonSerializable` annotations. Implement the standard model methods (`fromJson`, `toJson`, `toEntity`) following the established patterns. Add proper Hive field annotations for caching option data locally.
-
-### mobile-app\lib\features\exam_session\data\models\answer_model.dart(NEW)
+### mobile-app\lib\features\offline\data\models\sync_status_model.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\domain\entities\answer.dart(NEW)
+- mobile-app\lib\features\offline\domain\entities\sync_status.dart(NEW)
 
-Create the AnswerModel class for serializing user answers. Use `@HiveType(typeId: 19)` and include JSON serialization methods. This model will be used for both local storage and API submission. Handle the selectedOptionIds list properly and include DateTime serialization for answeredAt field.
+Create the SyncStatusModel with JSON and Hive serialization for tracking sync states. Use `@HiveType(typeId: 22)` and include proper enum handling for sync status values. Implement the standard model methods and handle DateTime serialization for sync timestamps. This model will be used to persist sync status information locally and track sync progress.
 
-### mobile-app\lib\features\exam_session\data\models\exam_session_model.dart(NEW)
+### mobile-app\lib\features\offline\data\models\offline_session_upload_model.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
-- mobile-app\lib\features\exams\data\models\exam_model.dart
+- mobile-app\lib\features\offline\domain\entities\offline_session_upload.dart(NEW)
 
-Create the ExamSessionModel class that extends the ExamSession entity with JSON and Hive serialization. Use `@HiveType(typeId: 20)` and `@JsonSerializable` annotations. Handle the complex nested structure including exam, questions list, and answers map. Implement proper JSON parsing for the session start API response format. Add methods for converting between the API response format and the domain entity. Include proper DateTime handling for session timing.
+Create the OfflineSessionUploadModel for serializing upload payloads. Use `@JsonSerializable` annotation and implement proper JSON serialization for the `/offline/upload` API endpoint. Handle the complex nested structure of session data, answers, and metadata. Include validation methods to ensure the payload meets API requirements before upload.
 
-### mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart(NEW)
+### mobile-app\lib\features\offline\data\datasources\offline_remote_datasource.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\datasources\auth_remote_datasource.dart
 - mobile-app\lib\core\network\dio_client.dart
 
-Create the ExamSessionRemoteDataSource interface and implementation for API communication. Implement methods like `startExamSession(examId)` that calls `POST /mobile/exams/{examId}/start`, `submitAnswer(sessionId, answerModel)` that calls `POST /mobile/exam-sessions/{sessionId}/answers`, and `submitExam(sessionId)` that calls `POST /mobile/exam-sessions/{sessionId}/submit`. Use the existing DioClient pattern from `AuthRemoteDataSource`. Handle API responses and convert them to models. Include proper error handling and follow the established remote data source patterns. Parse the complex session response with questions and settings.
+Create the OfflineRemoteDataSource for API communication with offline sync endpoints. Implement methods like `downloadExamForOffline(examId)` that fetches exam with questions, `syncOfflineData(lastSyncTimestamp)` that calls `GET /offline/sync`, and `uploadOfflineSessions(sessions)` that calls `POST /offline/upload`. Use the existing DioClient pattern and handle API responses properly. Include error handling for network failures and server errors during sync operations.
 
-### mobile-app\lib\features\exam_session\data\datasources\exam_session_local_datasource.dart(NEW)
+### mobile-app\lib\features\offline\data\datasources\offline_local_datasource.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\datasources\auth_local_datasource.dart
-- mobile-app\lib\core\storage\local_storage_service.dart
+- mobile-app\lib\core\storage\local_storage_service.dart(MODIFY)
 
-Create the ExamSessionLocalDataSource interface and implementation for local session caching. Implement methods for caching active sessions, answers, and progress. Include methods like `cacheSession()`, `getCachedSession()`, `cacheAnswer()`, `getCachedAnswers()`, `updateSessionProgress()`, and `clearSession()`. Use the existing `LocalStorageService` pattern and follow the pattern from `AuthLocalDataSource`. This will be used for maintaining session state and potential offline support in future phases.
+Create the OfflineLocalDataSource for managing offline exam storage and sync status tracking. Implement methods like `cacheOfflineExam()`, `getCachedOfflineExams()`, `removeOfflineExam()`, `saveSyncStatus()`, `getSyncStatus()`, `updateLastSyncTimestamp()`, and `getOfflineExamQuestions()`. Use dedicated Hive boxes for offline exams and sync metadata. Include cache management methods for handling storage limits and expiration of offline content.
 
-### mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(NEW)
+### mobile-app\lib\features\offline\data\repositories\offline_repository_impl.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\data\repositories\auth_repository_impl.dart
 - mobile-app\lib\core\network\network_info.dart
-- mobile-app\lib\core\error\failures.dart
 
-Create the ExamSessionRepositoryImpl that implements the domain repository interface. Implement session management with proper error handling and conversion from models to entities. For `startSession()`, call remote data source and cache the session locally. For `submitAnswer()`, submit to remote and update local cache optimistically. For `submitExam()`, finalize the session remotely and clear local cache. Include proper error handling and follow the pattern established in `AuthRepositoryImpl` with comprehensive error handling and caching logic.
+Create the OfflineRepositoryImpl that implements the domain repository interface. Implement offline/online strategy for exam downloads, sync operations, and conflict resolution. For `downloadExamForOffline()`, fetch from remote and cache locally with questions. For `syncPendingData()`, upload offline sessions and download updated data. Include proper error handling, conversion from models to entities, and integration with connectivity monitoring. Handle storage limits and cache expiration policies.
 
-### mobile-app\lib\features\exam_session\domain\repositories\exam_session_repository.dart(NEW)
+### mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\domain\repositories\auth_repository.dart
 - mobile-app\lib\core\error\failures.dart
 
-Create the ExamSessionRepository interface that defines the contract for exam session operations. Include methods like `startSession(examId)` returning `Either<Failure, ExamSession>`, `submitAnswer(sessionId, answer)` returning `Either<Failure, void>`, `submitExam(sessionId)` returning `Either<Failure, ExamResult>`, `getSession(sessionId)` for retrieving cached sessions, and `updateSessionProgress(sessionId, progress)` for local updates. Follow the Either pattern established in the authentication repository for consistent error handling.
+Create the OfflineRepository interface that defines the contract for offline operations. Include methods like `downloadExamForOffline(examId)` returning `Either<Failure, OfflineExam>`, `getOfflineExams()` returning `Either<Failure, List<OfflineExam>>`, `removeOfflineExam(examId)`, `syncPendingData()` returning `Either<Failure, SyncResult>`, `uploadOfflineSessions()`, and `resolveConflicts()`. Follow the Either pattern for consistent error handling and define clear contracts for offline data management.
 
-### mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(NEW)
+### mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
 
 References: 
 
 - mobile-app\lib\core\usecases\usecase.dart
 - mobile-app\lib\features\authentication\domain\usecases\login_usecase.dart
 
-Create the StartExamSessionUseCase that handles starting a new exam session. Define `StartExamSessionParams` class with examId property. Implement the UseCase interface from the core layer and call the repository's startSession method. Include proper parameter validation and follow the established use case patterns from the authentication feature. Handle exam availability checks and user permissions.
+Create the DownloadExamForOfflineUseCase that handles downloading exams for offline use. Define `DownloadExamParams` class with examId and optional parameters like includeExplanations. Implement the UseCase interface and call the repository's downloadExamForOffline method. Include validation for storage limits, network connectivity, and exam availability. Handle progress tracking for large downloads and provide feedback to the UI.
 
-### mobile-app\lib\features\exam_session\domain\usecases\submit_answer_usecase.dart(NEW)
+### mobile-app\lib\features\offline\domain\usecases\sync_offline_data_usecase.dart(NEW)
 
 References: 
 
+- mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
 - mobile-app\lib\core\usecases\usecase.dart
-- mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(NEW)
 
-Create the SubmitAnswerUseCase for submitting individual question answers. Define `SubmitAnswerParams` class with sessionId, questionId, selectedOptionIds, and timeSpent properties. Implement the UseCase interface and call the repository's submitAnswer method. Include proper validation for answer format and session state. Handle optimistic updates and error recovery.
+Create the SyncOfflineDataUseCase for synchronizing offline data with the server. Implement the NoParamsUseCase interface since sync doesn't require parameters. Call the repository's syncPendingData method and handle the sync process including uploading offline sessions and downloading updated data. Include proper error handling for network failures, server errors, and conflict scenarios.
 
-### mobile-app\lib\features\exam_session\domain\usecases\submit_exam_usecase.dart(NEW)
-
-References: 
-
-- mobile-app\lib\core\usecases\usecase.dart
-- mobile-app\lib\features\exam_session\domain\repositories\exam_session_repository.dart(NEW)
-
-Create the SubmitExamUseCase for finalizing and submitting the complete exam session. Define `SubmitExamParams` class with sessionId property. Implement the UseCase interface and call the repository's submitExam method. Include validation to ensure all required questions are answered (if applicable) and handle final submission logic. This use case will be called when the user manually submits or when auto-submit triggers on timer expiration.
-
-### mobile-app\lib\core\utils\exam_timer.dart(NEW)
+### mobile-app\lib\features\offline\domain\usecases\get_offline_exams_usecase.dart(NEW)
 
 References: 
 
-- mobile-app\lib\core\constants\app_constants.dart
+- mobile-app\lib\features\offline\domain\usecases\sync_offline_data_usecase.dart(NEW)
 
-Create a dedicated ExamTimer utility class for managing exam session timing. Implement methods like `start()`, `pause()`, `resume()`, `stop()`, `getRemainingTime()`, `getElapsedTime()`, and `isExpired()`. Include callback support for timer updates and expiration events. Handle both overall exam timer and per-question timers if needed. Use Dart's Timer class internally and provide a stream of timer updates for reactive UI. Include proper disposal methods and error handling for timer edge cases.
+Create the GetOfflineExamsUseCase for retrieving locally stored offline exams. Implement the NoParamsUseCase interface and call the repository's getOfflineExams method. Include filtering for expired exams and sorting by download date. This use case will be used by the UI to display available offline exams and manage offline content.
 
-### mobile-app\lib\core\utils\exam_progress_tracker.dart(NEW)
+### mobile-app\lib\features\offline\domain\usecases\remove_offline_exam_usecase.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(NEW)
+- mobile-app\lib\features\offline\domain\usecases\get_offline_exams_usecase.dart(NEW)
 
-Create an ExamProgressTracker utility class for tracking exam completion progress. Implement methods like `updateProgress()`, `getCompletionPercentage()`, `getAnsweredCount()`, `getUnansweredCount()`, `getTimeSpentPerQuestion()`, and `getOverallTimeSpent()`. Include progress calculation logic and statistics tracking. This utility will be used by the exam session bloc to maintain progress state and provide data for progress indicators.
+Create the RemoveOfflineExamUseCase for deleting offline exams from local storage. Define `RemoveOfflineExamParams` class with examId property. Implement the UseCase interface and call the repository's removeOfflineExam method. Include validation to ensure the exam exists and handle cleanup of associated data like cached questions and progress. Provide storage space reclamation information to the UI.
 
-### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+### mobile-app\lib\core\services\sync_manager.dart(NEW)
+
+References: 
+
+- mobile-app\lib\core\services\connectivity_service.dart(NEW)
+- mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
+
+Create a centralized SyncManager service that orchestrates all offline synchronization operations. Implement methods like `syncPendingData()`, `uploadOfflineSessions()`, `downloadUpdatedData()`, `handleSyncConflicts()`, and `scheduleBackgroundSync()`. Include retry logic with exponential backoff, conflict detection and resolution, and progress tracking. The service should coordinate between OfflineRepository, ConnectivityService, and BackgroundSyncService to provide a unified sync experience.
+
+### mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
-- mobile-app\lib\core\utils\exam_timer.dart(NEW)
+- mobile-app\lib\features\offline\domain\usecases\download_exam_for_offline_usecase.dart(NEW)
 
-Create the ExamSessionBloc for managing exam session state with comprehensive event handling. Implement events for starting session, navigating questions, selecting answers, submitting answers, timer updates, and exam completion. Include states for loading, session active, answer submitting, session completed, and error states. Use the exam timer utility and integrate with the use cases. Handle automatic submission on timer expiration, navigation restrictions based on exam settings, and optimistic answer updates. Follow the BLoC pattern established in `AuthBloc` with proper error handling and state management.
+Create the OfflineBloc for managing offline functionality state. Implement events for downloading exams, syncing data, removing offline content, and handling connectivity changes. Include states for downloading, syncing, offline content loaded, sync completed, and error states. Use the offline use cases and integrate with ConnectivityService for real-time connectivity updates. Handle progress tracking for downloads and sync operations. Follow the BLoC pattern established in other features.
 
-### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_event.dart(NEW)
+### mobile-app\lib\features\offline\presentation\bloc\offline_event.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\presentation\bloc\auth_event.dart
 
-Create the ExamSessionEvent classes for the exam session bloc. Include events like `SessionStartRequested(examId)`, `QuestionNavigated(index)`, `AnswerSelected(questionId, optionIds)`, `AnswerSubmitted(questionId)`, `TimerTicked(remainingSeconds)`, `SessionPaused()`, `SessionResumed()`, `ExamSubmitRequested()`, `SessionExpired()`, and `SessionError(error)`. Each event should include necessary parameters and follow the event pattern from the authentication feature. Include proper validation and type safety.
+Create the OfflineEvent classes for the offline bloc. Include events like `OfflineExamDownloadRequested(examId)`, `OfflineDataSyncRequested()`, `OfflineExamRemoveRequested(examId)`, `OfflineExamsLoadRequested()`, `ConnectivityChanged(isConnected)`, `SyncProgressUpdated(progress)`, and `ConflictResolutionRequested(sessionId)`. Each event should include necessary parameters and follow the event pattern from other features. Include proper validation and type safety.
 
-### mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart(NEW)
+### mobile-app\lib\features\offline\presentation\bloc\offline_state.dart(NEW)
 
 References: 
 
 - mobile-app\lib\features\authentication\presentation\bloc\auth_state.dart
 
-Create the ExamSessionState classes for the exam session bloc. Include states like `SessionInitial`, `SessionLoading`, `SessionActive(session, remainingTime, progress)`, `AnswerSubmitting(questionId)`, `AnswerSubmitted(questionId)`, `SessionPaused(session, remainingTime)`, `SessionCompleted(sessionId, results)`, `SessionExpired(sessionId)`, and `SessionError(error)`. The active state should contain the current session, timer information, progress data, and current question index. Follow the state pattern from the authentication feature with proper data encapsulation.
+Create the OfflineState classes for the offline bloc. Include states like `OfflineInitial`, `OfflineLoading`, `OfflineExamsLoaded(exams, isConnected)`, `ExamDownloading(examId, progress)`, `ExamDownloaded(examId)`, `DataSyncing(progress)`, `DataSynced(timestamp)`, `SyncConflict(conflicts)`, and `OfflineError(error)`. The states should contain relevant data like offline exams list, connectivity status, download/sync progress, and error information. Follow the state pattern from other features.
 
-### mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart(NEW)
+### mobile-app\lib\features\offline\presentation\pages\offline_exams_page.dart(NEW)
 
 References: 
 
 - mobile-app\lib\shared\widgets\custom_button.dart
 - mobile-app\lib\core\responsive\responsive_layout.dart
-- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
 
-Create the ExamTakingPage that provides the main interface for taking exams. Implement a responsive layout with app bar containing timer and progress indicator, body with question display area, and bottom navigation for question navigation and submission. Use `BlocBuilder` to react to exam session state changes. Handle loading states, error states, and session completion. Implement proper back button handling based on exam settings (allowBackNavigation). Include confirmation dialogs for exam submission and navigation warnings. Use the existing responsive layout system to adapt for different screen sizes and integrate with the navigation scaffold appropriately.
+Create the OfflineExamsPage that displays downloaded offline exams and provides management functionality. Implement a list view showing offline exams with download date, expiry status, and storage size. Include actions for removing offline exams, manual sync, and downloading new exams. Use BlocBuilder to react to offline state changes and handle loading, error, and loaded states. Include pull-to-refresh for manual sync and connectivity status indicators.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\question_display_widget.dart(NEW)
+### mobile-app\lib\features\offline\presentation\widgets\offline_exam_card.dart(NEW)
 
 References: 
 
 - mobile-app\lib\shared\widgets\app_card.dart
-- mobile-app\lib\core\theme\app_text_styles.dart
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+- mobile-app\lib\features\exams\presentation\widgets\exam_card.dart
 
-Create a QuestionDisplayWidget that handles rendering different question types. Implement a factory pattern that delegates to specific question type widgets based on the question type (multiple_choice, true_false). Include question text display, option rendering, and answer selection handling. Pass selection callbacks up to the parent widget. Use the existing card widgets and follow Material 3 design guidelines. Include accessibility features and semantic labels for screen readers.
+Create a widget for displaying offline exam information in a card format. Include exam title, download date, expiry status, storage size, and action buttons for removal or taking the exam. Use color coding for expiry status (green for valid, yellow for expiring soon, red for expired). Include progress indicators for download/sync operations and proper accessibility support. Follow the existing card design patterns.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\multiple_choice_question_widget.dart(NEW)
+### mobile-app\lib\features\offline\presentation\widgets\download_progress_widget.dart(NEW)
 
 References: 
 
 - mobile-app\lib\core\theme\app_dimensions.dart
-- mobile-app\lib\core\theme\app_colors.dart
-- mobile-app\lib\features\exam_session\domain\entities\question.dart(NEW)
+- mobile-app\lib\shared\widgets\loading_widget.dart
 
-Create a specialized widget for displaying multiple choice questions. Implement option tiles with radio buttons or checkboxes (depending on single vs multiple selection). Handle option selection state and visual feedback. Use the existing theme colors and dimensions for consistent styling. Include proper touch targets and accessibility support. Handle option shuffling if enabled in exam settings. Provide clear visual indication of selected options.
+Create a widget that displays download progress for offline exams. Include a progress bar, percentage indicator, download speed, and estimated time remaining. Add cancel download functionality and proper error handling for failed downloads. Use the existing progress styling from the theme and include accessibility announcements for progress updates.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\true_false_question_widget.dart(NEW)
+### mobile-app\lib\features\offline\presentation\widgets\sync_status_widget.dart(NEW)
 
 References: 
 
+- mobile-app\lib\core\theme\app_colors.dart
 - mobile-app\lib\shared\widgets\custom_button.dart
-- mobile-app\lib\core\theme\app_colors.dart
 
-Create a specialized widget for displaying true/false questions. Implement large, clear True/False buttons with proper visual feedback. Use distinctive colors and icons to make the choice clear. Handle selection state and provide immediate visual feedback. Follow Material 3 design guidelines and ensure good accessibility support. Include proper semantic labels for screen readers.
+Create a widget that displays sync status and connectivity information. Show current connectivity state, last sync time, pending sync operations, and sync progress. Include manual sync button and conflict resolution indicators. Use appropriate icons and colors for different sync states (synced, pending, syncing, error, conflict). Provide clear feedback about sync operations and any required user actions.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
-
-References: 
-
-- mobile-app\lib\core\theme\app_text_styles.dart
-- mobile-app\lib\core\theme\app_dimensions.dart
-
-Create an ExamTimerWidget that displays the remaining exam time with visual indicators. Implement countdown display with hours, minutes, and seconds. Include color changes as time runs low (green -> yellow -> red). Add progress ring or bar to show time progression visually. Handle timer updates from the bloc and display warnings when time is running out. Use the existing timer text styles from the theme. Include accessibility announcements for time warnings.
-
-### mobile-app\lib\features\exam_session\presentation\widgets\exam_progress_widget.dart(NEW)
+### mobile-app\lib\features\offline\presentation\widgets\conflict_resolution_dialog.dart(NEW)
 
 References: 
 
-- mobile-app\lib\core\theme\app_dimensions.dart
-- mobile-app\lib\core\theme\app_colors.dart
-
-Create an ExamProgressWidget that shows exam completion progress. Display current question number, total questions, answered count, and progress percentage. Include a linear progress indicator and question navigation dots/indicators. Show which questions have been answered and which are remaining. Use the existing progress dimensions from the theme. Include accessibility support for progress announcements.
-
-### mobile-app\lib\features\exam_session\presentation\widgets\question_navigation_widget.dart(NEW)
-
-References: 
-
-- mobile-app\lib\shared\widgets\custom_button.dart
 - mobile-app\lib\shared\widgets\app_dialog.dart
+- mobile-app\lib\shared\widgets\custom_button.dart
 
-Create a QuestionNavigationWidget for navigating between questions. Implement Previous/Next buttons with proper state management based on current question and exam settings. Include Submit Exam button when on the last question or when all questions are answered. Handle navigation restrictions (allowBackNavigation setting). Show confirmation dialogs for potentially destructive actions. Use the existing custom button components and follow established patterns.
+Create a dialog for handling sync conflicts when offline and online data differ. Display conflict details including local vs server data, timestamps, and differences. Provide options for resolving conflicts (keep local, use server, merge, or manual resolution). Include clear explanations of the conflict and consequences of each resolution option. Use the existing dialog components and follow Material 3 design guidelines.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\exam_session_app_bar.dart(NEW)
+### mobile-app\lib\features\exams\presentation\widgets\download_for_offline_button.dart(NEW)
 
 References: 
 
-- mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
-- mobile-app\lib\features\exam_session\presentation\widgets\exam_progress_widget.dart(NEW)
+- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
 
-Create a specialized app bar for exam taking that includes timer, progress indicator, and exam information. Implement a clean, distraction-free design that shows essential information without cluttering the interface. Include exam title, current question indicator, timer widget, and progress widget. Handle different screen sizes responsively. Provide proper back button handling with confirmation dialogs if needed. Follow Material 3 app bar design guidelines.
+Create a button widget for downloading exams for offline use. Display download status (not downloaded, downloading, downloaded, expired) with appropriate icons and text. Handle download initiation, progress display, and completion feedback. Include storage size information and download time estimates. Integrate with the OfflineBloc for state management and provide proper user feedback during download operations.
+
+### mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\core\network\network_info.dart
+- mobile-app\lib\core\services\sync_manager.dart(NEW)
+
+Enhance the ExamSessionRepositoryImpl to support offline exam sessions. Modify the `startSession()` method to detect offline mode using NetworkInfo and create local offline sessions when no connectivity is available. Update session management to handle offline session IDs and sync status tracking. Integrate with the SyncManager to automatically upload offline sessions when connectivity is restored. Add methods for managing offline session lifecycle and conflict resolution.
+
+### mobile-app\lib\features\exam_session\domain\usecases\start_exam_session_usecase.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\offline\domain\repositories\offline_repository.dart(NEW)
+- mobile-app\lib\core\network\network_info.dart
+
+Enhance the StartExamSessionUseCase to support offline exam sessions. Modify the use case to check for offline exam availability when network is not available. Add logic to validate that the exam is downloaded for offline use before allowing offline session creation. Include proper error handling for cases where offline exam is not available or expired. Integrate with offline repository to access cached exam questions.
+
+### mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\exams\presentation\widgets\download_for_offline_button.dart(NEW)
+- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
+
+Enhance the ExamDetailPage to include offline download functionality. Add the DownloadForOfflineButton widget to the exam actions section. Display offline availability status and storage requirements. Include connectivity-aware UI that shows different options based on online/offline status. Integrate with OfflineBloc to handle download operations and provide real-time feedback on download progress and completion.
 
 ### mobile-app\lib\core\router\app_router.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart(NEW)
-- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+- mobile-app\lib\features\offline\presentation\pages\offline_exams_page.dart(NEW)
+- mobile-app\lib\features\offline\presentation\bloc\offline_bloc.dart(NEW)
 
-Update the AppRouter to replace the exam taking placeholder page with the actual ExamTakingPage. Import the new exam session page and bloc. Replace the `PlaceholderPage` in the exam taking route with a proper implementation that provides the ExamSessionBloc and passes the examId parameter. Update the route builder to handle BlocProvider creation and proper parameter passing. Ensure the route is properly protected and handles authentication requirements. Add proper error handling for invalid exam IDs.
+Add new routes for offline functionality. Include routes for `/offline-exams` (OfflineExamsPage) and any other offline-related pages. Update the navigation destinations to include offline management if it should be accessible from the main navigation. Ensure proper route protection and parameter handling for offline-related routes. Add route transitions and proper BlocProvider setup for offline pages.
 
 ### mobile-app\lib\core\di\service_locator.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart(NEW)
-- mobile-app\lib\features\exam_session\data\repositories\exam_session_repository_impl.dart(NEW)
-- mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart(NEW)
+- mobile-app\lib\core\services\connectivity_service.dart(NEW)
+- mobile-app\lib\core\services\sync_manager.dart(NEW)
+- mobile-app\lib\features\offline\data\repositories\offline_repository_impl.dart(NEW)
 
-Update the service locator to register all new exam session dependencies. Add registrations for exam session remote/local data sources, repository, use cases, and bloc. Follow the existing pattern from authentication and exam feature registration. Ensure proper dependency order and use appropriate registration types (singleton for repositories, factory for blocs). Include all the new services: ExamSessionRemoteDataSource, ExamSessionLocalDataSource, ExamSessionRepository, StartExamSessionUseCase, SubmitAnswerUseCase, SubmitExamUseCase, ExamTimer, ExamProgressTracker, and ExamSessionBloc. Register the timer and progress tracker utilities as factories since they may be used per session.
+Register all new offline-related dependencies in the service locator. Add registrations for ConnectivityService, BackgroundSyncService, SyncManager, OfflineRemoteDataSource, OfflineLocalDataSource, OfflineRepository, all offline use cases, and OfflineBloc. Register WorkManager and connectivity services as singletons. Ensure proper dependency order and use appropriate registration types (singleton for services, factory for blocs). Include all new services and utilities for offline functionality.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\widgets.dart(NEW)
-
-References: 
-
-- mobile-app\lib\features\exam_session\presentation\widgets\question_display_widget.dart(NEW)
-- mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart(NEW)
-
-Create a barrel file for exam session widgets. Export `QuestionDisplayWidget`, `MultipleChoiceQuestionWidget`, `TrueFalseQuestionWidget`, `ExamTimerWidget`, `ExamProgressWidget`, `QuestionNavigationWidget`, and `ExamSessionAppBar` to provide easy access to exam session UI components. Include documentation comments for each exported widget explaining their purpose and usage in the exam taking flow.
-
-### mobile-app\lib\features\exam_session\presentation\widgets\exam_submission_dialog.dart(NEW)
+### mobile-app\lib\main.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\shared\widgets\app_dialog.dart
-- mobile-app\lib\shared\widgets\custom_button.dart
+- mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
+- mobile-app\lib\core\services\background_sync_service.dart(NEW)
 
-Create a specialized dialog for exam submission confirmation. Display exam summary including answered questions count, time spent, and warnings for unanswered questions. Include clear Submit and Cancel buttons with proper styling. Show different messages based on whether all questions are answered or if there are unanswered questions. Use the existing dialog components and follow Material 3 design guidelines. Include accessibility support and proper focus management.
+Initialize offline functionality in the main function. Register Hive adapters for new offline models (OfflineExamModel, SyncStatusModel, etc.) with appropriate typeIds (21, 22, etc.). Initialize WorkManager for background sync tasks with proper configuration for both Android and iOS. Set up background task registration and configure platform-specific background execution settings. Initialize the SyncManager and ConnectivityService during app startup.
 
-### mobile-app\lib\features\exam_session\presentation\widgets\session_expired_dialog.dart(NEW)
+### mobile-app\lib\core\storage\local_storage_service.dart(MODIFY)
 
 References: 
 
-- mobile-app\lib\shared\widgets\app_dialog.dart
-- mobile-app\lib\core\theme\app_colors.dart
+- mobile-app\lib\features\offline\data\models\offline_exam_model.dart(NEW)
 
-Create a dialog that appears when the exam session expires due to time running out. Display a clear message about session expiration and automatic submission. Include information about the submission status and next steps. Provide a button to view results or return to exam list. Use the existing dialog components and ensure the dialog cannot be dismissed accidentally. Include proper accessibility announcements for session expiration.
+Enhance the LocalStorageService to support offline functionality. Add new box operations for offline exams, sync status, and offline metadata. Include methods like `saveOfflineExam()`, `getOfflineExams()`, `saveSyncStatus()`, `getSyncStatus()`, `updateLastSyncTimestamp()`, and `getLastSyncTimestamp()`. Add cache management methods for handling storage limits and cleanup of expired offline content. Ensure proper error handling and follow existing patterns.
+
+### mobile-app\lib\shared\navigation\navigation_destinations.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\shared\navigation\navigation_item.dart
+
+Add offline management to the navigation destinations if it should be accessible from the main navigation. Include appropriate icons and labels for offline functionality. Consider adding it to a settings or profile section rather than main navigation to avoid cluttering the primary navigation. Ensure the navigation item properly integrates with the existing navigation structure and responsive design.
+
+### mobile-app\lib\features\offline\presentation\widgets\widgets.dart(NEW)
+
+References: 
+
+- mobile-app\lib\features\offline\presentation\widgets\offline_exam_card.dart(NEW)
+- mobile-app\lib\features\offline\presentation\widgets\sync_status_widget.dart(NEW)
+
+Create a barrel file for offline feature widgets. Export OfflineExamCard, DownloadProgressWidget, SyncStatusWidget, ConflictResolutionDialog, and DownloadForOfflineButton to provide easy access to offline-specific UI components. Include documentation comments for each exported widget explaining their purpose and usage in the offline functionality.
+
+### mobile-app\android\app\src\main\AndroidManifest.xml(MODIFY)
+
+Add Android-specific permissions and configurations for background sync functionality. Include WAKE_LOCK permission for background tasks, RECEIVE_BOOT_COMPLETED for auto-start after device reboot, and FOREGROUND_SERVICE permission if needed for long-running sync operations. Configure WorkManager and background task constraints. Add network security config if needed for API communication during background sync.
+
+### mobile-app\ios\Runner\Info.plist(MODIFY)
+
+Add iOS-specific configurations for background processing. Include BGTaskSchedulerPermittedIdentifiers for background sync tasks, UIBackgroundModes for background-processing and background-fetch capabilities. Configure background execution time limits and background app refresh settings. Add any required privacy usage descriptions for background data access if needed.
