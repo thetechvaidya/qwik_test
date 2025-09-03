@@ -63,6 +63,36 @@ class UserSettings extends Equatable {
     );
   }
 
+  /// Converts UserSettings to JSON map for API calls
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userId,
+      'preferences': {
+        'theme': preferences.theme,
+        'language': preferences.language,
+      },
+      'privacy': privacy,
+      'security': security,
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
+
+  /// Creates UserSettings from JSON map
+  factory UserSettings.fromJson(Map<String, dynamic> json) {
+    return UserSettings(
+      userId: json['user_id'] as String,
+      preferences: AppPreferences(
+        theme: json['preferences']?['theme'] as String? ?? 'system',
+        language: json['preferences']?['language'] as String? ?? 'en',
+      ),
+      privacy: Map<String, dynamic>.from(json['privacy'] as Map? ?? {}),
+      security: Map<String, dynamic>.from(json['security'] as Map? ?? {}),
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+    );
+  }
+
   @override
   String toString() {
     return 'UserSettings(userId: $userId, preferences: $preferences, privacy: $privacy, security: $security, updatedAt: $updatedAt)';

@@ -38,5 +38,8 @@ abstract class ExamRepository {
     String? categoryId,
     String? difficulty,
     String? type,
+    int? minDuration,
+    int? maxDuration,
+    bool? isActive,
   });
 }

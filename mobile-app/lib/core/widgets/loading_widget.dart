@@ -119,7 +119,7 @@ class SimplePlaceholder extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color ?? Colors.grey[300]?.withOpacity(0.3),
+        color: color ?? Colors.grey[300]?.withAlpha((255 * 0.3).round()),
         borderRadius: borderRadius ?? BorderRadius.circular(4),
       ),
     );

@@ -34,7 +34,7 @@ class ExamFilterBar extends StatelessWidget {
         color: AppColors.surface,
         border: Border(
           bottom: BorderSide(
-            color: AppColors.outline.withOpacity(0.2),
+            color: AppColors.outline.withAlpha((255 * 0.2).round()),
             width: 1,
           ),
         ),
@@ -167,7 +167,7 @@ class ExamFilterBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppColors.primary.withAlpha((255 * 0.1).round()) : Colors.transparent,
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.outline,
             width: 1,
@@ -214,7 +214,7 @@ class ExamFilterBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.error.withOpacity(0.1),
+          color: AppColors.error.withAlpha((255 * 0.1).round()),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(

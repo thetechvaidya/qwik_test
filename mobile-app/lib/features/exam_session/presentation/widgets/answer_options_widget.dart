@@ -319,16 +319,16 @@ class AnswerOptionsWidget extends StatelessWidget {
   Color _getOptionBackgroundColor(Option option, bool isSelected) {
     if (showCorrectAnswers) {
       if (option.isCorrect && isSelected) {
-        return AppColors.success.withOpacity(0.1);
+        return AppColors.success.withAlpha((255 * 0.1).round());
       } else if (!option.isCorrect && isSelected) {
-        return AppColors.error.withOpacity(0.1);
+        return AppColors.error.withAlpha((255 * 0.1).round());
       } else if (option.isCorrect) {
-        return AppColors.success.withOpacity(0.05);
+        return AppColors.success.withAlpha((255 * 0.05).round());
       }
     }
     
     return isSelected 
-        ? AppColors.primaryContainer.withOpacity(0.3)
+        ? AppColors.primaryContainer.withAlpha((255 * 0.3).round())
         : AppColors.surface;
   }
 

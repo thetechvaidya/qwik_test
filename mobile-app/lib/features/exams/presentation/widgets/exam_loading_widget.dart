@@ -121,7 +121,7 @@ class ExamLoadingWidget extends StatelessWidget {
                 width: 140,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withOpacity(0.3),
+                  color: AppColors.surface.withAlpha((255 * 0.3).round()),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -129,7 +129,7 @@ class ExamLoadingWidget extends StatelessWidget {
                 width: 60,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: AppColors.surface.withOpacity(0.3),
+                  color: AppColors.surface.withAlpha((255 * 0.3).round()),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../theme/app_colors.dart';
 
 /// A widget that displays cached network images with loading and error states
@@ -13,7 +14,7 @@ class CachedNetworkImageWidget extends StatelessWidget {
   final Color? backgroundColor;
 
   const CachedNetworkImageWidget({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.width,
     this.height,
@@ -22,23 +23,17 @@ class CachedNetworkImageWidget extends StatelessWidget {
     this.errorWidget,
     this.borderRadius,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    Widget imageWidget = Image.network(
-      imageUrl,
+    Widget imageWidget = CachedNetworkImage(
+      imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        
-        return placeholder ?? _buildDefaultPlaceholder();
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return errorWidget ?? _buildDefaultErrorWidget();
-      },
+      placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(),
+      errorWidget: (context, url, error) => errorWidget ?? _buildDefaultErrorWidget(),
     );
 
     if (borderRadius != null) {
@@ -100,13 +95,13 @@ class CircularCachedNetworkImage extends StatelessWidget {
   final Color? backgroundColor;
 
   const CircularCachedNetworkImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.radius,
     this.placeholder,
     this.errorWidget,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

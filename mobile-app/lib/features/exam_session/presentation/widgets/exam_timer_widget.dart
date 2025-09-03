@@ -76,7 +76,7 @@ class ExamTimerWidget extends StatelessWidget {
               child: CircularProgressIndicator(
                 value: _getProgressValue(),
                 strokeWidth: 3,
-                backgroundColor: _getTextColor().withOpacity(0.2),
+                backgroundColor: _getTextColor().withAlpha((255 * 0.2).round()),
                 valueColor: AlwaysStoppedAnimation<Color>(_getTextColor()),
               ),
             ),

@@ -41,6 +41,9 @@ abstract class ExamRemoteDataSource {
     String? categoryId,
     String? difficulty,
     String? type,
+    int? minDuration,
+    int? maxDuration,
+    bool? isActive,
   });
 
 
@@ -200,6 +203,9 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
     String? categoryId,
     String? difficulty,
     String? type,
+    int? minDuration,
+    int? maxDuration,
+    bool? isActive,
   }) async {
     try {
       final queryParams = {
@@ -208,6 +214,9 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
         if (categoryId != null) 'category_id': categoryId,
         if (difficulty != null) 'difficulty': difficulty,
         if (type != null) 'type': type,
+        if (minDuration != null) 'min_duration': minDuration,
+        if (maxDuration != null) 'max_duration': maxDuration,
+        if (isActive != null) 'is_active': isActive,
       };
 
       final response = await _dio.get(

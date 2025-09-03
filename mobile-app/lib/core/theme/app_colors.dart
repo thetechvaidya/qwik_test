@@ -52,6 +52,19 @@ class AppColors {
   static const Color errorContainer = errorLight;
   static const Color onErrorContainer = Color(0xFF7F1D1D);
   
+  // Additional Material 3 colors referenced in the codebase
+  static const Color outline = neutral300;
+  static const Color onSurface = neutral900;
+  static const Color primaryContainer = Color(0xFFDBEAFE);
+  static const Color onPrimaryContainer = Color(0xFF1E3A8A);
+  static const Color warningContainer = Color(0xFFFEF3C7);
+  static const Color onWarningContainer = Color(0xFF92400E);
+  static const Color successContainer = Color(0xFFD1FAE5);
+  static const Color onSuccessContainer = Color(0xFF064E3B);
+  static const Color divider = neutral200;
+  static const Color disabled = neutral400;
+  static const Color shadow = Color(0x1A000000);
+  
   // Light Color Scheme
   static const ColorScheme lightColorScheme = ColorScheme(
     brightness: Brightness.light,

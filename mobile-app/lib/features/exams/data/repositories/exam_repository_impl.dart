@@ -230,6 +230,9 @@ class ExamRepositoryImpl implements ExamRepository {
     String? categoryId,
     String? difficulty,
     String? type,
+    int? minDuration,
+    int? maxDuration,
+    bool? isActive,
   }) async {
     try {
       if (await _networkInfo.isConnected) {
@@ -241,6 +244,9 @@ class ExamRepositoryImpl implements ExamRepository {
             categoryId: categoryId,
             difficulty: difficulty,
             type: type,
+            minDuration: minDuration,
+            maxDuration: maxDuration,
+            isActive: isActive,
           );
 
           // Cache the search results

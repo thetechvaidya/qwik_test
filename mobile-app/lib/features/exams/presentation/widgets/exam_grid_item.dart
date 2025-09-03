@@ -98,12 +98,12 @@ class ExamGridItem extends StatelessWidget {
   }
 
   Widget _buildCategory(BuildContext context) {
-    if (exam.categoryName == null) {
+    if (exam.categoryName.isEmpty) {
       return const SizedBox.shrink();
     }
     
     return Text(
-      exam.categoryName!,
+      exam.categoryName,
       style: AppTextStyles.bodySmall.copyWith(
         color: AppColors.textSecondary,
       ),
@@ -135,7 +135,7 @@ class ExamGridItem extends StatelessWidget {
           children: [
             _buildMetadataItem(
               icon: Icons.quiz_outlined,
-              label: '${exam.questionCount}',
+              label: '${exam.totalQuestions}',
             ),
             const Spacer(),
             if (exam.stats.averageRating > 0)
@@ -255,7 +255,7 @@ class ExamGridItem extends StatelessWidget {
         return Icons.school_outlined;
       case ExamType.mock:
         return Icons.quiz_outlined;
-      case ExamType.certification:
+      case ExamType.live:
         return Icons.workspace_premium_outlined;
       case ExamType.assessment:
         return Icons.assessment_outlined;

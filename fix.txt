@@ -2,270 +2,336 @@ I have created the following plan after thorough exploration and analysis of the
 
 ### Observations
 
-The exams module has a fundamental **entity structure mismatch** causing most compilation errors:
+The UI and theme system is well-structured with comprehensive Material 3 support, but has several compilation errors:
 
-1. **ExamModel vs Exam entity divergence**: ExamModel has fields like `imageUrl`, `totalQuestions`, `passingScore` while Exam entity has `questionCount`, `categoryName`, etc.
+1. **Missing AppColors properties**: Code references `AppColors.outline`, `AppColors.onSurfaceVariant`, `AppColors.primaryContainer`, `AppColors.warningContainer` that don't exist in the current AppColors class
 
-2. **Missing UI properties**: Widgets access `requirements`, `topics`, `correctAnswers`, `incorrectAnswers` that don't exist in current entities.
+2. **Deprecated withOpacity() usage**: Many files use `color.withOpacity(0.x)` which should be replaced with `color.withAlpha((255 * 0.x).round())` for better performance
 
-3. **Enum extension gaps**: UI calls `examType.displayName` but ExamType enum lacks this extension.
+3. **Missing utility classes**: References to `DurationFormatter`, `DateFormatter` classes that may not exist
 
-4. **Search integration**: ExamBloc uses SearchExamsUseCase correctly, but entity inconsistencies cause conflicts.
+4. **Navigation system is complete**: NavigationItem, AppNavigationBar, and related classes are well-implemented with proper Material 3 support
 
-The solution requires redesigning the entity layer to match both the data model and UI expectations.
+5. **Theme structure is solid**: AppTextStyles, AppDimensions, and AppTheme are comprehensive and follow Material 3 guidelines
+
+The core architecture is excellent, just needs the missing properties and deprecated usage fixes.
 
 ### Approach
 
-I'll fix the exams module compilation errors by **aligning the entity structure** with what the UI expects and what the ExamModel provides. The core strategy is to:
+I'll fix the UI and theme-related compilation errors by addressing the core issues systematically:
 
-1. **Redesign the Exam entity** to include all properties used by UI widgets and available from ExamModel
-2. **Update ExamUserProgress entity** to include missing progress tracking properties
-3. **Add missing enum extensions** for display names and icons
-4. **Fix ExamModel conversion methods** to properly map between model and entity
-5. **Remove search functionality conflicts** by using proper repository interfaces
+1. **Add missing color properties** to `AppColors` class - Add `outline`, `primaryContainer`, `onSurface`, `warningContainer`, etc. that are referenced throughout the codebase
+2. **Update deprecated `withOpacity()` usage** - Replace with `withAlpha()` for better performance and modern Flutter practices
+3. **Fix navigation widget parameter issues** - Ensure all navigation widgets have proper parameter handling and missing imports
+4. **Fix custom widget constructor issues** - Address any const constructor problems and missing parameters
+5. **Add missing utility classes** - Create missing formatter classes and ensure all imports are available
 
-This approach maintains clean architecture while ensuring all UI components have access to the data they need. I'll avoid over-engineering by keeping the entity structure simple and focused on actual usage patterns.
+The approach focuses on making the existing well-structured theme system complete and fixing the specific compilation errors without over-engineering.
 
 ### Reasoning
 
-I analyzed the exams module files and found that the main compilation errors stem from a fundamental mismatch between the ExamModel (which has comprehensive fields like imageUrl, totalQuestions, passingScore) and the current Exam entity (which has a minimal structure with different field names). The UI widgets are trying to access properties that don't exist in the current entity structure. I also found that ExamUserProgress is missing several properties that the UI expects, and some enum extensions are missing. The search functionality integration is architecturally sound but requires consistent entity structures.
+I analyzed the UI and theme-related files and found that the core theme structure is well-designed with Material 3 support. The main issues are: (1) missing color properties in AppColors that are referenced throughout the codebase, (2) deprecated withOpacity() usage that should be replaced with withAlpha(), (3) some missing utility classes like formatters, and (4) potential navigation widget parameter issues. The AppTextStyles, AppDimensions, and core widget structure are comprehensive and well-implemented.
 
 ## Mermaid Diagram
 
 sequenceDiagram
-    participant UI as Exam Detail Page
-    participant Bloc as Exam Bloc
-    participant Entity as Exam Entity
-    participant Model as Exam Model
-    participant API as Remote Data Source
+    participant UI as UI Components
+    participant Colors as AppColors
+    participant Utils as Utility Classes
+    participant Widgets as Custom Widgets
+    participant Theme as Theme System
     
-    Note over UI,API: Exam Module Compilation Fixes
+    Note over UI,Theme: UI & Theme Compilation Fixes
     
-    UI->>Bloc: LoadExamDetailEvent
-    Bloc->>API: Fetch exam data
-    API->>Model: Return ExamModel with all fields
-    Note over Model: imageUrl, totalQuestions, passingScore, etc.
+    UI->>Colors: Request missing color properties
+    Colors->>Colors: Add outline, primaryContainer, onSurface, etc.
+    Colors-->>UI: All color properties available
     
-    Model->>Entity: Convert to updated Exam entity
-    Note over Entity: Add missing properties: requirements, topics, userProgress
+    UI->>Utils: Request DurationFormatter, DateFormatter
+    Utils->>Utils: Create missing utility classes
+    Utils-->>UI: Formatters available
     
-    Entity->>Entity: Apply enum extensions
-    Note over Entity: examType.displayName, difficulty.color
+    UI->>Widgets: Request CachedNetworkImageWidget
+    Widgets->>Widgets: Create missing widget
+    Widgets-->>UI: Widget available
     
-    Entity->>Bloc: Return comprehensive Exam entity
-    Bloc->>UI: ExamDetailLoaded state
+    UI->>UI: Replace withOpacity() with withAlpha()
+    Note over UI: Modern Flutter practices
     
-    UI->>UI: Access all required properties
-    Note over UI: exam.totalQuestions, exam.requirements, exam.userProgress.correctAnswers
+    Theme->>Theme: Verify Material 3 compliance
+    Note over Theme: WidgetStateProperty usage correct
     
-    Note over UI,API: All compilation errors resolved
+    Note over UI,Theme: All compilation errors resolved
 
 ## Proposed File Changes
 
-### mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+### mobile-app\lib\core\theme\app_colors.dart(MODIFY)
 
-References: 
+Add the missing color properties that are referenced throughout the codebase:
 
-- mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
-- mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
+1. **Add missing Material 3 color properties** after line 53 (after onErrorContainer):
+```dart
+// Additional Material 3 colors referenced in the codebase
+static const Color outline = neutral300;
+static const Color onSurface = neutral900;
+static const Color primaryContainer = Color(0xFFDBEAFE);
+static const Color onPrimaryContainer = Color(0xFF1E3A8A);
+static const Color warningContainer = Color(0xFFFEF3C7);
+static const Color onWarningContainer = Color(0xFF92400E);
+static const Color successContainer = Color(0xFFD1FAE5);
+static const Color onSuccessContainer = Color(0xFF064E3B);
+```
 
-Completely redesign the Exam entity to include all properties used by UI widgets and available from ExamModel:
+2. **Add semantic color aliases** that are commonly used:
+```dart
+// Semantic color aliases for consistency
+static const Color textPrimary = neutral900;
+static const Color textSecondary = neutral600;
+static const Color divider = neutral200;
+static const Color disabled = neutral400;
+static const Color shadow = Color(0x1A000000);
+```
 
-1. **Replace the current minimal structure** with a comprehensive entity that includes:
-   - Basic info: `id`, `title`, `description`, `imageUrl`
-   - Exam details: `duration` (as Duration?), `totalQuestions` (rename from questionCount), `totalMarks`, `passingScore`
-   - Classification: `difficulty` (as ExamDifficulty enum), `examType` (as ExamType enum), `categoryId`, `categoryName`, `subcategory`
-   - Metadata: `tags` (List<String>), `requirements` (List<String>), `topics` (List<String>)
-   - Timestamps: `createdAt`, `updatedAt`, `scheduledAt`, `expiresAt`
-   - Status: `isActive`, `isPaid`, `price`, `currency`, `status` (as ExamStatus enum), `isFavorite`
-   - Nested objects: `stats` (ExamStats), `userProgress` (ExamUserProgress?)
+These additions provide all the color properties that are currently being referenced in the UI components, ensuring compilation success while maintaining the existing Material 3 color scheme structure.
 
-2. **Add copyWith method** to support state updates (favorite toggle, progress updates)
+### mobile-app\lib\core\utils\duration_formatter.dart(MODIFY)
 
-3. **Add computed properties** like `formattedDuration`, `difficultyColor`, `statusColor` for UI convenience
+Create the missing utility classes that are referenced in the UI components:
 
-4. **Update ExamStats entity** to match what ExamModel provides: `totalAttempts`, `averageScore`, `highestScore`, `lowestScore`, `passCount`, `failCount`, `passRate`, `averageCompletionTime`
+1. **Create DurationFormatter class**:
+```dart
+class DurationFormatter {
+  static String format(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    } else if (minutes > 0) {
+      return '${minutes}m ${seconds}s';
+    } else {
+      return '${seconds}s';
+    }
+  }
+  
+  static String formatDetailed(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+  }
+}
+```
 
-This creates a single source of truth that satisfies both the data layer and UI requirements.
-Add missing enum extensions and status enums:
+This utility class provides the formatting functionality that's referenced in the exam and UI components.
 
-1. **Add ExamStatus enum** with values: `draft`, `published`, `archived`, `suspended`
+### mobile-app\lib\core\utils\date_formatter.dart(MODIFY)
 
-2. **Update ExamType enum** to include `live` value (currently missing) and add extension:
-   ```
-   extension ExamTypeExtension on ExamType {
-     String get displayName { /* return user-friendly names */ }
-     IconData get icon { /* return appropriate icons */ }
-   }
-   ```
+Create the DateFormatter utility class:
 
-3. **Update ExamDifficulty enum** to use string values that match the API: `beginner`, `intermediate`, `advanced`, `expert`
+```dart
+import 'package:intl/intl.dart';
 
-4. **Add ExamDifficultyExtension** with color helpers:
-   ```
-   extension ExamDifficultyExtension on ExamDifficulty {
-     Color get color { /* return difficulty-specific colors */ }
-     String get description { /* return difficulty descriptions */ }
-   }
-   ```
+class DateFormatter {
+  static String format(DateTime date, {String pattern = 'MMM dd, yyyy'}) {
+    return DateFormat(pattern).format(date);
+  }
+  
+  static String formatRelative(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays > 7) {
+      return DateFormat('MMM dd, yyyy').format(date);
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
+    } else {
+      return 'Just now';
+    }
+  }
+  
+  static String formatTime(DateTime date) {
+    return DateFormat('HH:mm').format(date);
+  }
+  
+  static String formatDateTime(DateTime date) {
+    return DateFormat('MMM dd, yyyy HH:mm').format(date);
+  }
+}
+```
 
-These extensions provide the display helpers that UI widgets are trying to access.
-Update the ExamUserProgress entity to include all properties that UI widgets expect:
+### mobile-app\lib\features\profile\presentation\widgets\profile_header.dart(MODIFY)
 
-1. **Add missing progress tracking properties**:
-   - `answeredQuestions` (int) - number of questions answered
-   - `correctAnswers` (int) - number of correct answers
-   - `incorrectAnswers` (int) - number of incorrect answers
-   - `timeSpent` (Duration) - time spent on exam
-   - `score` (double?) - current score if available
+Replace all deprecated `withOpacity()` usage with `withAlpha()` for better performance and modern Flutter practices:
 
-2. **Keep existing properties**: `userId`, `examId`, `completionPercentage`, `lastAttemptAt`, `isStarted`, `isCompleted`
+1. **Line 33**: Change `backgroundColor: theme.colorScheme.primary.withOpacity(0.1),` to `backgroundColor: theme.colorScheme.primary.withAlpha((255 * 0.1).round()),`
 
-3. **Add computed properties**:
-   - `accuracy` getter: `correctAnswers / answeredQuestions * 100`
-   - `remainingQuestions` method that takes total questions as parameter
-   - `formattedTimeSpent` getter for UI display
+2. **Line 51**: Change `color: Colors.black.withOpacity(0.3),` to `color: Colors.black.withAlpha((255 * 0.3).round()),`
 
-4. **Add copyWith method** for easy state updates during exam taking
+3. **Line 108**: Change `color: theme.colorScheme.outline.withOpacity(0.2),` to `color: theme.colorScheme.outline.withAlpha((255 * 0.2).round()),`
 
-This ensures all progress-related properties that the exam detail page tries to access are available.
+4. **Line 117**: Change `color: color.withOpacity(0.1),` to `color: color.withAlpha((255 * 0.1).round()),`
 
-### mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
+5. **Line 153**: Change `backgroundColor: theme.colorScheme.primary.withOpacity(0.1),` to `backgroundColor: theme.colorScheme.primary.withAlpha((255 * 0.1).round()),`
 
-References: 
+6. **Line 164**: Change `color: theme.colorScheme.onSurface.withOpacity(0.6),` to `color: theme.colorScheme.onSurface.withAlpha((255 * 0.6).round()),`
 
-- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+This modernizes the code to use the more performant `withAlpha()` method instead of the deprecated `withOpacity()` method.
 
-Fix the ExamModel conversion methods to properly map between the updated entity structure:
+### mobile-app\lib\features\settings\presentation\pages\settings_page.dart(MODIFY)
 
-1. **Update `toEntity()` method** to map all ExamModel fields to the new Exam entity structure:
-   - Map `totalQuestions` to `totalQuestions` (keep same name)
-   - Convert `duration` (int minutes) to `Duration(minutes: duration)`
-   - Map `category` to `categoryName` and add `categoryId` if available
-   - Map string enums to proper enum values using existing helper methods
-   - Handle nested `stats` conversion properly
-   - Set default values for missing fields like `requirements`, `topics` (empty lists)
-   - Map `isFavorite` from user preferences if available
+Replace deprecated `withOpacity()` usage with `withAlpha()` throughout the file:
 
-2. **Update `fromEntity()` method** to reverse the mapping:
-   - Convert `Duration` back to int minutes
-   - Convert enums back to string values
-   - Handle all new entity fields appropriately
+1. **Line 91**: Change `color: Colors.red.withAlpha((255 * 0.6).round()),` (this one is already correct)
 
-3. **Add null safety and fallbacks** for fields that might not be available from the API
+2. **Update any other withOpacity usage** if found in the settings page
 
-4. **Update ExamStatsModel conversion** to match the updated ExamStats entity structure
+3. **Fix the property access issue** on line 161 and 229: Ensure the language property is accessed correctly as `state.settings.preferences.language`
 
-This ensures seamless conversion between the data layer and domain layer.
+4. **Add null safety checks** for the settings state to prevent runtime errors:
+```dart
+subtitle: state.settings?.preferences?.language ?? 'English',
+```
 
-### mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
+This ensures the settings page compiles correctly and uses modern Flutter practices.
 
-References: 
+### mobile-app\lib\features\exam_session\presentation\widgets(MODIFY)
 
-- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+Replace all deprecated `withOpacity()` usage with `withAlpha()` throughout the exam session widgets:
 
-Update the exam detail page to use the correct entity properties and handle missing data gracefully:
+1. **In exam_timer_widget.dart**: Line 79 - Change `backgroundColor: _getTextColor().withOpacity(0.2),` to `backgroundColor: _getTextColor().withAlpha((255 * 0.2).round()),`
+2. **In navigation_controls_widget.dart**: Line 37 - Change `color: Colors.black.withOpacity(0.1),` to `color: Colors.black.withAlpha((255 * 0.1).round()),` and line 139 - Change `color: onPressed != null ? color : AppColors.onSurface.withOpacity(0.38),` to `color: onPressed != null ? color : AppColors.onSurface.withAlpha((255 * 0.38).round()),`
+3. **In question_palette_widget.dart**: Line 31 - Change `color: Colors.black.withOpacity(0.1),` to `color: Colors.black.withAlpha((255 * 0.1).round()),`
+4. **In exam_header_widget.dart**: Line 30 - Change `color: Colors.black.withOpacity(0.1),` to `color: Colors.black.withAlpha((255 * 0.1).round()),`
 
-1. **Fix property access** to match the updated Exam entity:
-   - Use `exam.totalQuestions` instead of `exam.questionCount`
-   - Access `exam.userProgress?.correctAnswers` etc. with null safety
-   - Use `exam.requirements` and `exam.topics` directly
-   - Access `exam.examType.displayName` using the new extension
+This modernizes all the exam session widgets to use the more performant `withAlpha()` method.
 
-2. **Add null safety checks** for optional properties:
-   - Check if `exam.userProgress` exists before accessing its properties
-   - Handle missing `requirements` and `topics` gracefully
-   - Provide fallback values for missing data
+### mobile-app\lib\features\exams\presentation\widgets(MODIFY)
 
-3. **Update progress calculations** to use the new ExamUserProgress properties:
-   - Use `progress.answeredQuestions`, `progress.correctAnswers`, `progress.incorrectAnswers`
-   - Calculate remaining questions as `exam.totalQuestions - progress.answeredQuestions`
+Replace all deprecated `withOpacity()` usage with `withAlpha()` throughout the exam widgets:
 
-4. **Fix enum usage** to use the new extensions:
-   - `exam.examType.displayName` for display text
-   - `exam.difficulty.color` for difficulty badge colors
+1. **In exam_filter_bar.dart**: Line 37 - Change `color: AppColors.outline.withOpacity(0.2),` to `color: AppColors.outline.withAlpha((255 * 0.2).round()),` and line 170 - Change `color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,` to `color: isSelected ? AppColors.primary.withAlpha((255 * 0.1).round()) : Colors.transparent,`
 
-This ensures the UI compiles and displays data correctly with the updated entity structure.
+2. **In exam_sort_bottom_sheet.dart**: Line 182 - Change `? AppColors.primary.withOpacity(0.1)` to `? AppColors.primary.withAlpha((255 * 0.1).round())`
 
-### mobile-app\lib\features\exams\presentation\bloc\exam_bloc.dart(MODIFY)
+3. **In exam_grid_item.dart**: Line 65 - Change `color: _getDifficultyColor().withOpacity(0.1),` to `color: _getDifficultyColor().withAlpha((255 * 0.1).round()),` and line 157 - Change `color: _getDifficultyColor().withOpacity(0.1),` to `color: _getDifficultyColor().withAlpha((255 * 0.1).round()),`
 
-References: 
+4. **In exam_loading_widget.dart**: Lines 124 and 132 - Change `color: AppColors.surface.withOpacity(0.3),` to `color: AppColors.surface.withAlpha((255 * 0.3).round()),`
 
-- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
-- mobile-app\lib\features\search\domain\usecases\search_exams_usecase.dart
+5. **In exam_detail_page.dart**: Line 91 - Change `AppColors.primary.withOpacity(0.8),` to `AppColors.primary.withAlpha((255 * 0.8).round()),` and line 134 - Change `color: Colors.white.withOpacity(0.9),` to `color: Colors.white.withAlpha((255 * 0.9).round()),`
 
-Fix the ExamBloc to work with the updated entity structure and resolve search functionality conflicts:
+6. **In exam_empty_state.dart**: Line 124 - Change `color: _getIconBackgroundColor().withOpacity(0.1),` to `color: _getIconBackgroundColor().withAlpha((255 * 0.1).round()),`
 
-1. **Update exam list operations** to use the new Exam entity structure:
-   - Fix `_onToggleExamFavorite` to use the new `copyWith` method on Exam entity
-   - Update `_onUpdateExamProgress` to properly update the `userProgress` field
-   - Ensure all exam operations work with the comprehensive entity
+7. **In exam_card.dart**: Line 76 - Change `color: _getDifficultyColor().withOpacity(0.1),` to `color: _getDifficultyColor().withAlpha((255 * 0.1).round()),`
 
-2. **Fix search integration** by ensuring consistent entity usage:
-   - Verify that SearchExamsUseCase returns the same Exam entity type
-   - Ensure search filters align with the new entity structure
-   - Remove any duplicate search logic if it exists
+This modernizes all the exam widgets to use the more performant `withAlpha()` method.
 
-3. **Add missing passingScore handling** in exam completion logic:
-   - Use `exam.passingScore` instead of hardcoded values
-   - Handle cases where passingScore might be null
+### mobile-app\lib\core\widgets\cached_network_image_widget.dart(MODIFY)
 
-4. **Update error handling** to provide better user feedback:
-   - Add specific error messages for different failure types
-   - Ensure error states preserve the previous loaded state when possible
+Create the missing CachedNetworkImageWidget that's referenced in the question content widget:
 
-This ensures the bloc layer works correctly with the updated entity structure and integrates properly with the search functionality.
+```dart
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-### mobile-app\lib\features\exams\data\repositories\exam_repository_impl.dart(MODIFY)
+/// A widget for displaying cached network images with loading and error states
+class CachedNetworkImageWidget extends StatelessWidget {
+  const CachedNetworkImageWidget({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.placeholder,
+    this.errorWidget,
+    this.borderRadius,
+  });
 
-References: 
+  final String imageUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Widget? placeholder;
+  final Widget? errorWidget;
+  final BorderRadius? borderRadius;
 
-- mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
-- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+  @override
+  Widget build(BuildContext context) {
+    Widget image = CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholder: (context, url) => placeholder ?? _buildDefaultPlaceholder(),
+      errorWidget: (context, url, error) => errorWidget ?? _buildDefaultErrorWidget(),
+    );
 
-Update the exam repository implementation to work with the new entity structure:
+    if (borderRadius != null) {
+      image = ClipRRect(
+        borderRadius: borderRadius!,
+        child: image,
+      );
+    }
 
-1. **Fix entity conversion** in all repository methods:
-   - Ensure `getExams()` properly converts ExamModel list to Exam entity list
-   - Update `getExamDetail()` to handle the comprehensive entity structure
-   - Fix `searchExams()` to return consistent Exam entities
+    return image;
+  }
 
-2. **Add missing field handling** for new entity properties:
-   - Handle `requirements` and `topics` fields (provide empty lists if not available from API)
-   - Manage `userProgress` data integration if it comes from a separate endpoint
-   - Set appropriate default values for missing optional fields
+  Widget _buildDefaultPlaceholder() {
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.grey[300],
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 
-3. **Update error handling** to be more specific:
-   - Provide better error messages for different API failure scenarios
-   - Handle cases where partial data is available
+  Widget _buildDefaultErrorWidget() {
+    return Container(
+      width: width,
+      height: height,
+      color: Colors.grey[200],
+      child: const Center(
+        child: Icon(
+          Icons.broken_image,
+          color: Colors.grey,
+          size: 48,
+        ),
+      ),
+    );
+  }
+}
+```
 
-4. **Ensure search method compatibility** with the search module:
-   - Verify that the search method signature matches what SearchExamsUseCase expects
-   - Ensure consistent filtering and pagination handling
+### mobile-app\lib\core\widgets\loading_widget.dart(MODIFY)
 
-This ensures the repository layer properly bridges between the data models and the updated domain entities.
+Replace deprecated `withOpacity()` usage with `withAlpha()` in the loading widget:
 
-### mobile-app\lib\features\exams\domain\repositories\exam_repository.dart(MODIFY)
+**Line 122**: Change `color: color ?? Colors.grey[300]?.withOpacity(0.3),` to `color: color ?? Colors.grey[300]?.withAlpha((255 * 0.3).round()),`
 
-References: 
+This modernizes the loading widget to use the more performant `withAlpha()` method instead of the deprecated `withOpacity()` method.
 
-- mobile-app\lib\features\search\domain\usecases\search_exams_usecase.dart
-- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+### mobile-app\lib\shared\widgets\custom_button.dart(MODIFY)
 
-Update the exam repository interface to match the implementation and ensure consistency:
+Fix the CustomButton widget to address any remaining compilation issues:
 
-1. **Verify method signatures** align with the updated entity structure:
-   - Ensure all methods return the updated Exam entity type
-   - Check that search method parameters match what SearchExamsUseCase expects
-   - Verify pagination and filtering parameter types
+1. **Fix line 221**: Change `foregroundColor = colorScheme.onSecondary;` to `foregroundColor = colorScheme.primary;` (this should be primary color for text buttons, not onSecondary)
 
-2. **Add missing method documentation** for clarity:
-   - Document expected behavior for optional fields like `requirements`, `topics`
-   - Clarify how `userProgress` data is handled
-   - Document error scenarios and expected failure types
+2. **Ensure all withAlpha usage is correct**: The CustomButton already uses `withAlpha()` correctly, so no changes needed for opacity methods
 
-3. **Ensure search integration compatibility**:
-   - Verify that the `searchExams` method signature matches what the search module expects
-   - Ensure consistent return types and error handling
+3. **Add missing import if needed**: Ensure all required imports are present for Material 3 widgets
 
-This ensures the repository interface is consistent with both the implementation and the search module requirements.
+4. **Verify WidgetStateProperty usage**: The widget correctly uses `WidgetStateProperty` instead of the deprecated `MaterialStateProperty`
+
+This ensures the CustomButton widget compiles correctly and follows Material 3 guidelines.

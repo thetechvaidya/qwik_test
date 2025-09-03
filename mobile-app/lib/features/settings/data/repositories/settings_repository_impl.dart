@@ -1,8 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/user_settings.dart';
-import '../../domain/entities/notification_settings.dart';
 import '../../domain/entities/app_preferences.dart';
-import '../../domain/entities/offline_preferences.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../datasources/settings_local_datasource.dart';
 import '../datasources/settings_remote_datasource.dart';
@@ -310,23 +308,5 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<String>>> getAvailableLanguages() async {
-    try {
-      final languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'];
-      return Right(languages);
-    } catch (e) {
-      return Left(CacheFailure('Failed to load available languages'));
-    }
-  }
 
-  @override
-  Future<Either<Failure, List<String>>> getAvailableThemes() async {
-    try {
-      final themes = ['light', 'dark', 'system'];
-      return Right(themes);
-    } catch (e) {
-      return Left(CacheFailure('Failed to load available themes'));
-    }
-  }
 }

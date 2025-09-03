@@ -97,10 +97,10 @@ class ExamCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (exam.categoryName != null) ...[
+              if (exam.categoryName.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
-                  exam.categoryName!,
+                  exam.categoryName,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -165,7 +165,7 @@ class ExamCard extends StatelessWidget {
         // Question count
         _buildMetadataItem(
           icon: Icons.quiz_outlined,
-          label: '${exam.questionCount} questions',
+          label: '${exam.totalQuestions} questions',
         ),
         
         // Rating
@@ -336,7 +336,7 @@ class ExamCard extends StatelessWidget {
         return Icons.school_outlined;
       case ExamType.mock:
         return Icons.quiz_outlined;
-      case ExamType.certification:
+      case ExamType.live:
         return Icons.workspace_premium_outlined;
       case ExamType.assessment:
         return Icons.assessment_outlined;

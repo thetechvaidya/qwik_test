@@ -158,7 +158,7 @@ class _SettingsPageState extends State<SettingsPage> {
               return SettingsTile(
                 icon: Icons.language,
                 title: 'Language',
-                subtitle: state.settings.language,
+                subtitle: state.settings.preferences.language,
                 onTap: () => _showLanguageSelector(context),
               );
             }
@@ -226,12 +226,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   ...state.availableLanguages.map(
                     (language) => ListTile(
                       title: Text(language),
-                      trailing: state.settings.language == language
+                      trailing: state.settings.preferences.language == language
                           ? const Icon(Icons.check, color: Colors.green)
                           : null,
                       onTap: () {
                         final updatedSettings = state.settings.copyWith(
-                          language: language,
+                          preferences: state.settings.preferences.copyWith(
+                            language: language,
+                          ),
                         );
                         context.read<SettingsBloc>().add(
                           SettingsUpdateRequested(settings: updatedSettings),

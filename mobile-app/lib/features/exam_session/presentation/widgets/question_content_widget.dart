@@ -172,15 +172,15 @@ class QuestionContentWidget extends StatelessWidget {
     
     switch (difficulty) {
       case QuestionDifficulty.easy:
-        chipColor = AppColors.success.withOpacity(0.1);
+        chipColor = AppColors.success.withAlpha((255 * 0.1).round());
         textColor = AppColors.success;
         break;
       case QuestionDifficulty.medium:
-        chipColor = AppColors.warning.withOpacity(0.1);
+        chipColor = AppColors.warning.withAlpha((255 * 0.1).round());
         textColor = AppColors.warning;
         break;
       case QuestionDifficulty.hard:
-        chipColor = AppColors.error.withOpacity(0.1);
+        chipColor = AppColors.error.withAlpha((255 * 0.1).round());
         textColor = AppColors.error;
         break;
     }
@@ -256,9 +256,9 @@ class QuestionContentWidget extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.1),
+        color: AppColors.warning.withAlpha((255 * 0.1).round()),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+        border: Border.all(color: AppColors.warning.withAlpha((255 * 0.3).round())),
       ),
       child: Row(
         children: [

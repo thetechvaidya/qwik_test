@@ -28,7 +28,7 @@ class QuestionPaletteWidget extends StatelessWidget {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             blurRadius: 8,
             offset: const Offset(-2, 0),
           ),
@@ -56,7 +56,7 @@ class QuestionPaletteWidget extends StatelessWidget {
         color: theme.colorScheme.primaryContainer,
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withAlpha((255 * 0.2).round()),
           ),
         ),
       ),
@@ -81,7 +81,7 @@ class QuestionPaletteWidget extends StatelessWidget {
                 Text(
                   '${progressTracker.answeredCount}/${session.questions.length} answered',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
+                    color: theme.colorScheme.onPrimaryContainer.withAlpha((255 * 0.8).round()),
                   ),
                 ),
               ],
@@ -267,10 +267,10 @@ class QuestionPaletteWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+        color: theme.colorScheme.surfaceVariant.withAlpha((255 * 0.5).round()),
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withAlpha((255 * 0.2).round()),
           ),
         ),
       ),

@@ -30,7 +30,7 @@ class ProfileHeader extends StatelessWidget {
                   onTap: onAvatarTap,
                   child: CircleAvatar(
                     radius: 50,
-                    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                    backgroundColor: theme.colorScheme.primary.withAlpha((255 * 0.1).round()),
                     backgroundImage: profile.avatarUrl != null
                         ? NetworkImage(profile.avatarUrl!)
                         : null,
@@ -48,7 +48,7 @@ class ProfileHeader extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withAlpha((255 * 0.3).round()),
                       ),
                       child: const Center(
                         child: SizedBox(
@@ -98,7 +98,7 @@ class ProfileHeader extends StatelessWidget {
               Text(
                 profile.email,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withAlpha((255 * 0.7).round()),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -111,7 +111,7 @@ class ProfileHeader extends StatelessWidget {
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.2),
+                    color: theme.colorScheme.outline.withAlpha((255 * 0.2).round()),
                   ),
                 ),
                 child: Text(
@@ -134,7 +134,7 @@ class ProfileHeader extends StatelessWidget {
                 Container(
                   height: 40,
                   width: 1,
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withAlpha((255 * 0.2).round()),
                 ),
                 _buildInfoItem(
                   context,
@@ -170,7 +170,7 @@ class ProfileHeader extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withAlpha((255 * 0.6).round()),
             ),
           ),
           const SizedBox(height: 2),

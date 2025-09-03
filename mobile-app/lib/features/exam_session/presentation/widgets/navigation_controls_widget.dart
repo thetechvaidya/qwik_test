@@ -34,7 +34,7 @@ class NavigationControlsWidget extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             offset: const Offset(0, -2),
             blurRadius: 4,
           ),
@@ -131,12 +131,12 @@ class NavigationControlsWidget extends StatelessWidget {
       icon: Icon(
         icon,
         size: 18,
-        color: onPressed != null ? color : AppColors.onSurface.withOpacity(0.38),
+        color: onPressed != null ? color : AppColors.onSurface.withAlpha((255 * 0.38).round()),
       ),
       label: Text(
         label,
         style: AppTextStyles.bodySmall.copyWith(
-          color: onPressed != null ? color : AppColors.onSurface.withOpacity(0.38),
+          color: onPressed != null ? color : AppColors.onSurface.withAlpha((255 * 0.38).round()),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -186,12 +186,12 @@ class NavigationControlsWidget extends StatelessWidget {
         icon: Icon(
           icon,
           size: 20,
-          color: onPressed != null ? AppColors.primary : AppColors.onSurface.withOpacity(0.38),
+          color: onPressed != null ? AppColors.primary : AppColors.onSurface.withAlpha((255 * 0.38).round()),
         ),
         label: Text(
           label,
           style: AppTextStyles.labelLarge.copyWith(
-            color: onPressed != null ? AppColors.primary : AppColors.onSurface.withOpacity(0.38),
+            color: onPressed != null ? AppColors.primary : AppColors.onSurface.withAlpha((255 * 0.38).round()),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -267,7 +267,7 @@ class CompactNavigationControlsWidget extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             offset: const Offset(0, -2),
             blurRadius: 4,
           ),

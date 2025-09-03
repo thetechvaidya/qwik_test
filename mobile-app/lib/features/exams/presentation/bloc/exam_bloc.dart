@@ -500,22 +500,28 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
 
   /// Handle toggling exam favorite
   Future<void> _onToggleExamFavorite(ToggleExamFavoriteEvent event, Emitter<ExamState> emit) async {
-    // This would typically call a use case to update favorite status
-    // For now, we'll just update the local state
     if (state is ExamLoaded) {
       final currentState = state as ExamLoaded;
       
       // Update exam in the list
       final updatedExams = currentState.exams.map((exam) {
         if (exam.id == event.examId) {
-          // This would need to be implemented in the Exam entity
-          // return exam.copyWith(isFavorite: event.isFavorite);
+          return exam.copyWith(isFavorite: event.isFavorite);
+        }
+        return exam;
+      }).toList();
+
+      // Also update search results if any
+      final updatedSearchResults = currentState.searchResults.map((exam) {
+        if (exam.id == event.examId) {
+          return exam.copyWith(isFavorite: event.isFavorite);
         }
         return exam;
       }).toList();
 
       emit(currentState.copyWith(
         exams: updatedExams,
+        searchResults: updatedSearchResults,
         lastUpdated: DateTime.now(),
       ));
     }
@@ -537,22 +543,74 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
 
   /// Handle updating exam progress
   Future<void> _onUpdateExamProgress(UpdateExamProgressEvent event, Emitter<ExamState> emit) async {
-    // This would typically call a use case to update exam progress
-    // For now, we'll just update the local state
     if (state is ExamLoaded) {
       final currentState = state as ExamLoaded;
       
       // Update exam progress in the list
       final updatedExams = currentState.exams.map((exam) {
         if (exam.id == event.examId) {
-          // This would need to be implemented in the Exam entity
-          // return exam.copyWith(userProgress: updatedProgress);
+          final currentProgress = exam.userProgress;
+          final updatedProgress = currentProgress?.copyWith(
+            completionPercentage: event.completionPercentage,
+            isCompleted: event.isCompleted,
+            answeredQuestions: event.answeredQuestions,
+            correctAnswers: event.correctAnswers,
+            incorrectAnswers: event.incorrectAnswers,
+            timeSpent: event.timeSpent,
+            score: event.score,
+            lastAttemptAt: DateTime.now(),
+          ) ?? ExamUserProgress(
+            userId: 'current-user', // This should come from auth context
+            examId: event.examId,
+            completionPercentage: event.completionPercentage,
+            isCompleted: event.isCompleted,
+            answeredQuestions: event.answeredQuestions,
+            correctAnswers: event.correctAnswers,
+            incorrectAnswers: event.incorrectAnswers,
+            timeSpent: event.timeSpent,
+            score: event.score,
+            lastAttemptAt: DateTime.now(),
+          );
+          
+          return exam.copyWith(userProgress: updatedProgress);
+        }
+        return exam;
+      }).toList();
+
+      // Also update search results if any
+      final updatedSearchResults = currentState.searchResults.map((exam) {
+        if (exam.id == event.examId) {
+          final currentProgress = exam.userProgress;
+          final updatedProgress = currentProgress?.copyWith(
+            completionPercentage: event.completionPercentage,
+            isCompleted: event.isCompleted,
+            answeredQuestions: event.answeredQuestions,
+            correctAnswers: event.correctAnswers,
+            incorrectAnswers: event.incorrectAnswers,
+            timeSpent: event.timeSpent,
+            score: event.score,
+            lastAttemptAt: DateTime.now(),
+          ) ?? ExamUserProgress(
+            userId: 'current-user',
+            examId: event.examId,
+            completionPercentage: event.completionPercentage,
+            isCompleted: event.isCompleted,
+            answeredQuestions: event.answeredQuestions,
+            correctAnswers: event.correctAnswers,
+            incorrectAnswers: event.incorrectAnswers,
+            timeSpent: event.timeSpent,
+            score: event.score,
+            lastAttemptAt: DateTime.now(),
+          );
+          
+          return exam.copyWith(userProgress: updatedProgress);
         }
         return exam;
       }).toList();
 
       emit(currentState.copyWith(
         exams: updatedExams,
+        searchResults: updatedSearchResults,
         lastUpdated: DateTime.now(),
       ));
     }

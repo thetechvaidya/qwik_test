@@ -27,7 +27,7 @@ class ExamHeaderWidget extends StatelessWidget {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             offset: const Offset(0, 2),
             blurRadius: 4,
           ),

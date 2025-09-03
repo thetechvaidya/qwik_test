@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/exam.dart';
 import '../bloc/exam_bloc.dart';
+import '../bloc/exam_state.dart';
 import '../widgets/exam_loading_widget.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -128,13 +129,12 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
             ],
           ),
           const SizedBox(height: 8),
-          if (exam.categoryName != null)
-            Text(
-              exam.categoryName!,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: Colors.white.withOpacity(0.9),
-              ),
+          Text(
+            exam.categoryName,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: Colors.white.withOpacity(0.9),
             ),
+          ),
         ],
       ),
     );
@@ -196,7 +196,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           child: _buildStatCard(
             icon: Icons.quiz_outlined,
             title: 'Questions',
-            value: exam.questionCount.toString(),
+            value: exam.totalQuestions.toString(),
             color: AppColors.primary,
           ),
         ),
@@ -320,7 +320,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
                 ),
                 _buildProgressItem(
                   'Remaining',
-                  (exam.questionCount - progress.answeredQuestions).toString(),
+                  (exam.totalQuestions - progress.answeredQuestions).toString(),
                   AppColors.textSecondary,
                 ),
               ],
@@ -378,7 +378,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
   }
 
   Widget _buildRequirementsSection(Exam exam) {
-    if (exam.requirements == null || exam.requirements!.isEmpty) {
+    if (exam.requirements.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -392,7 +392,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
           ),
         ),
         const SizedBox(height: 12),
-        ...exam.requirements!.map(
+        ...exam.requirements.map(
           (requirement) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
@@ -425,7 +425,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
   }
 
   Widget _buildTopicsSection(Exam exam) {
-    if (exam.topics == null || exam.topics!.isEmpty) {
+    if (exam.topics.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -442,7 +442,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: exam.topics!.map(
+          children: exam.topics.map(
             (topic) => Chip(
               label: Text(
                 topic,

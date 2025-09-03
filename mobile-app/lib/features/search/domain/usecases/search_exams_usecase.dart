@@ -36,6 +36,9 @@ class SearchExamsUseCase implements UseCase<PaginatedResponse<Exam>, SearchExams
         categoryId: params.categoryId,
         difficulty: params.difficulty,
         type: params.examType,
+        minDuration: params.minDuration,
+        maxDuration: params.maxDuration,
+        isActive: params.isActive,
       );
 
       return result.fold(

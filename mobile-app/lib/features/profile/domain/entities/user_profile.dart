@@ -104,6 +104,38 @@ class UserProfile extends Equatable {
     );
   }
 
+  /// Gets the user's initials for avatar fallback
+  String getInitials() {
+    final nameParts = name.trim().split(' ');
+    if (nameParts.length >= 2) {
+      return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
+    } else if (nameParts.isNotEmpty && nameParts.first.isNotEmpty) {
+      return nameParts.first[0].toUpperCase();
+    }
+    return email.isNotEmpty ? email[0].toUpperCase() : '?';
+  }
+
+  /// Checks if the profile is complete
+  bool isProfileComplete() {
+    return name.isNotEmpty && email.isNotEmpty;
+  }
+
+  /// Gets formatted join date
+  String getFormattedJoinDate() {
+    if (createdAt == null) return 'Unknown';
+    final now = DateTime.now();
+    final difference = now.difference(createdAt!);
+    
+    if (difference.inDays > 365) {
+      return 'Joined ${(difference.inDays / 365).floor()} year${(difference.inDays / 365).floor() == 1 ? '' : 's'} ago';
+    } else if (difference.inDays > 30) {
+      return 'Joined ${(difference.inDays / 30).floor()} month${(difference.inDays / 30).floor() == 1 ? '' : 's'} ago';
+    } else if (difference.inDays > 0) {
+      return 'Joined ${difference.inDays} day${difference.inDays == 1 ? '' : 's'} ago';
+    }
+    return 'Joined recently';
+  }
+
   @override
   String toString() {
     return 'UserProfile(id: $id, name: $name, email: $email, avatar: $avatar, bio: $bio, location: $location, website: $website, socialLinks: $socialLinks, stats: $stats, preferences: $preferences, createdAt: $createdAt, updatedAt: $updatedAt)';

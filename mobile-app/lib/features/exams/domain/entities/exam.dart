@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 enum ExamDifficulty { beginner, intermediate, advanced, expert }
 
-enum ExamType { practice, mock, certification, assessment, live }
+enum ExamType { practice, mock, assessment, live }
 
 enum ExamStatus { draft, published, archived, suspended }
 
@@ -55,12 +55,10 @@ extension ExamTypeExtension on ExamType {
         return 'Practice';
       case ExamType.mock:
         return 'Mock Exam';
-      case ExamType.certification:
-        return 'Certification';
+      case ExamType.live:
+        return 'Live';
       case ExamType.assessment:
         return 'Assessment';
-      case ExamType.live:
-        return 'Live Exam';
     }
   }
 
@@ -70,12 +68,10 @@ extension ExamTypeExtension on ExamType {
         return Icons.school;
       case ExamType.mock:
         return Icons.assessment;
-      case ExamType.certification:
-        return Icons.workspace_premium;
-      case ExamType.assessment:
-        return Icons.quiz;
       case ExamType.live:
         return Icons.live_tv;
+      case ExamType.assessment:
+        return Icons.quiz;
     }
   }
 }
@@ -250,11 +246,27 @@ class ExamStats {
   final double averageRating;
   final int completionRate;
   final int enrolledCount;
+  final int totalAttempts;
+  final double averageScore;
+  final double highestScore;
+  final double lowestScore;
+  final int passCount;
+  final int failCount;
+  final double passRate;
+  final Duration averageCompletionTime;
 
   ExamStats({
     required this.averageRating,
     required this.completionRate,
     required this.enrolledCount,
+    this.totalAttempts = 0,
+    this.averageScore = 0.0,
+    this.highestScore = 0.0,
+    this.lowestScore = 0.0,
+    this.passCount = 0,
+    this.failCount = 0,
+    this.passRate = 0.0,
+    this.averageCompletionTime = Duration.zero,
   });
 }
 
@@ -265,13 +277,74 @@ class ExamUserProgress {
   final DateTime? lastAttemptAt;
   final bool isStarted;
   final bool isCompleted;
+  final int answeredQuestions;
+  final int correctAnswers;
+  final int incorrectAnswers;
+  final Duration timeSpent;
+  final double? score;
 
   ExamUserProgress({
     required this.userId,
     required this.examId,
     required this.completionPercentage,
     this.lastAttemptAt,
-    required this.isStarted,
-    required this.isCompleted,
+    this.isStarted = false,
+    this.isCompleted = false,
+    this.answeredQuestions = 0,
+    this.correctAnswers = 0,
+    this.incorrectAnswers = 0,
+    this.timeSpent = Duration.zero,
+    this.score,
   });
+
+  double get accuracy {
+    if (answeredQuestions == 0) return 0.0;
+    return (correctAnswers / answeredQuestions) * 100;
+  }
+
+  int remainingQuestions(int totalQuestions) {
+    return totalQuestions - answeredQuestions;
+  }
+
+  String get formattedTimeSpent {
+    final hours = timeSpent.inHours;
+    final minutes = timeSpent.inMinutes.remainder(60);
+    final seconds = timeSpent.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}m ${seconds}s';
+    } else if (minutes > 0) {
+      return '${minutes}m ${seconds}s';
+    } else {
+      return '${seconds}s';
+    }
+  }
+
+  ExamUserProgress copyWith({
+    String? userId,
+    String? examId,
+    double? completionPercentage,
+    DateTime? lastAttemptAt,
+    bool? isStarted,
+    bool? isCompleted,
+    int? answeredQuestions,
+    int? correctAnswers,
+    int? incorrectAnswers,
+    Duration? timeSpent,
+    double? score,
+  }) {
+    return ExamUserProgress(
+      userId: userId ?? this.userId,
+      examId: examId ?? this.examId,
+      completionPercentage: completionPercentage ?? this.completionPercentage,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      isStarted: isStarted ?? this.isStarted,
+      isCompleted: isCompleted ?? this.isCompleted,
+      answeredQuestions: answeredQuestions ?? this.answeredQuestions,
+      correctAnswers: correctAnswers ?? this.correctAnswers,
+      incorrectAnswers: incorrectAnswers ?? this.incorrectAnswers,
+      timeSpent: timeSpent ?? this.timeSpent,
+      score: score ?? this.score,
+    );
+  }
 }
