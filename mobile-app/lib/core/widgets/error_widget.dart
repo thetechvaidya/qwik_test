@@ -87,7 +87,7 @@ class CustomErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (showIcon) ..[
+            if (showIcon) ...[
               Icon(
                 icon ?? Icons.error_outline,
                 size: 64,
@@ -95,7 +95,7 @@ class CustomErrorWidget extends StatelessWidget {
               ),
               const SizedBox(height: 16),
             ],
-            if (title != null) ..[
+            if (title != null) ...[
               Text(
                 title!,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -177,7 +177,7 @@ class CompactErrorWidget extends StatelessWidget {
               ),
             ),
           ),
-          if (onRetry != null) ..[
+          if (onRetry != null) ...[
             const SizedBox(width: 8),
             TextButton(
               onPressed: onRetry,
@@ -231,7 +231,7 @@ class ListItemErrorWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (onRetry != null) ..[
+            if (onRetry != null) ...[
               const SizedBox(height: 12),
               TextButton(
                 onPressed: onRetry,

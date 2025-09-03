@@ -109,7 +109,7 @@ class SubscriptionCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (subscription.isActive) ..[
+        if (subscription.isActive) ...[
           _buildDetailRow(
             context,
             icon: Icons.calendar_today,
@@ -123,7 +123,7 @@ class SubscriptionCard extends StatelessWidget {
             label: 'Auto Renewal',
             value: subscription.autoRenewal ? 'Enabled' : 'Disabled',
           ),
-        ] else ..[
+        ] else ...[
           _buildDetailRow(
             context,
             icon: Icons.info_outline,
@@ -180,7 +180,7 @@ class SubscriptionCard extends StatelessWidget {
     
     return Row(
       children: [
-        if (!subscription.isActive || subscription.planName.toLowerCase() == 'free') ..[
+        if (!subscription.isActive || subscription.planName.toLowerCase() == 'free') ...[
           Expanded(
             child: ElevatedButton(
               onPressed: onUpgrade,
@@ -200,7 +200,7 @@ class SubscriptionCard extends StatelessWidget {
               ),
             ),
           ),
-        ] else ..[
+        ] else ...[
           Expanded(
             child: OutlinedButton(
               onPressed: onManage,

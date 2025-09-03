@@ -8,12 +8,12 @@ class StudyRecommendationsCard extends StatelessWidget {
   final bool isLoading;
 
   const StudyRecommendationsCard({
-    Key? key,
+    super.key,
     required this.recommendations,
     this.onRecommendationTap,
     this.onRefresh,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,7 @@ class StudyRecommendationsCard extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 200,
       child: Center(
         child: Column(
@@ -95,7 +95,7 @@ class StudyRecommendationsCard extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 200,
       child: Center(
         child: Column(
@@ -136,7 +136,7 @@ class StudyRecommendationsCard extends StatelessWidget {
             child: _buildRecommendationItem(context, recommendation),
           ),
         ),
-        if (recommendations.length > 5) ..[
+        if (recommendations.length > 5) ...[
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => _showAllRecommendations(context),
@@ -159,10 +159,10 @@ class StudyRecommendationsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _getPriorityColor(recommendation.priority).withOpacity(0.05),
+          color: _getPriorityColor(recommendation.priority).withAlpha((255 * 0.05).round()),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getPriorityColor(recommendation.priority).withOpacity(0.2),
+            color: _getPriorityColor(recommendation.priority).withAlpha((255 * 0.2).round()),
             width: 1,
           ),
         ),
@@ -220,7 +220,7 @@ class StudyRecommendationsCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                if (recommendation.estimatedTime != null) ..[
+                if (recommendation.estimatedTime != null) ...[
                   Icon(
                     Icons.schedule,
                     size: 14,
@@ -235,7 +235,7 @@ class StudyRecommendationsCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                 ],
-                if (recommendation.difficulty != null) ..[
+                if (recommendation.difficulty != null) ...[
                   Icon(
                     Icons.trending_up,
                     size: 14,
@@ -251,7 +251,7 @@ class StudyRecommendationsCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                 ],
-                if (recommendation.tags.isNotEmpty) ..[
+                if (recommendation.tags.isNotEmpty) ...[
                   Expanded(
                     child: Wrap(
                       spacing: 4,
@@ -281,7 +281,7 @@ class StudyRecommendationsCard extends StatelessWidget {
                 ],
               ],
             ),
-            if (recommendation.resources.isNotEmpty) ..[
+            if (recommendation.resources.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),

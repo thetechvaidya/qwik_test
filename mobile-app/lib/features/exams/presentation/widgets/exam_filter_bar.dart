@@ -46,7 +46,7 @@ class ExamFilterBar extends StatelessWidget {
           _buildFilterChips(context),
           
           // Sort and view options
-          if (showSortButton && !isCompact) ..[
+          if (showSortButton && !isCompact) ...[
             const SizedBox(height: 8),
             _buildSortRow(context),
           ],
@@ -104,7 +104,7 @@ class ExamFilterBar extends StatelessWidget {
           ),
           
           // Clear filters button
-          if (filters.hasFilters) ..[
+          if (filters.hasFilters) ...[
             const SizedBox(width: 8),
             _buildClearFiltersButton(context),
           ],
@@ -177,7 +177,7 @@ class ExamFilterBar extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ..[
+            if (icon != null) ...[
               Icon(
                 icon,
                 size: 14,
@@ -192,7 +192,7 @@ class ExamFilterBar extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               ),
             ),
-            if (isSelected) ..[
+            if (isSelected) ...[
               const SizedBox(width: 4),
               Icon(
                 Icons.keyboard_arrow_down,

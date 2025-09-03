@@ -22,54 +22,10 @@ class AchievementModel extends Achievement {
     super.isHidden = false,
   });
 
-  factory AchievementModel.fromJson(Map<String, dynamic> json) {
-    return AchievementModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      icon: json['icon'] as String,
-      progress: json['progress'] as int? ?? 0,
-      total: json['total'] as int? ?? 1,
-      isUnlocked: json['isUnlocked'] as bool? ?? false,
-      unlockedAt: json['unlockedAt'] != null
-          ? DateTime.parse(json['unlockedAt'] as String)
-          : null,
-      category: AchievementCategory.values.firstWhere(
-        (e) => e.name == json['category'],
-        orElse: () => AchievementCategory.examCompletion,
-      ),
-      points: json['points'] as int? ?? 0,
-      difficulty: AchievementDifficulty.values.firstWhere(
-        (e) => e.name == json['difficulty'],
-        orElse: () => AchievementDifficulty.bronze,
-      ),
-      requirements: (json['requirements'] as List<dynamic>?)?
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
-      badgeUrl: json['badgeUrl'] as String?,
-      isHidden: json['isHidden'] as bool? ?? false,
-    );
-  }
+  factory AchievementModel.fromJson(Map<String, dynamic> json) =>
+      _$AchievementModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'icon': icon,
-      'progress': progress,
-      'total': total,
-      'isUnlocked': isUnlocked,
-      'unlockedAt': unlockedAt?.toIso8601String(),
-      'category': category.name,
-      'points': points,
-      'difficulty': difficulty.name,
-      'requirements': requirements,
-      'badgeUrl': badgeUrl,
-      'isHidden': isHidden,
-    };
-  }
+  Map<String, dynamic> toJson() => _$AchievementModelToJson(this);
 
   /// Create from entity
   factory AchievementModel.fromEntity(Achievement entity) {

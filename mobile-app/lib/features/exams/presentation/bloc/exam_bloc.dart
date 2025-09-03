@@ -12,8 +12,7 @@ import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/get_featured_exams_usecase.dart';
 import '../../domain/usecases/get_recent_exams_usecase.dart';
 import '../../domain/usecases/get_popular_exams_usecase.dart';
-import '../../domain/usecases/search_exams_usecase.dart';
-import '../../../search/domain/usecases/search_exams_usecase.dart' as search;
+import '../../../search/domain/usecases/search_exams_usecase.dart';
 import 'exam_event.dart';
 import 'exam_state.dart';
 
@@ -26,7 +25,6 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
   final GetRecentExamsUseCase _getRecentExamsUseCase;
   final GetPopularExamsUseCase _getPopularExamsUseCase;
   final SearchExamsUseCase _searchExamsUseCase;
-  final search.SearchExamsUseCase _searchWithHistoryUseCase;
 
   // Pagination controller
   late PaginationController _paginationController;
@@ -45,7 +43,6 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
     required GetRecentExamsUseCase getRecentExamsUseCase,
     required GetPopularExamsUseCase getPopularExamsUseCase,
     required SearchExamsUseCase searchExamsUseCase,
-    required search.SearchExamsUseCase searchWithHistoryUseCase,
   })
       : _getExamsUseCase = getExamsUseCase,
         _getExamDetailUseCase = getExamDetailUseCase,
@@ -54,7 +51,6 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
         _getRecentExamsUseCase = getRecentExamsUseCase,
         _getPopularExamsUseCase = getPopularExamsUseCase,
         _searchExamsUseCase = searchExamsUseCase,
-        _searchWithHistoryUseCase = searchWithHistoryUseCase,
         super(const ExamInitial()) {
     _paginationController = PaginationController(
       pageSize: 20,
@@ -422,7 +418,7 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
       }
 
       // Perform search with history tracking
-      final result = await _searchWithHistoryUseCase(search.SearchExamsParams(
+      final result = await _searchExamsUseCase(SearchExamsParams(
         query: event.query,
         categoryId: event.categoryId,
         difficulty: event.difficulty,

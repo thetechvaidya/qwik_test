@@ -228,14 +228,14 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   }
 
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
+    switch (failure) {
+      case ServerFailure _:
         return 'Server error occurred. Please try again later.';
-      case CacheFailure:
+      case CacheFailure _:
         return 'Local data error occurred.';
-      case NetworkFailure:
+      case NetworkFailure _:
         return 'Network error. Please check your connection.';
-      case ValidationFailure:
+      case ValidationFailure _:
         return 'Invalid data provided.';
       default:
         return 'An unexpected error occurred.';

@@ -68,12 +68,12 @@ class _SplashPageState extends State<SplashPage>
           // Navigate to dashboard after a short delay
           await Future.delayed(const Duration(milliseconds: 1500));
           if (!mounted) return;
-          context.go('/dashboard');
+          context.go(AppRouter.home);
         } else if (state is AuthUnauthenticated) {
           // Navigate to login after a short delay
           await Future.delayed(const Duration(milliseconds: 1500));
           if (!mounted) return;
-          context.go('/login');
+          context.go(AppRouter.login);
         }
       },
       child: Scaffold(

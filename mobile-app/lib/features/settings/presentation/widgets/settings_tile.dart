@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 class SettingsTile extends StatelessWidget {
   const SettingsTile({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
     this.trailing,
     this.onTap,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   const SettingsTile.switchTile({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
@@ -23,11 +23,10 @@ class SettingsTile extends StatelessWidget {
          value: value,
          onChanged: enabled ? onChanged : null,
        ),
-       onTap = null,
-       super(key: key);
+       onTap = null;
 
   const SettingsTile.sliderTile({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
@@ -47,8 +46,7 @@ class SettingsTile extends StatelessWidget {
            divisions: divisions,
          ),
        ),
-       onTap = null,
-       super(key: key);
+       onTap = null;
 
   final IconData icon;
   final String title;
@@ -67,15 +65,15 @@ class SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: enabled 
-              ? theme.colorScheme.primary.withOpacity(0.1)
-              : theme.colorScheme.onSurface.withOpacity(0.05),
+              ? theme.colorScheme.primary.withAlpha((255 * 0.1).round())
+              : theme.colorScheme.onSurface.withAlpha((255 * 0.05).round()),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           icon,
           color: enabled 
               ? theme.colorScheme.primary
-              : theme.colorScheme.onSurface.withOpacity(0.4),
+              : theme.colorScheme.onSurface.withAlpha((255 * 0.4).round()),
           size: 20,
         ),
       ),
@@ -84,7 +82,7 @@ class SettingsTile extends StatelessWidget {
         style: theme.textTheme.bodyLarge?.copyWith(
           color: enabled 
               ? theme.colorScheme.onSurface
-              : theme.colorScheme.onSurface.withOpacity(0.4),
+              : theme.colorScheme.onSurface.withAlpha((255 * 0.4).round()),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -93,8 +91,8 @@ class SettingsTile extends StatelessWidget {
               subtitle!,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: enabled 
-                    ? theme.colorScheme.onSurface.withOpacity(0.7)
-                    : theme.colorScheme.onSurface.withOpacity(0.3),
+                    ? theme.colorScheme.onSurface.withAlpha((255 * 0.7).round())
+                    : theme.colorScheme.onSurface.withAlpha((255 * 0.3).round()),
               ),
             )
           : null,
@@ -103,8 +101,8 @@ class SettingsTile extends StatelessWidget {
             ? Icon(
                 Icons.chevron_right,
                 color: enabled 
-                    ? theme.colorScheme.onSurface.withOpacity(0.4)
-                    : theme.colorScheme.onSurface.withOpacity(0.2),
+                    ? theme.colorScheme.onSurface.withAlpha((255 * 0.4).round())
+                    : theme.colorScheme.onSurface.withAlpha((255 * 0.2).round()),
               )
             : null
       ),
@@ -119,10 +117,10 @@ class SettingsTile extends StatelessWidget {
 
 class SettingsTileGroup extends StatelessWidget {
   const SettingsTileGroup({
-    Key? key,
+    super.key,
     required this.children,
     this.margin,
-  }) : super(key: key);
+  });
 
   final List<Widget> children;
   final EdgeInsetsGeometry? margin;
@@ -161,11 +159,11 @@ class SettingsTileGroup extends StatelessWidget {
 
 class SettingsHeader extends StatelessWidget {
   const SettingsHeader({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     this.padding,
-  }) : super(key: key);
+  });
 
   final String title;
   final String? subtitle;
@@ -187,12 +185,12 @@ class SettingsHeader extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
           ),
-          if (subtitle != null) ..[
+          if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle!,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withAlpha((255 * 0.6).round()),
               ),
             ),
           ],

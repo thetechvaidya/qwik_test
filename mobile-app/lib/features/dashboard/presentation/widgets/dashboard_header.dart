@@ -67,7 +67,7 @@ class DashboardHeader extends StatelessWidget {
             const SizedBox(height: 20),
             
             // Summary Statistics
-            if (dashboardData.summary != null) ..[
+            if (dashboardData.summary != null) ...[
               Row(
                 children: [
                   Expanded(
@@ -84,7 +84,7 @@ class DashboardHeader extends StatelessWidget {
                     child: _buildSummaryItem(
                       context,
                       'Average Score',
-                      '${dashboardData.summary!.averageScore.toStringAsFixed(1)}%',
+                      '${dashboardData.summary!.overallAverageScore.toStringAsFixed(1)}%',
                       Icons.trending_up,
                       Colors.green,
                     ),
@@ -98,7 +98,7 @@ class DashboardHeader extends StatelessWidget {
                     child: _buildSummaryItem(
                       context,
                       'Study Streak',
-                      '${dashboardData.summary!.studyStreak} days',
+                      '${dashboardData.userStats.currentStreak} days',
                       Icons.local_fire_department,
                       Colors.orange,
                     ),
@@ -108,7 +108,7 @@ class DashboardHeader extends StatelessWidget {
                     child: _buildSummaryItem(
                       context,
                       'Achievements',
-                      dashboardData.summary!.totalAchievements.toString(),
+                      dashboardData.summary!.totalAchievementsUnlocked.toString(),
                       Icons.emoji_events,
                       Colors.amber,
                     ),

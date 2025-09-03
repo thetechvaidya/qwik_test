@@ -214,7 +214,7 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
                             : AppColors.textPrimary,
                       ),
                     ),
-                    if (_getSortOptionDescription(option.value) != null) ..[
+                    if (_getSortOptionDescription(option.value) != null) ...[
                       const SizedBox(height: 2),
                       Text(
                         _getSortOptionDescription(option.value)!,

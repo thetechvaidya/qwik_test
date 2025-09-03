@@ -19,13 +19,8 @@ class RouteGuard {
   static const List<String> _protectedRoutes = [
     AppRouter.home,
     AppRouter.exams,
-    AppRouter.practice,
-    AppRouter.progress,
     AppRouter.profile,
     AppRouter.settings,
-    AppRouter.notifications,
-    AppRouter.help,
-    AppRouter.about,
   ];
 
   /// Check if a route requires authentication
@@ -103,16 +98,7 @@ class RouteGuard {
     }
   }
 
-  /// Check if biometric authentication is required for a route
-  static bool requiresBiometricAuth(String path) {
-    // Define routes that might require biometric authentication
-    const biometricRoutes = [
-      AppRouter.editProfile,
-      AppRouter.settings,
-    ];
-    
-    return biometricRoutes.any((route) => path.startsWith(route));
-  }
+
 
   /// Get user-friendly route names for logging/debugging
   static String getRouteName(String path) {
@@ -121,15 +107,11 @@ class RouteGuard {
       AppRouter.login: 'Login',
       AppRouter.register: 'Register',
       AppRouter.forgotPassword: 'Forgot Password',
+      AppRouter.sessionExpired: 'Session Expired',
       AppRouter.home: 'Home',
       AppRouter.exams: 'Exams',
-      AppRouter.practice: 'Practice',
-      AppRouter.progress: 'Progress',
       AppRouter.profile: 'Profile',
       AppRouter.settings: 'Settings',
-      AppRouter.notifications: 'Notifications',
-      AppRouter.help: 'Help',
-      AppRouter.about: 'About',
       AppRouter.examDetail: 'Exam Detail',
       AppRouter.examTaking: 'Taking Exam',
       AppRouter.examResult: 'Exam Result',

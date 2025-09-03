@@ -19,7 +19,7 @@ class ExamSessionModelAdapter extends TypeAdapter<ExamSessionModel> {
     return ExamSessionModel(
       sessionId: fields[0] as String,
       examId: fields[1] as String,
-      exam: fields[2] as ExamModel?,
+      exam: fields[2] as ExamModel,
       questions: (fields[3] as List).cast<QuestionModel>(),
       answers: (fields[4] as List).cast<AnswerModel>(),
       currentQuestionIndex: fields[5] as int,
@@ -27,7 +27,7 @@ class ExamSessionModelAdapter extends TypeAdapter<ExamSessionModel> {
       expiresAt: fields[7] as DateTime,
       remainingTimeSeconds: fields[8] as int,
       status: fields[9] as String,
-      settings: (fields[10] as Map).cast<String, dynamic>(),
+      settings: fields[10] as ExamSettingsModel,
       metadata: (fields[11] as Map?)?.cast<String, dynamic>(),
       pausedAt: fields[12] as DateTime?,
       totalPauseDuration: fields[13] as int,
@@ -90,9 +90,7 @@ ExamSessionModel _$ExamSessionModelFromJson(Map<String, dynamic> json) =>
     ExamSessionModel(
       sessionId: json['session_id'] as String,
       examId: json['exam_id'] as String,
-      exam: json['exam'] == null
-          ? null
-          : ExamModel.fromJson(json['exam'] as Map<String, dynamic>),
+      exam: ExamModel.fromJson(json['exam'] as Map<String, dynamic>),
       questions: (json['questions'] as List<dynamic>?)
               ?.map((e) => QuestionModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -107,7 +105,8 @@ ExamSessionModel _$ExamSessionModelFromJson(Map<String, dynamic> json) =>
       expiresAt: DateTime.parse(json['expires_at'] as String),
       remainingTimeSeconds: (json['remaining_time_seconds'] as num).toInt(),
       status: json['status'] as String? ?? 'active',
-      settings: json['settings'] as Map<String, dynamic>? ?? const {},
+      settings:
+          ExamSettingsModel.fromJson(json['settings'] as Map<String, dynamic>),
       metadata: json['metadata'] as Map<String, dynamic>?,
       pausedAt: json['paused_at'] == null
           ? null

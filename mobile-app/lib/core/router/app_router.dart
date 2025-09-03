@@ -17,52 +17,25 @@ import 'go_router_refresh_stream.dart';
 // Import navigation components
 import '../../shared/navigation/navigation_scaffold.dart';
 import '../../shared/navigation/navigation_destinations.dart';
-// import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/exams/presentation/pages/exam_list_page.dart';
 import '../../features/exams/presentation/pages/exam_detail_page.dart';
-// import '../../features/exams/presentation/pages/exam_taking_page.dart';
-// import '../../features/exams/presentation/pages/exam_result_page.dart';
-// import '../../features/profile/presentation/pages/profile_page.dart';
-// import '../../features/profile/presentation/pages/edit_profile_page.dart';
-// import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/exam_session/presentation/pages/exam_taking_page.dart';
+import '../../features/results/presentation/pages/results_page.dart';
+import '../../features/results/presentation/pages/exam_result_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/authentication/presentation/pages/forgot_password_page.dart';
+import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../features/dashboard/presentation/bloc/dashboard_event.dart';
+import '../../features/profile/presentation/bloc/profile_bloc.dart';
+import '../../features/profile/presentation/bloc/profile_event.dart';
+import '../../features/settings/presentation/bloc/settings_bloc.dart';
+import '../../features/settings/presentation/bloc/settings_event.dart';
+import '../di/service_locator.dart';
 
-// Temporary placeholder pages
-class PlaceholderPage extends StatelessWidget {
-  final String title;
-  
-  const PlaceholderPage({Key? key, required this.title}) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.construction,
-              size: 64,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This page is under construction',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+
 
 /// Shell widget that provides navigation structure for the main app
 class AppShell extends StatelessWidget {
@@ -98,18 +71,11 @@ class AppRouter {
   static const String forgotPassword = '/forgot-password';
   static const String sessionExpired = '/session-expired';
   
-  // Main app routes (matching NavigationDestinations)
+  // Main app routes (core features only)
   static const String home = '/home';
   static const String exams = '/exams';
-  static const String practice = '/practice';
-  static const String progress = '/progress';
   static const String profile = '/profile';
-  
-  // Secondary routes
   static const String settings = '/settings';
-  static const String notifications = '/notifications';
-  static const String help = '/help';
-  static const String about = '/about';
   
   // Detailed routes
   static const String examDetail = '/exams/:examId';
@@ -155,7 +121,7 @@ class AppRouter {
       GoRoute(
         path: forgotPassword,
         name: 'forgot-password',
-        builder: (context, state) => const PlaceholderPage(title: 'Forgot Password'),
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(
         path: sessionExpired,
@@ -173,7 +139,14 @@ class AppRouter {
           GoRoute(
             path: home,
             name: 'home',
-            builder: (context, state) => const PlaceholderPage(title: 'Home'),
+            builder: (context, state) {
+              final authBloc = context.read<AuthBloc>();
+              final userId = authBloc.state.user?.id ?? '';
+              return BlocProvider(
+                create: (_) => sl<DashboardBloc>()..add(LoadDashboardData(userId: userId)),
+                child: DashboardPage(userId: userId),
+              );
+            },
           ),
           GoRoute(
             path: exams,
@@ -194,7 +167,7 @@ class AppRouter {
                     name: 'exam-taking',
                     builder: (context, state) {
                       final examId = state.pathParameters['examId']!;
-                      return PlaceholderPage(title: 'Taking Exam - $examId');
+                      return ExamTakingPage(examId: examId);
                     },
                   ),
                   GoRoute(
@@ -202,7 +175,7 @@ class AppRouter {
                     name: 'exam-result',
                     builder: (context, state) {
                       final examId = state.pathParameters['examId']!;
-                      return PlaceholderPage(title: 'Exam Result - $examId');
+                      return ExamResultPage(examId: examId);
                     },
                   ),
                 ],
@@ -210,46 +183,42 @@ class AppRouter {
             ],
           ),
           GoRoute(
-            path: practice,
-            name: 'practice',
-            builder: (context, state) => const PlaceholderPage(title: 'Practice'),
-          ),
-          GoRoute(
-            path: progress,
-            name: 'progress',
-            builder: (context, state) => const PlaceholderPage(title: 'Progress'),
-          ),
-          GoRoute(
             path: profile,
             name: 'profile',
-            builder: (context, state) => const PlaceholderPage(title: 'Profile'),
+            builder: (context, state) {
+              final authBloc = context.read<AuthBloc>();
+              final userId = authBloc.state.user?.id ?? '';
+              return BlocProvider(
+                create: (context) => sl<ProfileBloc>()..add(LoadUserProfile(userId)),
+                child: ProfilePage(userId: userId),
+              );
+            },
             routes: [
               GoRoute(
                 path: 'edit',
                 name: 'edit-profile',
-                builder: (context, state) => const PlaceholderPage(title: 'Edit Profile'),
+                builder: (context, state) {
+                  final authBloc = context.read<AuthBloc>();
+                  final userId = authBloc.state.user?.id ?? '';
+                  return BlocProvider(
+                    create: (context) => sl<ProfileBloc>()..add(LoadUserProfile(userId)),
+                    child: EditProfilePage(userId: userId),
+                  );
+                },
               ),
             ],
           ),
           GoRoute(
             path: settings,
             name: 'settings',
-            builder: (context, state) => const PlaceholderPage(title: 'Settings'),
-          ),
-          GoRoute(
-            path: notifications,
-            name: 'notifications',
-            builder: (context, state) => const PlaceholderPage(title: 'Notifications'),
-          ),
-          GoRoute(
-            path: help,
-            name: 'help',
-            builder: (context, state) => const PlaceholderPage(title: 'Help'),
-          ),
-          GoRoute(
-            path: about,
-            name: 'about',
-            builder: (context, state) => const PlaceholderPage(title: 'About'),
+            builder: (context, state) {
+              final authBloc = context.read<AuthBloc>();
+              final userId = authBloc.state.user?.id ?? '';
+              return BlocProvider(
+                create: (context) => sl<SettingsBloc>()..add(LoadUserSettings(userId)),
+                child: const SettingsPage(),
+              );
+            },
           ),
         ],
       ),
@@ -292,7 +261,8 @@ class AppRouter {
     return _router!;
   }
 
-  static GoRouter router(BuildContext context) => getRouter(context);
+  /// Legacy property for backward compatibility
+  static GoRouter get router => throw UnsupportedError('Use AppRouter.getRouter(context) instead');
 
   /// Enhanced route redirect handler with comprehensive authentication checks
   static String? _handleRouteRedirect(BuildContext context, GoRouterState state) {
@@ -343,10 +313,7 @@ class AppRouter {
       return _handleTokenRefreshState(authState, currentPath);
     }
     
-    // Handle biometric authentication requirements
-    if (authState is states.AuthBiometricAuthRequired) {
-      return _handleBiometricAuthRequired(currentPath);
-    }
+
     
     // Handle loading states - don't redirect during initial load
     if (authState is states.AuthInitial || authState is states.AuthLoading) {
@@ -380,12 +347,7 @@ class AppRouter {
     return null;
   }
   
-  /// Handle biometric authentication requirements
-  static String? _handleBiometricAuthRequired(String currentPath) {
-    // Allow staying on current route during biometric auth
-    // The UI should handle showing biometric prompt
-    return null;
-  }
+
   
   /// Check if route requires authentication
   static bool _isRouteProtected(String path) {

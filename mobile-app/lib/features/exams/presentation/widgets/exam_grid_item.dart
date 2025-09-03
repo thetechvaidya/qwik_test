@@ -42,7 +42,7 @@ class ExamGridItem extends StatelessWidget {
               _buildCategory(context),
               const Spacer(),
               _buildMetadata(context),
-              if (showProgress && exam.userProgress != null) ..[
+              if (showProgress && exam.userProgress != null) ...[
                 const SizedBox(height: 8),
                 _buildProgress(context),
               ],

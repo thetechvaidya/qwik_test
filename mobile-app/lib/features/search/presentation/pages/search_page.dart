@@ -111,15 +111,15 @@ class _SearchPageState extends State<SearchPage> {
     // Navigate based on result type
     switch (result.type) {
       case 'exam':
-        context.push('/exams/${result.id}');
+        context.push(AppRouter.examDetail.replaceAll(':examId', result.id));
         break;
       case 'quiz':
         // Navigate to quiz detail if implemented
-        context.push('/quizzes/${result.id}');
+        context.push('/quizzes/${result.id}'); // TODO: Add AppRouter constant for quizzes
         break;
       case 'category':
         // Navigate to category exams
-        context.push('/exams?categoryId=${result.id}');
+        context.push('${AppRouter.exams}?categoryId=${result.id}');
         break;
     }
   }
@@ -154,7 +154,7 @@ class _SearchPageState extends State<SearchPage> {
                 color: Theme.of(context).cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withAlpha((255 * 0.05).round()),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),

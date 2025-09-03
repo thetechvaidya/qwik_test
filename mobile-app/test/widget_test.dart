@@ -317,7 +317,7 @@ class _AnalyticsTestAppState extends State<AnalyticsTestApp>
               ElevatedButton(
                 key: const Key('details_button'),
                 onPressed: () async {
-                  await trackNavigation('/details', method: 'button');
+                  await trackNavigation('/details', additionalParameters: {'method': 'button'});
                   Navigator.pushNamed(context, '/details');
                 },
                 child: const Text('Go to Details'),

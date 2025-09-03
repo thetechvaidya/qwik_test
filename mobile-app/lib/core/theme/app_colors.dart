@@ -47,6 +47,10 @@ class AppColors {
   static const Color textPrimary = neutral900;
   static const Color textSecondary = neutral600;
   static const Color border = neutral300;
+  static const Color surfaceVariant = neutral100;
+  static const Color onSurfaceVariant = neutral600;
+  static const Color errorContainer = errorLight;
+  static const Color onErrorContainer = Color(0xFF7F1D1D);
   
   // Light Color Scheme
   static const ColorScheme lightColorScheme = ColorScheme(

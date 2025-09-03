@@ -1,601 +1,168 @@
 I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
 
 ---
-## Comment 1: AuthInterceptor marks profile endpoints as auth endpoints, skipping Authorization header and refresh logic.
+## Comment 1: Exam result route mismatches constant and GoRoute path causing 404 on navigation.
 
-Update `AuthInterceptor._isAuthEndpoint` in `lib/core/network/auth_interceptor.dart` to remove `ApiEndpoints.profile` and `ApiEndpoints.updateProfile` from the auth paths so Authorization is applied to profile routes.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\auth_interceptor.dart
----
-## Comment 2: Token validity/refresh checks decode JWT; fallback to stored expiration for opaque tokens.
-
-Modify `SecureTokenStorage.isTokenValid()` and `SecureTokenStorage.needsRefresh()` in `lib/core/storage/secure_token_storage.dart` to first use `_tokenExpirationKey` and only fall back to JWT decoding when no stored expiration exists.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\storage\secure_token_storage.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\auth_utils.dart
----
-## Comment 3: Refreshing on 403 may cause unnecessary retries; limit automatic refresh to 401/419.
-
-In `lib/core/network/auth_interceptor.dart`, update `onError` to trigger refresh only for 401 and 419. Do not attempt refresh on 403; forward the error instead.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\auth_interceptor.dart
----
-## Comment 4: SessionExpiredPage is not wired; redirect currently sends users to login only.
-
-Add a `sessionExpired` route in `lib/core/router/app_router.dart` mapping to `SessionExpiredPage`, and update redirect handling to navigate there on `AuthSessionExpired`.
+Update `lib/core/router/app_router.dart`:
+- Replace the nested `GoRoute` under `':examId'` from `path: '/exam-result/:examId'` to `path: 'result'`.
+- Keep `name: 'exam-result'`.
+- Remove any leading `/` so it composes to `/exams/:examId/result`.
+- Verify `goToExamResult` and `pushExamResult` generate the same URL.
 
 ### Referred Files
 - c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\session_expired_page.dart
+---
+## Comment 2: DashboardPage requires DashboardBloc but no provider or DI registration exists.
+
+Implement DI and provider:
+1) Register Dashboard data sources, repository, use cases, and then:
+```
+sl.registerFactory<DashboardBloc>(() => DashboardBloc(
+  getDashboardData: sl<GetDashboardData>(),
+  getUserStats: sl<GetUserStats>(),
+  getAchievements: sl<GetAchievements>(),
+  getRecentActivities: sl<GetRecentActivities>(),
+  getPerformanceTrends: sl<GetPerformanceTrends>(),
+  updateAchievementProgress: sl<UpdateAchievementProgress>(),
+  unlockAchievement: sl<UnlockAchievement>(),
+  dashboardRepository: sl<DashboardRepository>(),
+));
+```
+2) Provide it. E.g., in router builder for `home`:
+```
+builder: (context, state) => BlocProvider(
+  create: (_) => sl<DashboardBloc>()..add(LoadDashboardData(userId: userId)),
+  child: DashboardPage(userId: userId),
+)
+```
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+---
+## Comment 3: ProfilePage/EditProfilePage depend on ProfileBloc without provider/DI and edit page has compile error.
+
+Do the following:
+- In `service_locator.dart`, register Profile repository/use cases and:
+```
+sl.registerFactory<ProfileBloc>(() => ProfileBloc(
+  getUserProfileUseCase: sl<GetUserProfileUseCase>(),
+  updateUserProfileUseCase: sl<UpdateUserProfileUseCase>(),
+  uploadAvatarUseCase: sl<UploadAvatarUseCase>(),
+  getUserStatsUseCase: sl<GetUserStatsUseCase>(),
+  getSubscriptionInfoUseCase: sl<GetSubscriptionInfoUseCase>(),
+));
+```
+- Wrap `ProfilePage` and `EditProfilePage` with `BlocProvider(create: (_) => sl<ProfileBloc>())` in router.
+- In `EditProfilePage._saveProfile()`, replace `widget.profile` with `_currentProfile!` and guard against null:
+```
+if (_currentProfile == null) return;
+final updatedProfile = _currentProfile!.copyWith(
+  name: _nameController.text.trim(),
+  email: _emailController.text.trim(),
+  bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
+);
+```
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\profile_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\edit_profile_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+---
+## Comment 4: SettingsPage uses SettingsBloc but no provider exists in widget tree.
+
+Wrap `SettingsPage` with a provider in router:
+```
+builder: (context, state) => BlocProvider(
+  create: (_) => sl<SettingsBloc>()..add(const SettingsLoadRequested(userId: 'current_user')),
+  child: const SettingsPage(),
+)
+```
+Optionally add a top-level MultiBlocProvider in `main.dart` if you want it globally.
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\pages\settings_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
+---
+## Comment 5: ThemeBloc is used in main.dart but not registered in DI, causing startup crash.
+
+Register ThemeBloc in `service_locator.dart`:
+```
+sl.registerFactory<ThemeBloc>(() => ThemeBloc());
+```
+Or, construct it directly in `main.dart` without DI:
+```
+BlocProvider(create: (_) => ThemeBloc()),
+```
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\bloc\theme_bloc.dart
+---
+## Comment 6: ForgotPasswordPage is stubbed; does not call API, contrary to simplified plan.
+
+Implement real reset:
+- Add `requestPasswordReset(email)` to `AuthRemoteDataSource` and repository.
+- Expose a simple use case (optional) or call repository from the page via a small Cubit.
+- Replace delay with:
+```
+final success = await context.read<AuthBloc>().requestPasswordReset(_emailController.text);
+```
+- Show success/error accordingly.
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\data\datasources\auth_remote_datasource.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
+---
+## Comment 7: AnswerOptionsWidget supports only MCQ/TF; ensure backend does not send unsupported types.
+
+Add a pre-check when starting a session (in `ExamSessionBloc` after loading questions):
+- If any question has a type not in {singleChoice, multipleChoice, trueFalse}, emit a user-friendly error and prevent starting.
+- Alternatively, hide unsupported type labels in `QuestionContentWidget` when types are unsupported.
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\answer_options_widget.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\question_content_widget.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart
+---
+## Comment 8: Router guard includes biometric state in simplified scope; remove unused complexity.
+
+Update `AppRouter` to remove biometric-related branch and any references. Also verify `AuthBloc` no longer emits `AuthBiometricAuthRequired`. Clean related constants/strings if present.
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
 - c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\bloc\auth_state.dart
 ---
-## Comment 5: Dio timeouts may require Duration in v5; confirm `AppConstants` types to avoid runtime errors.
-
-Verify the types of `AppConstants.connectionTimeout` and `AppConstants.receiveTimeout`. If they are ints, change them to `Duration` or wrap them with `Duration(milliseconds: ...)` in `lib/core/network/dio_client.dart`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\dio_client.dart
----
-## Comment 6: Interceptor should prefer AuthLocalDataSource for token retrieval to align with repository layer.
-
-Refactor `onRequest` in `lib/core/network/auth_interceptor.dart` to read the access token via `AuthLocalDataSource.getAuthToken()` and use its `accessToken` instead of reading from `SecureTokenStorage` directly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\auth_interceptor.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\data\datasources\auth_local_datasource.dart
----
-## Comment 7: Potential redirect UX flicker: AuthBloc emits SessionExpired then Unauthenticated shortly after.
-
-In `lib/features/authentication/presentation/bloc/auth_bloc.dart`, review `_onAuthSessionExpired` and consider removing the delayed transition to `AuthUnauthenticated`, or update `AppRouter` to handle both states identically to avoid double redirects.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 8: AuthUtils.generateSecureRandomString is not cryptographically secure; rename or use Random.secure.
-
-Replace `AuthUtils.generateSecureRandomString` in `lib/core/utils/auth_utils.dart` with an implementation using `Random.secure()` or rename it to `generateRandomString` if true security is not required.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\auth_utils.dart
----
-## Comment 9: Deep linking helper present but unused; ensure redirect logic accounts for deep links consistently.
-
-Either remove `supportsDeepLinking` from `lib/core/router/route_guard.dart` if unused, or integrate it into `AppRouter._handleRouteRedirect` to enforce deep-link policies.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\route_guard.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-
-I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
-
----
-## Comment 1: Duplicate navigationBarTheme/navigationRailTheme in lightTheme; dark colors used in light theme; compile-time error.
-
-Open `lib/core/theme/app_theme.dart`. In `lightTheme`, remove the second `navigationBarTheme` and `navigationRailTheme` blocks that use `AppColors.darkColorScheme`. In `darkTheme`, ensure a single `navigationBarTheme` and a single `navigationRailTheme` exist using `AppColors.darkColorScheme` and remove duplicates if any.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\theme\app_theme.dart
----
-## Comment 2: CardThemeData type usage is invalid; should be CardTheme; will not compile.
-
-In `lib/core/theme/app_theme.dart`, replace all occurrences of `cardTheme: CardThemeData(` with `cardTheme: CardTheme(` in both `lightTheme` and `darkTheme`. Keep the inner properties unchanged.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\theme\app_theme.dart
----
-## Comment 3: Bottom Navigation badges not shown: toNavigationDestination ignores badge for NavigationBar.
-
-Update `toNavigationDestination()` in `lib/shared/navigation/navigation_item.dart`:
-- If `badge != null`, wrap both `icon` and `selectedIcon` in `Badge(label: badge, child: Icon(...))` before applying the optional `Tooltip` wrapper.
-- Keep the existing tooltip wrapping logic intact.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\navigation_item.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\navigation_destinations.dart
----
-## Comment 4: Desktop layout does not switch to a drawer; NavigationRail used for desktop contradicts plan.
-
-Modify `lib/shared/navigation/navigation_scaffold.dart` `_buildDesktopLayout` to use a desktop drawer:
-- Use a `NavigationDrawer` or a persistent side drawer area listing `destinations`.
-- Build drawer destinations from `NavigationItem`s; on select, call `onDestinationSelected`.
-- Gate this behind `ScreenSize.desktop` (already implied) and keep the rail for tablet.
-- Maintain existing props for backward compatibility (e.g., allow opting back to rail).
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\navigation_scaffold.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\responsive\responsive_builder.dart
----
-## Comment 5: CustomTextField lacks FocusNode support; plan asked for focus management improvements.
-
-In `lib/shared/widgets/custom_text_field.dart`:
-- Add a `final FocusNode? focusNode;` to `CustomTextField` and accept it in the constructor.
-- Pass `focusNode: widget.focusNode` to `TextFormField`.
-- Optionally add a `bool submitOnEnterNext` flag to call `FocusScope.of(context).nextFocus()` in `onFieldSubmitted` when `textInputAction == TextInputAction.next`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\custom_text_field.dart
----
-## Comment 6: CustomButton M3 variants use ElevatedButton; should use FilledButton/FilledButton.tonal for M3 compliance.
-
-In `lib/shared/widgets/custom_button.dart` `_buildButtonWidget` switch:
-- For `ButtonVariant.filled`: use `FilledButton`.
-- For `ButtonVariant.filledTonal`: use `FilledButton.tonal`.
-- For `ButtonVariant.elevated`: keep `ElevatedButton`.
-- Reuse the computed `buttonStyle` where applicable.
-- Ensure disabled/loading handling remains intact.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\custom_button.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\theme\app_theme.dart
----
-## Comment 7: Using dart:io Platform in LoadingWidget breaks Flutter Web builds; add web guard.
-
-Update `lib/shared/widgets/loading_widget.dart`:
-- Import `package:flutter/foundation.dart` and use `if (kIsWeb) { /* use Material */ } else if (Platform.isIOS) { /* Cupertino */ } else { /* Material */ }`.
-- Optionally replace direct `dart:io` usage with `Theme.of(context).platform == TargetPlatform.iOS` to avoid `dart:io`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\loading_widget.dart
----
-## Comment 8: Selected index mapping can desync when selected destination is disabled.
-
-In `lib/shared/navigation/app_navigation_bar.dart` and `app_navigation_rail.dart`:
-- Accept an optional `currentRoute` string.
-- If provided, compute `filteredSelectedIndex` via `enabledDestinations.map((e) => e.value).toList().indexByRoute(currentRoute)` to ensure correct highlighting; fallback to mapping only if route is not provided.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\app_navigation_bar.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\app_navigation_rail.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\navigation\navigation_destinations.dart
----
-## Comment 9: Consider deferring TextField fillColor to theme for consistency across light/dark.
-
-In `lib/shared/widgets/custom_text_field.dart`, remove explicit `fillColor` or compute it from `Theme.of(context).colorScheme.surfaceContainerHigh/Lowest` as appropriate. Ensure it matches `inputDecorationTheme.fillColor`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\custom_text_field.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\theme\app_theme.dart
----
-
-I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
-
----
-## Comment 1: ExamBloc DI mismatch and duplicate SearchExamsUseCase registrations will break service locator resolution.
-
-Update `core/di/service_locator.dart` to remove `paginationController:` when constructing `ExamBloc` and inject both search use cases using instanceName. Alias the imports for the two `SearchExamsUseCase` classes and register them distinctly as `'examsSearch'` and `'searchSearch'`. Ensure `ExamBloc` receives `searchWithHistoryUseCase` and not `paginationController`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\bloc\exam_bloc.dart
----
-## Comment 2: GetExamsUseCase uses non-existent PaginationParams.limit; should use perPage to avoid compile errors.
-
-In `features/exams/domain/usecases/get_exams_usecase.dart`, replace the `PaginationParams` constructor named argument `limit` with `perPage`. Consider renaming `GetExamsParams.limit` to `perPage` for alignment.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\domain\usecases\get_exams_usecase.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
----
-## Comment 3: PaginationController.nextPage does not advance the page; load more requests repeat current page.
-
-In `features/exams/presentation/bloc/exam_bloc.dart` use `page: _paginationController.getNextPage()` for load-more calls and call `_paginationController.startLoadingMore()` before the request. Alternatively, update `core/utils/pagination_utils.dart` to increment page in `nextPage()` and reflect the new current page.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\bloc\exam_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
----
-## Comment 4: Load-more state handling emits ExamLoading, dropping data; keep ExamLoaded and update pagination state.
-
-Modify `_onLoadMoreExams` in `exams/presentation/bloc/exam_bloc.dart` to avoid emitting `ExamLoading` and instead update `ExamLoaded.paginationState` using `_paginationController.startLoadingMore()` and `updateFromResponse/handleError`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\bloc\exam_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\pages\exam_list_page.dart
----
-## Comment 5: SortOption.icon is a String but used as IconData; causes compile-time type error in UI.
-
-In `exams/presentation/bloc/exam_state.dart`, change `SortOption.icon` type to `IconData` and update `availableOptions` to reference `Icons.*` constants. Ensure `_SortBottomSheet` imports `material.dart`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\bloc\exam_state.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\widgets\exam_filter_bar.dart
----
-## Comment 6: SearchRemoteDataSource lacks search() and trackSearchAnalytics(), but repository calls them.
-
-Extend `features/search/data/datasources/search_remote_datasource.dart` to declare `search()` and `trackSearchAnalytics()` and implement both in `SearchRemoteDataSourceImpl` using `ApiEndpoints.search` and the analytics endpoint. Return `PaginatedResponse<SearchResultModel>` consistent with your pagination model.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\data\datasources\search_remote_datasource.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\data\repositories\search_repository_impl.dart
----
-## Comment 7: Search pagination model inconsistent; repository imports missing file and bloc expects different fields.
-
-Refactor search to use `core/utils/pagination_utils.dart`. In that file, add getters `totalPages` and `hasNextPage`. Update `features/search/data/repositories/search_repository_impl.dart` and `features/search/domain/repositories/search_repository.dart` to import from `core/utils/pagination_utils.dart`. Adjust `SearchBloc` to use the unified fields.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\data\repositories\search_repository_impl.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\domain\repositories\search_repository.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\presentation\bloc\search_bloc.dart
----
-## Comment 8: SearchBloc passes unsupported categoryId param to GetSearchSuggestionsUseCase; remove or extend use case.
-
-In `features/search/presentation/bloc/search_bloc.dart`, construct `GetSearchSuggestionsParams(query: event.query, limit: event.limit)` since the params class doesn’t include `categoryId`. If category-scoped suggestions are needed, extend the params and data source accordingly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\presentation\bloc\search_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\domain\usecases\get_search_suggestions_usecase.dart
----
-## Comment 9: SearchPage imports wrong paths and references non-existent widgets causing build errors.
-
-Update `features/search/presentation/pages/search_page.dart` to import `core/widgets/*` instead of `core/presentation/widgets/*`. Implement the referenced `search_*` widgets (bar, result_card, filters, history) under `features/search/presentation/widgets/` or replace with existing shared widgets.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\presentation\pages\search_page.dart
----
-## Comment 10: Router does not expose a route for SearchPage; add route to align with navigation expectations.
-
-In `core/router/app_router.dart`, add a `GoRoute` for `/search` and pass query parameters to `SearchPage`. Ensure imports for `SearchPage` are added.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\presentation\pages\search_page.dart
----
-## Comment 11: Service locator imports pagination_controller.dart which doesn’t exist; should import pagination_utils.dart.
-
-Replace `import '../utils/pagination_controller.dart';` with `import '../utils/pagination_utils.dart';` in `core/di/service_locator.dart`. Optionally remove the `PaginationController` registration if unused.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
----
-## Comment 12: Category browsing page missing as a standalone screen; clarify intent or add a simple CategoryPage.
-
-Add `features/exams/presentation/pages/category_page.dart` showing a grid of `Category` items with tap-through to filtered exams. Wire it in `app_router.dart` under `/exams/categories` if required.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\pages\exam_list_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 13: SearchResult pagination fields used in bloc mismatched; adjust to unified getters or rename usages.
-
-After standardizing pagination, update `features/search/presentation/bloc/search_bloc.dart` to use standardized fields for `totalPages` and next-page availability.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\search\presentation\bloc\search_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\utils\pagination_utils.dart
----
-
-I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
-
----
-## Comment 1: Utilities and several planned widgets are still missing, resulting in unresolved imports and broken UI.
-
-Implement the missing utilities and widgets to satisfy imports and align with the planned architecture.
-
-Context and intent:
-- The plan requires timer management, progress tracking, and specific question widgets.
-- Current `ExamTakingPage` imports non-existent widgets.
-
-Action steps:
-1) Create utilities in `core/utils/`:
-   - `exam_timer.dart`: class `ExamTimer` with start/pause/resume/stop, `Stream<int>` ticks, and dispose.
-   - `exam_progress_tracker.dart`: class `ExamProgressTracker` that computes answered, skipped, marked counts and percentage from `ExamSession` and `List<Answer>`.
-
-2) Under `features/exam_session/presentation/widgets/`, implement:
-   - `question_display_widget.dart`: switch on `QuestionType` and render.
-   - `multiple_choice_question_widget.dart`: checkbox/radio list; callback returns `Answer`.
-   - `true_false_question_widget.dart`: two buttons; callback returns `Answer`.
-   - `exam_progress_widget.dart`: linear indicator showing current/total, answered.
-   - `question_navigation_widget.dart`: prev/next/submit with callbacks.
-   - `exam_session_app_bar.dart`: include `ExamTimerWidget` and `ExamProgressWidget`.
-   - `exam_submission_dialog.dart`: confirmation with counts, triggers submit.
-   Ensure imports and paths are correct.
-
-3) Update `exam_taking_page.dart` to use the implemented planned widgets; remove references to `ExamHeaderWidget`, `QuestionContentWidget`, `AnswerOptionsWidget`, `NavigationControlsWidget`, and `QuestionPaletteWidget` unless you create them.
-
-4) Verify compilation: run codegen for json/hive if needed, and fix any import paths.
-
-5) Add basic tests/storybook usage where possible to verify rendering and callbacks.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart
----
-## Comment 2: DI lacks exam session registrations and page uses getIt alias; update service locator and page.
-
-Wire exam session DI and fix alias usage.
-
-Context:
-- Exam session remote/local data sources, repository, and use cases (`StartExamSessionUseCase`, `GetExamSessionUseCase`, `SubmitAnswerUseCase`, `SubmitExamUseCase`, `UpdateExamSessionUseCase`, `AbandonExamSessionUseCase`) exist.
-- Bloc `ExamSessionBloc` depends on these.
-- `service_locator.dart` uses `sl`.
-
-Steps:
-1) In `core/di/service_locator.dart`, after other registrations, add:
-   - sl.registerLazySingleton<ExamSessionRemoteDataSource>(() => ExamSessionRemoteDataSourceImpl(dio: sl<DioClient>().dio));
-   - sl.registerLazySingleton<ExamSessionLocalDataSource>(() => ExamSessionLocalDataSourceImpl());
-   - sl.registerLazySingleton<ExamSessionRepository>(() => ExamSessionRepositoryImpl(remoteDataSource: sl(), localDataSource: sl(), networkInfo: sl()));
-   - sl.registerLazySingleton<StartExamSessionUseCase>(() => StartExamSessionUseCase(sl()));
-   - sl.registerLazySingleton<GetExamSessionUseCase>(() => GetExamSessionUseCase(sl()));
-   - sl.registerLazySingleton<SubmitAnswerUseCase>(() => SubmitAnswerUseCase(sl()));
-   - sl.registerLazySingleton<SubmitExamUseCase>(() => SubmitExamUseCase(sl()));
-   - sl.registerLazySingleton<UpdateExamSessionUseCase>(() => UpdateExamSessionUseCase(sl()));
-   - sl.registerLazySingleton<AbandonExamSessionUseCase>(() => AbandonExamSessionUseCase(sl()));
-   - sl.registerFactory<ExamSessionBloc>(() => ExamSessionBloc(startExamSessionUseCase: sl(), getExamSessionUseCase: sl(), submitAnswerUseCase: sl(), submitExamUseCase: sl(), updateExamSessionUseCase: sl(), abandonExamSessionUseCase: sl()));
-
-2) Replace `_examSessionBloc = getIt<ExamSessionBloc>();` in `ExamTakingPage` with `sl<ExamSessionBloc>();` and import service locator.
-
-3) Consider async init for local DS if it needs Hive boxes to be opened; call `await sl.allReady()` before using sl.
-
-4) Validate end-to-end by navigating to take route and ensuring bloc constructs without missing DI registrations.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart
----
-## Comment 3: AppRouter still routes to Placeholder for exam-taking; integrate ExamTakingPage with Bloc.
-
-Integrate the real exam-taking page in the router.
-
-Steps:
-1) Import `ExamTakingPage` and `ExamSessionBloc`, and `service_locator.dart`.
-2) In the `take` nested route builder, do:
-   - final examId = state.pathParameters['examId']!;
-   - return BlocProvider(create: (_) => sl<ExamSessionBloc>()..add(StartExamSessionEvent(examId: examId)), child: ExamTakingPage(sessionId: '', examId: examId));
-3) Remove the PlaceholderPage usage for this route.
-4) Ensure auth guard behavior remains consistent.
-5) Build and test navigation to confirm session flow starts properly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 4: Fix invalid collection-if/spread and add FontFeature import in ExamTimerWidget.
-
-Edit `features/exam_session/presentation/widgets/exam_timer_widget.dart`:
-- Add `import 'dart:ui' show FontFeature;` at top.
-- Replace the invalid list-spread with a proper collection-if using spread operator as described.
-- Rebuild to verify there are no syntax errors.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\exam_timer_widget.dart
----
-## Comment 5: Score aggregation uses int with double values; update totals to double in Bloc.
-
-Refactor score calculations for accuracy and types.
-
-Steps:
-1) In `_emitCompletedState`, change:
-   - `final answers = session.answers;` to `final answers = session.answers.values.toList();`
-   - `final totalScore = answers.fold<double>(0.0, (sum, a) => sum + (a.score ?? 0.0));`
-   - `final maxScore = session.questions.fold<double>(0.0, (sum, q) => sum + (q.marks));`
-2) Compute `percentage` as `maxScore > 0 ? (totalScore / maxScore) * 100 : 0.0;`
-3) `isPassed` as `percentage >= session.exam.passingScore`.
-4) Update `ExamSessionCompleted` to accept `double totalScore` and `double maxScore`, and update usages accordingly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart
----
-## Comment 6: Local DS opens Hive boxes synchronously and for generic List<T>; add init and adapters.
-
-Harden local caching by initializing Hive boxes.
-
-Steps:
-1) Add `Future<void> init()` to `ExamSessionLocalDataSource` and implement in `Impl` to call `Hive.openBox<ExamSessionModel>(_examSessionsBoxName)` etc., and register generated adapters.
-2) Change constructor to not open boxes; require `await dataSource.init()` in DI.
-3) Consider changing `_sessionQuestionsBox` and `_sessionAnswersBox` to `Box<dynamic>` or `Box<List<dynamic>>` if adapter constraints exist, or store each `AnswerModel` under composite keys like `'sessionId:questionId'`.
-4) Update DI to use `registerLazySingletonAsync` and await `sl.allReady()` before use.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\data\datasources\exam_session_local_datasource.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\data\datasources\exam_session_local_datasource.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
----
-## Comment 7: Start exam endpoint deviates from `/api/mobile/exams/{id}/start`; adjust RemoteDataSource.
-
-Fix start endpoint path.
-
-Steps:
-1) In `startExamSession`, replace `ApiEndpoints.examSessions` with `ApiEndpoints.startExam(examId)`.
-2) Ensure the payload matches backend: often no `exam_id` is needed in body if path includes it. Remove it if unnecessary.
-3) Verify response handling matches API.
-4) Add/adjust endpoint helpers in `api_endpoints.dart` if missing (they exist).
-5) Test by starting a session and verifying a 201 with session data.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\data\datasources\exam_session_remote_datasource.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\api_endpoints.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\api_endpoints.dart
----
-## Comment 8: Use session.isTimeExpired() method, not property, in canSubmitExam check.
-
-Edit `features/exam_session/presentation/bloc/exam_session_state.dart`:
-- In `canSubmitExam`, change `session.isTimeExpired` to `session.isTimeExpired()`.
-- Alternatively, add `bool get isTimeExpired => isTimeExpired();` in `ExamSession` but avoid name collision; prefer direct method call.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_state.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\domain\entities\exam_session.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\domain\entities\exam_session.dart
----
-## Comment 9: Replace getIt alias with sl in ExamTakingPage to match DI.
-
-Open `features/exam_session/presentation/pages/exam_taking_page.dart` and replace `_examSessionBloc = getIt<ExamSessionBloc>();` with `_examSessionBloc = sl<ExamSessionBloc>();`. Ensure `import '../../../../core/di/service_locator.dart';` and that `sl` is initialized before use.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart
----
-## Comment 10: ExamTakingPage uses non-existent widgets diverging from planned components; align imports/usages.
-
-Refactor `ExamTakingPage` to use the planned widget set.
-
-Steps:
-1) Replace top header with `ExamSessionAppBar` or inline composition using `ExamTimerWidget` and `ExamProgressWidget`.
-2) Use `QuestionDisplayWidget` to render the current question based on `QuestionType` and handle answer callbacks by dispatching `SubmitAnswerEvent`.
-3) Use `QuestionNavigationWidget` for prev/next/submit controls.
-4) Remove imports for non-existent widgets and add imports for the implemented planned widgets.
-5) Ensure all callbacks match Bloc events and state fields.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart
----
-I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
-
----
-## Comment 1: Router still uses placeholders; new Dashboard/Progress/Exam Result pages aren’t wired in.
-
-Update `lib/core/router/app_router.dart` to import and use `DashboardPage`, `ProgressPage`, and `ExamResultPage` instead of `PlaceholderPage`, providing required `BlocProvider`s and route params.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart
----
-## Comment 2: Service locator doesn’t register new dashboard/results data sources, repos, use cases, blocs.
-
-Add DI registrations in `lib/core/di/service_locator.dart` for Dashboard and Results (remote/local data sources, repositories, use cases, and blocs), mirroring existing patterns.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
----
-## Comment 3: DashboardRepositoryImpl uses non-existent local data source API (method name and signatures).
-
-Align `DashboardRepositoryImpl` calls with `DashboardLocalDataSource` methods: use `isDashboardDataFresh(userId)`, `cacheDashboardData(userId, data)`, and `setCacheTimestamp(userId, 'dashboard', timestamp)`; apply similar fixes for user stats, achievements, activities, trends.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\repositories\dashboard_repository_impl.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\datasources\dashboard_local_datasource.dart
----
-## Comment 4: DashboardRemoteDataSourceImpl expects parameters not defined in interface and wrong endpoints.
-
-Review `dashboard_remote_datasource.dart` interface and implementation to match repository expectations: add or remove parameters consistently (e.g., `unlockedOnly`, `category`, `period` types), and standardize URL paths as per backend docs.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\datasources\dashboard_remote_datasource.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\repositories\dashboard_repository_impl.dart
----
-## Comment 5: Dashboard models/entities are out of sync (fields, types, and added models missing).
-
-Unify `DashboardSummary` in `dashboard_data.dart` with `DashboardSummaryModel` fields or adjust the model to match the entity. Ensure all referenced model files exist/generate and run build_runner to produce *.g.dart files.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\models\dashboard_data_model.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\domain\entities\dashboard_data.dart
----
-## Comment 6: UserStatsModel and UserStats entity definitions don’t match; wrong types and fields.
-
-Refactor either `UserStats` entity or `UserStatsModel` so their fields and types align; update `fromEntity`, `toEntity`, and JSON methods accordingly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\domain\entities\user_stats.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\models\user_stats_model.dart
----
-## Comment 7: RecentActivity entity vs. presentation widgets use incompatible properties.
-
-Update `RecentActivity` entity or `recent_activities_section.dart` to use consistent types: stick to `ActivityType` enum in UI and replace `timestamp` with `completedAt`; build badges via entity accessors (`getFormattedDescription`, `getRelativeTime`).
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\domain\entities\recent_activity.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\widgets\recent_activities_section.dart
----
-## Comment 8: ResultsLayer: repository/data source and presentation use incompatible types and APIs.
-
-Standardize `ExamResult` entity API to match usage in UI and repository, or refactor UI and repository to use the entity methods (`getPercentageScore()`, `getFormattedTimeSpent()`) and proper types (Duration, enums). Align JSON models accordingly.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\domain\entities\exam_result.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\widgets\exam_results_list.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\data\repositories\results_repository_impl.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\data\datasources\results_remote_datasource.dart
----
-## Comment 9: ResultsBloc/events/states refer to missing or mismatched use cases and parameters.
-
-Align `ResultsBloc` event parameter shapes and usages with `ResultsRepository` contracts and `ExamResult` entity fields. Replace `result.score` with `result.getPercentageScore()`, `subject` with `category` if intended.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\bloc\results_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\domain\repositories\results_repository.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\domain\entities\exam_result.dart
----
-## Comment 10: Planned widgets/pages for score visualization and result detail are missing.
-
-Implement the missing chart/result widgets and `ExamResultPage` as per the plan, or adjust the scope to use existing `PerformanceAnalyticsCard` and `ResultsPage` with fl_chart-based visualizations for scores and trends.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\charts\score_chart_widget.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\exam_result_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\widgets\result_summary_card.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\widgets\question_result_item.dart
----
-## Comment 11: Missing dashboard progress/analytics page from plan; only ResultsPage exists.
-
-Add `features/dashboard/presentation/pages/progress_page.dart` and route to it via `/progress`, using existing chart widgets and DashboardBloc to fetch trends.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\progress_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 12: Firebase initialization doesn’t use generated options; analytics not wired on screen views.
-
-Update `main.dart` to use `DefaultFirebaseOptions.currentPlatform` if available, and call `FirebaseService.instance.trackScreenView` in `initState` of pages like `DashboardPage`, `ResultsPage` and when viewing results.
+## Comment 9: Firebase initialization kept; confirm minimal analytics-only scope or remove per plan.
+
+If not required:
+- Remove firebase_analytics, crashlytics, performance from `pubspec.yaml` and related code.
+- Simplify `FirebaseService` initialization or guard it behind a feature flag.
+If required:
+- Note in README that analytics/crash reporting are intentionally retained.
 
 ### Referred Files
 - c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
 - c:\Users\goela\Desktop\Trie\mobile-app\lib\core\services\firebase_service.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\results_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\pubspec.yaml
+- c:\Users\goela\Desktop\Trie\mobile-app\README.md
 ---
-## Comment 13: Generated code references without running build_runner; *.g.dart files missing.
+## Comment 10: AppConstants.baseUrl is hardcoded; ensure alignment with MOBILE_API_DOCUMENTATION.md
 
-Run code generation and commit generated files or switch to manual serialization consistently. Ensure `build_runner` runs successfully and all models' fields are consistent.
+Update configuration:
+- Move base URL to env/config (e.g., `.env` or build-time flavors).
+- Ensure `core/network/api_endpoints.dart` composes base + `/api/mobile` correctly.
+- Document in README how to set base URL per environment.
 
 ### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\models\dashboard_data_model.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\data\models\user_stats_model.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\data\models\exam_result_model.dart
----
-## Comment 14: Type mismatches in Dashboard presentation components vs. domain entities.
-
-Refactor presentation widgets to use actual entity fields and helper methods (e.g., `DashboardSummary.totalExamsCompleted`, `UserStats.weeklyProgressPercentage`, `Achievement.category` enum -> map to icon/color via extension).
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\domain\entities\dashboard_data.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\widgets\dashboard_header.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\widgets\user_stats_card.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\widgets\achievements_section.dart
----
-## Comment 15: Results page and widgets use non-existent domain types (`PerformanceAnalytics`, `StudyRecommendation`).
-
-Create `PerformanceAnalytics` and `StudyRecommendation` entities (and models if needed) or remove these dependencies and rely on existing analytics map structures returned by repository.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\results_page.dart
----
-## Comment 16: ExamSessionBloc not integrated with Firebase analytics or results navigation.
-
-In `ExamSessionBloc`, inject `FirebaseService` and track `trackExamStarted` at start and `trackExamCompleted` on submit/timeout; trigger navigation to results page via a UI listener when state becomes `ExamSessionCompleted`.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\services\firebase_service.dart
----
-## Comment 17: No charts for score visualization on result details as per plan.
-
-Add a reusable score chart (radial progress) widget and include it in a new `ExamResultPage`, showing percentage, pass/fail color coding, and breakdowns.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\exam_result_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\shared\widgets\charts\score_chart_widget.dart
----
-## Comment 18: Multiple naming inconsistencies across layers (category vs subject, status string vs enum).
-
-Standardize naming: use `category` across results analytics, keep statuses as enums in entities and map to strings at the UI layer.
-
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\bloc\results_bloc.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\widgets\achievements_section.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\widgets\exam_results_list.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\constants\app_constants.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\api_endpoints.dart
+- c:\Users\goela\Desktop\Trie\MOBILE_API_DOCUMENTATION.md
 ---

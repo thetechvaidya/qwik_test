@@ -32,7 +32,7 @@ import '../di/service_locator.dart';
 /// ```
 mixin FirebaseAnalyticsMixin<T extends StatefulWidget> on State<T> {
   /// The Firebase service instance
-  FirebaseService get _firebaseService => getIt<FirebaseService>();
+  FirebaseService get _firebaseService => sl<FirebaseService>();
   
   /// The screen name for analytics tracking.
   /// Override this in your widget to provide a custom screen name.
@@ -261,7 +261,7 @@ mixin FirebaseAnalyticsMixin<T extends StatefulWidget> on State<T> {
 /// ```
 mixin FirebaseAnalyticsStatelessMixin on StatelessWidget {
   /// The Firebase service instance
-  FirebaseService get _firebaseService => getIt<FirebaseService>();
+  FirebaseService get _firebaseService => sl<FirebaseService>();
   
   /// The screen name for analytics tracking.
   /// Override this in your widget to provide a custom screen name.
@@ -345,7 +345,7 @@ mixin FirebaseAnalyticsStatelessMixin on StatelessWidget {
 /// from anywhere in the widget tree.
 extension FirebaseAnalyticsContextExtension on BuildContext {
   /// Gets the Firebase service instance
-  FirebaseService get _firebaseService => getIt<FirebaseService>();
+  FirebaseService get _firebaseService => sl<FirebaseService>();
   
   /// Tracks a screen view event from context
   Future<void> trackScreenView(String screenName, {Map<String, Object>? parameters}) async {

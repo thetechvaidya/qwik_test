@@ -11,6 +11,7 @@ import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/refresh_token_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/request_password_reset_usecase.dart';
 import 'auth_event.dart' as events;
 import 'auth_state.dart' as states;
 
@@ -21,6 +22,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     required LogoutUseCase logoutUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
     required RefreshTokenUseCase refreshTokenUseCase,
+    required RequestPasswordResetUseCase requestPasswordResetUseCase,
     required AuthRepository authRepository,
     required AuthEventBus eventBus,
   })  : _loginUseCase = loginUseCase,
@@ -28,6 +30,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
         _logoutUseCase = logoutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
         _refreshTokenUseCase = refreshTokenUseCase,
+        _requestPasswordResetUseCase = requestPasswordResetUseCase,
         _authRepository = authRepository,
         _eventBus = eventBus,
         super(const states.AuthInitial()) {
@@ -38,7 +41,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     on<events.AuthTokenRefreshRequested>(_onAuthTokenRefreshRequested);
     on<events.AuthTokenRefreshFailed>(_onAuthTokenRefreshFailed);
     on<events.AuthSessionExpired>(_onAuthSessionExpired);
-    on<events.AuthBiometricAuthRequested>(_onAuthBiometricAuthRequested);
+
     on<events.AuthEmailVerificationRequested>(_onAuthEmailVerificationRequested);
     on<events.AuthPasswordResetRequested>(_onAuthPasswordResetRequested);
     on<events.AuthPasswordResetConfirmRequested>(_onAuthPasswordResetConfirmRequested);
@@ -89,6 +92,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
   final LogoutUseCase _logoutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   final RefreshTokenUseCase _refreshTokenUseCase;
+  final RequestPasswordResetUseCase _requestPasswordResetUseCase;
   final AuthRepository _authRepository;
   final AuthEventBus _eventBus;
   
@@ -254,12 +258,7 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
     emit(const states.AuthUnauthenticated());
   }
   
-  Future<void> _onAuthBiometricAuthRequested(
-    events.AuthBiometricAuthRequested event,
-    Emitter<states.AuthState> emit,
-  ) async {
-    emit(states.AuthBiometricAuthRequired(reason: event.reason));
-  }
+
 
   Future<void> _onAuthEmailVerificationRequested(
     events.AuthEmailVerificationRequested event,
@@ -278,9 +277,16 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
   ) async {
     emit(const states.AuthPasswordResetLoading());
     
-    // For now, just emit success - in a real implementation,
-    // you'd have a password reset use case
-    emit(const states.AuthPasswordResetSuccess());
+    final result = await _requestPasswordResetUseCase(
+      RequestPasswordResetParams(email: event.email),
+    );
+    
+    result.fold(
+      (failure) => emit(states.AuthPasswordResetFailure(
+        message: _mapFailureToMessage(failure),
+      )),
+      (_) => emit(const states.AuthPasswordResetSuccess()),
+    );
   }
 
   Future<void> _onAuthPasswordResetConfirmRequested(

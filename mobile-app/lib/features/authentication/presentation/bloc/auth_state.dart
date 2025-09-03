@@ -157,15 +157,3 @@ class AuthTokenRefreshFailed extends AuthState {
 class AuthSessionExpired extends AuthState {
   const AuthSessionExpired();
 }
-
-/// State when biometric authentication is required
-class AuthBiometricAuthRequired extends AuthState {
-  const AuthBiometricAuthRequired({
-    this.reason = 'Please authenticate to continue',
-  });
-
-  final String reason;
-
-  @override
-  List<Object?> get props => [reason];
-}

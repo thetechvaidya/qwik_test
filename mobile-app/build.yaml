@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      hive_generator:
+        generate_for:
+          exclude:
+            - test/**
+      json_serializable:
+        generate_for:
+          exclude:
+            - test/**

@@ -156,7 +156,6 @@ class SearchRepositoryImpl implements SearchRepository {
           );
         } catch (e) {
           // If remote fails, continue with local suggestions
-          print('Failed to get remote suggestions: $e');
         }
       }
 
@@ -176,7 +175,7 @@ class SearchRepositoryImpl implements SearchRepository {
             }
           }
         } catch (e) {
-          print('Failed to get cached suggestions: $e');
+          // Failed to get cached suggestions
         }
       }
 
@@ -211,7 +210,7 @@ class SearchRepositoryImpl implements SearchRepository {
             }
           }
         } catch (e) {
-          print('Failed to get history suggestions: $e');
+          // Failed to get history suggestions
         }
       }
 
@@ -285,7 +284,6 @@ class SearchRepositoryImpl implements SearchRepository {
         hasResults: hasResults,
       ).catchError((e) {
         // Silently handle errors for analytics
-        print('Search analytics failed: $e');
       });
     }
   }
@@ -306,7 +304,6 @@ class SearchRepositoryImpl implements SearchRepository {
         filters: filters,
       ).catchError((e) {
         // Silently handle errors for analytics
-        print('Search analytics tracking failed: $e');
       });
     }
   }

@@ -30,7 +30,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
   @override
   void initState() {
     super.initState();
-    _examBloc = getIt<ExamBloc>();
+    _examBloc = sl<ExamBloc>();
     
     // Load exam details if not already provided
     if (widget.exam == null) {
@@ -493,7 +493,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
             ),
           ),
         ),
-        if (progress != null && progress.isStarted && !progress.isCompleted) ..[
+        if (progress != null && progress.isStarted && !progress.isCompleted) ...[
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,

@@ -239,7 +239,7 @@ class _FeaturedExamCard extends StatelessWidget {
         Row(
           children: [
             _buildDifficultyChip(),
-            if (exam.categoryName != null) ..[
+            if (exam.categoryName != null) ...[
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

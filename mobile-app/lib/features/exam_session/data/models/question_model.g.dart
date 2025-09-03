@@ -28,13 +28,16 @@ class QuestionModelAdapter extends TypeAdapter<QuestionModel> {
       imageUrl: fields[8] as String?,
       audioUrl: fields[9] as String?,
       videoUrl: fields[10] as String?,
+      order: fields[11] as int,
+      isRequired: fields[12] as bool,
+      metadata: (fields[13] as Map?)?.cast<String, dynamic>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, QuestionModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,7 +59,13 @@ class QuestionModelAdapter extends TypeAdapter<QuestionModel> {
       ..writeByte(9)
       ..write(obj.audioUrl)
       ..writeByte(10)
-      ..write(obj.videoUrl);
+      ..write(obj.videoUrl)
+      ..writeByte(11)
+      ..write(obj.order)
+      ..writeByte(12)
+      ..write(obj.isRequired)
+      ..writeByte(13)
+      ..write(obj.metadata);
   }
 
   @override
@@ -90,6 +99,9 @@ QuestionModel _$QuestionModelFromJson(Map<String, dynamic> json) =>
       imageUrl: json['image_url'] as String?,
       audioUrl: json['audio_url'] as String?,
       videoUrl: json['video_url'] as String?,
+      order: (json['order'] as num).toInt(),
+      isRequired: json['is_required'] as bool? ?? true,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
@@ -105,4 +117,7 @@ Map<String, dynamic> _$QuestionModelToJson(QuestionModel instance) =>
       'image_url': instance.imageUrl,
       'audio_url': instance.audioUrl,
       'video_url': instance.videoUrl,
+      'order': instance.order,
+      'is_required': instance.isRequired,
+      'metadata': instance.metadata,
     };

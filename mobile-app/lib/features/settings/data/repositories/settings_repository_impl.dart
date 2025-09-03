@@ -37,7 +37,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final localSettings = await localDataSource.getCachedUserSettings(userId);
           return Right(localSettings);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load user settings from server and cache'));
         }
       }
     } else {
@@ -45,26 +45,32 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final localSettings = await localDataSource.getCachedUserSettings(userId);
         return Right(localSettings);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load offline preferences from cache'));
       }
     }
   }
 
   @override
-  Future<Either<Failure, UserSettings>> updateUserSettings(
-    String userId,
-    Map<String, dynamic> updates,
+  Future<Either<Failure, void>> updateUserSettings(
+    UserSettings settings,
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final updatedSettings = await remoteDataSource.updateUserSettings(userId, updates);
-        await localDataSource.cacheUserSettings(updatedSettings);
-        return Right(updatedSettings);
+        final settingsModel = UserSettingsModel.fromEntity(settings);
+        await remoteDataSource.updateUserSettings(settingsModel.userId, settingsModel.toJson());
+        await localDataSource.cacheUserSettings(settingsModel);
+        return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to update user settings'));
       }
     } else {
-      return Left(ServerFailure());
+       try {
+        final settingsModel = UserSettingsModel.fromEntity(settings);
+        await localDataSource.cacheUserSettings(settingsModel);
+        return const Right(null);
+      } on CacheException {
+        return Left(CacheFailure('Failed to cache user settings'));
+      }
     }
   }
 
@@ -80,7 +86,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final localNotifications = await localDataSource.getCachedNotificationSettings(userId);
           return Right(localNotifications);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load notification settings from server and cache'));
         }
       }
     } else {
@@ -88,69 +94,55 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final localNotifications = await localDataSource.getCachedNotificationSettings(userId);
         return Right(localNotifications);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load notification settings from cache'));
       }
     }
   }
 
   @override
-  Future<Either<Failure, NotificationSettings>> updateNotificationSettings(
-    String userId,
-    Map<String, dynamic> updates,
+  Future<Either<Failure, void>> updateNotificationSettings(
+    NotificationSettings settings,
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final updatedNotifications = await remoteDataSource.updateNotificationSettings(userId, updates);
-        await localDataSource.cacheNotificationSettings(updatedNotifications);
-        return Right(updatedNotifications);
+        final settingsModel = NotificationSettingsModel.fromEntity(settings);
+        await remoteDataSource.updateNotificationSettings(settingsModel.userId, settingsModel.toJson());
+        await localDataSource.cacheNotificationSettings(settingsModel);
+        return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, AppPreferences>> getAppPreferences(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remotePreferences = await remoteDataSource.getAppPreferences(userId);
-        await localDataSource.cacheAppPreferences(remotePreferences);
-        return Right(remotePreferences);
-      } on ServerException {
-        try {
-          final localPreferences = await localDataSource.getCachedAppPreferences(userId);
-          return Right(localPreferences);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
+        return Left(ServerFailure('Failed to update notification settings'));
       }
     } else {
       try {
-        final localPreferences = await localDataSource.getCachedAppPreferences(userId);
-        return Right(localPreferences);
+        final settingsModel = NotificationSettingsModel.fromEntity(settings);
+        await localDataSource.cacheNotificationSettings(settingsModel);
+        return const Right(null);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to cache notification settings'));
       }
     }
   }
 
   @override
-  Future<Either<Failure, AppPreferences>> updateAppPreferences(
-    String userId,
-    Map<String, dynamic> updates,
+  Future<Either<Failure, AppPreferences>> getAppPreferences() async {
+    try {
+      final localPreferences = await localDataSource.getCachedAppPreferences();
+      return Right(localPreferences);
+    } on CacheException {
+      return Left(CacheFailure('Failed to load app preferences from cache'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateAppPreferences(
+    AppPreferences preferences,
   ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final updatedPreferences = await remoteDataSource.updateAppPreferences(userId, updates);
-        await localDataSource.cacheAppPreferences(updatedPreferences);
-        return Right(updatedPreferences);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
+     try {
+      final preferencesModel = AppPreferencesModel.fromEntity(preferences);
+      await localDataSource.cacheAppPreferences(preferencesModel);
+      return const Right(null);
+    } on CacheException {
+      return Left(CacheFailure('Failed to cache app preferences'));
     }
   }
 
@@ -166,7 +158,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final localOfflinePrefs = await localDataSource.getCachedOfflinePreferences(userId);
           return Right(localOfflinePrefs);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load offline preferences from server and cache'));
         }
       }
     } else {
@@ -174,26 +166,25 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final localOfflinePrefs = await localDataSource.getCachedOfflinePreferences(userId);
         return Right(localOfflinePrefs);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load offline preferences from cache'));
       }
     }
   }
 
   @override
-  Future<Either<Failure, OfflinePreferences>> updateOfflinePreferences(
-    String userId,
-    Map<String, dynamic> updates,
+  Future<Either<Failure, void>> updateOfflinePreferences(
+    OfflinePreferences preferences,
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final updatedOfflinePrefs = await remoteDataSource.updateOfflinePreferences(userId, updates);
-        await localDataSource.cacheOfflinePreferences(updatedOfflinePrefs);
-        return Right(updatedOfflinePrefs);
+        await remoteDataSource.updateOfflinePreferences(preferences);
+        await localDataSource.cacheOfflinePreferences(preferences);
+        return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to update offline preferences'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -205,10 +196,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await localDataSource.clearAllCache();
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to reset settings to default'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -219,10 +210,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final exportedSettings = await remoteDataSource.exportSettings(userId);
         return Right(exportedSettings);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to export settings'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -237,10 +228,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await localDataSource.clearAllCache();
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to import settings'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -256,7 +247,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedThemes = await localDataSource.getCachedAvailableThemes();
           return Right(cachedThemes);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load available themes from server and cache'));
         }
       }
     } else {
@@ -264,7 +255,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedThemes = await localDataSource.getCachedAvailableThemes();
         return Right(cachedThemes);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load available themes from cache'));
       }
     }
   }
@@ -281,7 +272,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedLanguages = await localDataSource.getCachedAvailableLanguages();
           return Right(cachedLanguages);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load available languages from server and cache'));
         }
       }
     } else {
@@ -289,7 +280,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedLanguages = await localDataSource.getCachedAvailableLanguages();
         return Right(cachedLanguages);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load available languages from cache'));
       }
     }
   }
@@ -306,7 +297,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedVersion = await localDataSource.getCachedPrivacyPolicyVersion();
           return Right(cachedVersion);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load privacy policy version from server and cache'));
         }
       }
     } else {
@@ -314,7 +305,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedVersion = await localDataSource.getCachedPrivacyPolicyVersion();
         return Right(cachedVersion);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load privacy policy version from cache'));
       }
     }
   }
@@ -331,7 +322,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedVersion = await localDataSource.getCachedTermsOfServiceVersion();
           return Right(cachedVersion);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load terms of service version from server and cache'));
         }
       }
     } else {
@@ -339,7 +330,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedVersion = await localDataSource.getCachedTermsOfServiceVersion();
         return Right(cachedVersion);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load terms of service version from cache'));
       }
     }
   }
@@ -354,10 +345,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await remoteDataSource.updateConsentStatus(userId, consents);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to update consent status'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -373,7 +364,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedStats = await localDataSource.getCachedDataUsageStatistics(userId);
           return Right(cachedStats);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load data usage statistics from server and cache'));
         }
       }
     } else {
@@ -381,7 +372,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedStats = await localDataSource.getCachedDataUsageStatistics(userId);
         return Right(cachedStats);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load data usage statistics from cache'));
       }
     }
   }
@@ -393,10 +384,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await remoteDataSource.requestDataExport(userId);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to request data export'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -408,10 +399,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await localDataSource.clearAllCache();
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to request account deletion'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -423,10 +414,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await localDataSource.clearAllCache();
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to sync settings across devices'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -445,7 +436,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           final cachedSettings = await localDataSource.getCachedDeviceSpecificSettings(userId, deviceId);
           return Right(cachedSettings);
         } on CacheException {
-          return Left(ServerFailure());
+          return Left(ServerFailure('Failed to load device specific settings from server and cache'));
         }
       }
     } else {
@@ -453,7 +444,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         final cachedSettings = await localDataSource.getCachedDeviceSpecificSettings(userId, deviceId);
         return Right(cachedSettings);
       } on CacheException {
-        return Left(CacheFailure());
+        return Left(CacheFailure('Failed to load device specific settings from cache'));
       }
     }
   }
@@ -470,10 +461,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
         await localDataSource.cacheDeviceSpecificSettings(userId, deviceId, settings);
         return const Right(null);
       } on ServerException {
-        return Left(ServerFailure());
+        return Left(ServerFailure('Failed to update device specific settings'));
       }
     } else {
-      return Left(ServerFailure());
+      return Left(ServerFailure('No internet connection'));
     }
   }
 
@@ -483,7 +474,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await localDataSource.clearSettingsCache(userId);
       return const Right(null);
     } on CacheException {
-      return Left(CacheFailure());
+      return Left(CacheFailure('Failed to clear settings cache'));
     }
   }
 
@@ -493,7 +484,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await localDataSource.clearAllCache();
       return const Right(null);
     } on CacheException {
-      return Left(CacheFailure());
+      return Left(CacheFailure('Failed to clear all cache'));
     }
   }
 }

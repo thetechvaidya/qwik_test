@@ -51,7 +51,7 @@ class AppNavigationBar extends StatelessWidget {
   final Duration? animationDuration;
 
   /// Overlay color for interactive states
-  final MaterialStateProperty<Color?>? overlayColor;
+  final WidgetStateProperty<Color?>? overlayColor;
 
   /// Color of the selection indicator
   final Color? indicatorColor;

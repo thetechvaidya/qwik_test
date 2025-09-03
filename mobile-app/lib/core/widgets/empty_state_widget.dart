@@ -122,7 +122,8 @@ class EmptyStateWidget extends StatelessWidget {
           children: [
             if (illustration != null)
               illustration!
-            else if (showIcon && icon != null) ..[
+            else if (showIcon && icon != null) ...[
+
               Icon(
                 icon,
                 size: 80,
@@ -138,7 +139,8 @@ class EmptyStateWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (subtitle != null) ..[
+            if (subtitle != null) ...[
+
               const SizedBox(height: 12),
               Text(
                 subtitle!,
@@ -191,7 +193,8 @@ class CompactEmptyStateWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icon != null) ..[
+          if (icon != null) ...[
+
             Icon(
               icon,
               size: 48,
@@ -206,7 +209,8 @@ class CompactEmptyStateWidget extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          if (onAction != null && actionText != null) ..[
+          if (onAction != null && actionText != null) ...[
+
             const SizedBox(height: 16),
             TextButton(
               onPressed: onAction,

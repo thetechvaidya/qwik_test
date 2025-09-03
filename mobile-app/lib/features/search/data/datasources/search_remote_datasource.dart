@@ -136,10 +136,8 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
       }
     } on DioException catch (e) {
       // Don't throw for analytics failures, just log
-      print('Search analytics failed: ${e.message}');
     } catch (e) {
       // Don't throw for analytics failures, just log
-      print('Search analytics failed: $e');
     }
   }
 

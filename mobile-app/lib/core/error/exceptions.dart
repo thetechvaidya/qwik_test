@@ -17,6 +17,36 @@ class ServerException extends AppException {
   String toString() => 'ServerException: $message (Code: $code)';
 }
 
+class UnauthorizedException extends ServerException {
+  const UnauthorizedException(String message, {int? code})
+      : super(message, code: code);
+}
+
+class ForbiddenException extends ServerException {
+  const ForbiddenException(String message, {int? code})
+      : super(message, code: code);
+}
+
+class NotFoundException extends ServerException {
+  const NotFoundException(String message, {int? code})
+      : super(message, code: code);
+}
+
+class ConflictException extends ServerException {
+  const ConflictException(String message, {int? code})
+      : super(message, code: code);
+}
+
+class BadRequestException extends ServerException {
+  const BadRequestException(String message, {int? code})
+      : super(message, code: code);
+}
+
+class InternalServerErrorException extends ServerException {
+  const InternalServerErrorException(String message, {int? code})
+      : super(message, code: code);
+}
+
 /// Network-related exceptions
 class NetworkException extends AppException {
   const NetworkException(super.message, {super.code});

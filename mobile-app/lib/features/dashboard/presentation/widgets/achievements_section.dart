@@ -131,7 +131,7 @@ class AchievementsSection extends StatelessWidget {
         ),
         
         // Show more button if there are more achievements
-        if (sortedAchievements.length > 3) ..[
+        if (sortedAchievements.length > 3) ...[
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => _showAllAchievements(context, sortedAchievements),
@@ -237,7 +237,7 @@ class AchievementsSection extends StatelessWidget {
                   const SizedBox(height: 8),
                   
                   // Progress Bar (only for locked achievements)
-                  if (!achievement.isUnlocked) ..[
+                  if (!achievement.isUnlocked) ...[
                     Row(
                       children: [
                         Expanded(
@@ -260,7 +260,7 @@ class AchievementsSection extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ] else ..[
+                  ] else ...[
                     // Unlock date for unlocked achievements
                     if (achievement.unlockedAt != null)
                       Text(

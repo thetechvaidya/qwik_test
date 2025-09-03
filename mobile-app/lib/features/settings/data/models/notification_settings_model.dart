@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:hive/hive.dart';
+import 'package:flutter/material.dart';
 import '../../domain/entities/notification_settings.dart';
 
 part 'notification_settings_model.g.dart';

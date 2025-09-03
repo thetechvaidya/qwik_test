@@ -113,7 +113,7 @@ class _CategoryFilterChip extends StatelessWidget {
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (category.icon != null) ..[
+          if (category.icon != null) ...[
             Icon(
               _getCategoryIcon(),
               size: 16,
@@ -128,7 +128,7 @@ class _CategoryFilterChip extends StatelessWidget {
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
-          if (category.examCount > 0) ..[
+          if (category.examCount > 0) ...[
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

@@ -160,15 +160,3 @@ class AuthTokenRefreshFailed extends AuthEvent {
 class AuthSessionExpired extends AuthEvent {
   const AuthSessionExpired();
 }
-
-/// Event to request biometric authentication
-class AuthBiometricAuthRequested extends AuthEvent {
-  const AuthBiometricAuthRequested({
-    this.reason = 'Please authenticate to continue',
-  });
-
-  final String reason;
-
-  @override
-  List<Object?> get props => [reason];
-}

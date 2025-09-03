@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../domain/entities/user_profile.dart';
 import '../bloc/profile_bloc.dart';
@@ -10,10 +9,10 @@ import '../bloc/profile_state.dart';
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({
     Key? key,
-    required this.profile,
+    required this.userId,
   }) : super(key: key);
 
-  final UserProfile profile;
+  final String userId;
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -24,30 +23,38 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _bioController = TextEditingController();
-  final _imagePicker = ImagePicker();
   
   bool _hasChanges = false;
+  UserProfile? _currentProfile;
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-  }
-
-  void _initializeControllers() {
-    _nameController.text = widget.profile.name;
-    _emailController.text = widget.profile.email;
-    _bioController.text = widget.profile.bio ?? '';
-    
+    _loadProfile();
     _nameController.addListener(_onFieldChanged);
     _emailController.addListener(_onFieldChanged);
     _bioController.addListener(_onFieldChanged);
   }
 
+  void _loadProfile() {
+    context.read<ProfileBloc>().add(
+      ProfileLoadRequested(userId: widget.userId),
+    );
+  }
+
+  void _initializeControllers(UserProfile profile) {
+    _currentProfile = profile;
+    _nameController.text = profile.name;
+    _emailController.text = profile.email;
+    _bioController.text = profile.bio ?? '';
+  }
+
   void _onFieldChanged() {
-    final hasChanges = _nameController.text != widget.profile.name ||
-        _emailController.text != widget.profile.email ||
-        _bioController.text != (widget.profile.bio ?? '');
+    if (_currentProfile == null) return;
+    
+    final hasChanges = _nameController.text != _currentProfile!.name ||
+        _emailController.text != _currentProfile!.email ||
+        _bioController.text != (_currentProfile!.bio ?? '');
     
     if (hasChanges != _hasChanges) {
       setState(() {
@@ -70,7 +77,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     
     return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
-        if (state is ProfileUpdateSuccess) {
+        if (state is ProfileLoaded) {
+          _initializeControllers(state.profile);
+        } else if (state is ProfileUpdateSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Profile updated successfully'),
@@ -120,11 +129,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAvatarSection(context, state),
+                    _buildAvatarSection(context),
                     const SizedBox(height: 24),
                     _buildFormFields(context),
-                    const SizedBox(height: 32),
-                    _buildDangerZone(context),
                   ],
                 ),
               ),
@@ -135,71 +142,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildAvatarSection(BuildContext context, ProfileState state) {
+  Widget _buildAvatarSection(BuildContext context) {
     final theme = Theme.of(context);
-    final isUploading = state is ProfileAvatarUploading;
     
     return Center(
       child: Column(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                backgroundImage: widget.profile.avatarUrl != null
-                    ? NetworkImage(widget.profile.avatarUrl!)
-                    : null,
-                child: widget.profile.avatarUrl == null
-                    ? Icon(
-                        Icons.person,
-                        size: 60,
-                        color: theme.colorScheme.primary,
-                      )
-                    : null,
-              ),
-              if (isUploading)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.colorScheme.surface,
-                      width: 2,
-                    ),
-                  ),
-                  child: IconButton(
-                    onPressed: isUploading ? null : _showAvatarOptions,
-                    icon: Icon(
-                      Icons.camera_alt,
-                      color: theme.colorScheme.onPrimary,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          CircleAvatar(
+            radius: 60,
+            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+            child: Icon(
+              Icons.person,
+              size: 60,
+              color: theme.colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Tap to change profile picture',
+            'Profile Picture',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withOpacity(0.6),
             ),
@@ -270,141 +230,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildDangerZone(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Card(
-      color: Colors.red.withOpacity(0.05),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Danger Zone',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'These actions cannot be undone.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.red.withOpacity(0.8),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (widget.profile.avatarUrl != null)
-              OutlinedButton.icon(
-                onPressed: _deleteAvatar,
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Remove Profile Picture'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  void _showAvatarOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Take Photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from Gallery'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            if (widget.profile.avatarUrl != null)
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteAvatar();
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 80,
-      );
-      
-      if (image != null) {
-        context.read<ProfileBloc>().add(
-          ProfileAvatarUploadRequested(
-            userId: widget.profile.id,
-            imagePath: image.path,
-          ),
-        );
-      }
-    } catch (e) {
+  void _saveProfile() {
+    if (_currentProfile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick image: $e'),
+        const SnackBar(
+          content: Text('Profile data not loaded. Please try again.'),
           backgroundColor: Colors.red,
         ),
       );
+      return;
     }
-  }
-
-  void _deleteAvatar() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove Profile Picture'),
-        content: const Text('Are you sure you want to remove your profile picture?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<ProfileBloc>().add(
-                ProfileAvatarDeleteRequested(userId: widget.profile.id),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _saveProfile() {
+    
     if (_formKey.currentState?.validate() ?? false) {
-      final updatedProfile = widget.profile.copyWith(
+      final updatedProfile = _currentProfile!.copyWith(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),

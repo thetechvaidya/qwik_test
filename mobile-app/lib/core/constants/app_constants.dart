@@ -1,3 +1,5 @@
+import '../config/environment_config.dart';
+
 /// Application-wide constants
 class AppConstants {
   // App Information
@@ -5,7 +7,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
   
   // API Configuration
-  static const String baseUrl = 'https://api.qwiktest.com';
+  static String get baseUrl => EnvironmentConfig.baseUrl;
   static const String apiVersion = 'v1';
   static const String mobileApiPrefix = '/mobile';
   
@@ -16,11 +18,7 @@ class AppConstants {
   static const String themeKey = 'theme_mode';
   static const String languageKey = 'language';
   
-  // Hive Box Names
-  static const String authBoxName = 'auth_box';
-  static const String userBoxName = 'user_box';
-  static const String examBoxName = 'exam_box';
-  static const String settingsBoxName = 'settings_box';
+
   
   // Animation Durations
   static const Duration shortAnimation = Duration(milliseconds: 200);
@@ -40,7 +38,7 @@ class AppConstants {
   static const int maxRetryAttempts = 3;
   
   // Network
-  static const Duration connectionTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
-  static const Duration sendTimeout = Duration(seconds: 30);
+  static Duration get connectionTimeout => EnvironmentConfig.apiTimeout;
+  static Duration get receiveTimeout => EnvironmentConfig.apiTimeout;
+  static Duration get sendTimeout => EnvironmentConfig.apiTimeout;
 }

@@ -53,6 +53,7 @@ class SearchLocalDataSourceImpl implements SearchLocalDataSource {
   SearchLocalDataSourceImpl();
 
   /// Initialize Hive boxes
+  @override
   Future<void> init() async {
     _searchHistoryBox = await Hive.openBox<SearchHistoryModel>(_searchHistoryBoxName);
     _searchSuggestionsBox = await Hive.openBox<SearchSuggestionModel>(_searchSuggestionsBoxName);

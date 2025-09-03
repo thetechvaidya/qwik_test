@@ -21,46 +21,10 @@ class RecentActivityModel extends RecentActivity {
     super.pointsEarned,
   });
 
-  factory RecentActivityModel.fromJson(Map<String, dynamic> json) {
-    return RecentActivityModel(
-      id: json['id'] as String,
-      type: ActivityType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => ActivityType.examCompleted,
-      ),
-      title: json['title'] as String,
-      description: json['description'] as String,
-      completedAt: DateTime.parse(json['completedAt'] as String),
-      metadata: Map<String, dynamic>.from(
-        json['metadata'] as Map<String, dynamic>? ?? {},
-      ),
-      examId: json['examId'] as String?,
-      examTitle: json['examTitle'] as String?,
-      score: (json['score'] as num?)?.toDouble(),
-      achievementId: json['achievementId'] as String?,
-      achievementTitle: json['achievementTitle'] as String?,
-      streakCount: json['streakCount'] as int?,
-      pointsEarned: json['pointsEarned'] as int?,
-    );
-  }
+  factory RecentActivityModel.fromJson(Map<String, dynamic> json) =>
+      _$RecentActivityModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'type': type.name,
-      'title': title,
-      'description': description,
-      'completedAt': completedAt.toIso8601String(),
-      'metadata': metadata,
-      'examId': examId,
-      'examTitle': examTitle,
-      'score': score,
-      'achievementId': achievementId,
-      'achievementTitle': achievementTitle,
-      'streakCount': streakCount,
-      'pointsEarned': pointsEarned,
-    };
-  }
+  Map<String, dynamic> toJson() => _$RecentActivityModelToJson(this);
 
   /// Create from entity
   factory RecentActivityModel.fromEntity(RecentActivity entity) {

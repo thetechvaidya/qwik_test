@@ -7,10 +7,10 @@ class PerformanceAnalyticsCard extends StatefulWidget {
   final Function(String)? onPeriodChanged;
 
   const PerformanceAnalyticsCard({
-    Key? key,
+    super.key,
     required this.analytics,
     this.onPeriodChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<PerformanceAnalyticsCard> createState() => _PerformanceAnalyticsCardState();
@@ -88,10 +88,10 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.05),
+        color: Theme.of(context).primaryColor.withAlpha((255 * 0.05).round()),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withAlpha((255 * 0.1).round()),
         ),
       ),
       child: Column(
@@ -183,7 +183,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
               ),
           textAlign: TextAlign.center,
         ),
-        if (improvement != null) ..[
+        if (improvement != null) ...[
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -265,7 +265,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
 
   Widget _buildChart(BuildContext context) {
     if (widget.analytics.performanceHistory.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 200,
         child: Center(
           child: Column(
@@ -289,7 +289,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
       );
     }
 
-    return Container(
+    return SizedBox(
       height: 200,
       child: LineChart(
         LineChartData(
@@ -375,7 +375,7 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
               gradient: LinearGradient(
                 colors: [
                   Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor.withOpacity(0.3),
+                  Theme.of(context).primaryColor.withAlpha((255 * 0.3).round()),
                 ],
               ),
               barWidth: 3,
@@ -397,8 +397,8 @@ class _PerformanceAnalyticsCardState extends State<PerformanceAnalyticsCard> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Theme.of(context).primaryColor.withOpacity(0.2),
-                    Theme.of(context).primaryColor.withOpacity(0.05),
+                    Theme.of(context).primaryColor.withAlpha((255 * 0.2).round()),
+                    Theme.of(context).primaryColor.withAlpha((255 * 0.05).round()),
                   ],
                 ),
               ),

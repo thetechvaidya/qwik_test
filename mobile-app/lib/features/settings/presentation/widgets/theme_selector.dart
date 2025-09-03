@@ -6,7 +6,7 @@ import '../bloc/theme_event.dart';
 import '../bloc/theme_state.dart';
 
 class ThemeSelector extends StatefulWidget {
-  const ThemeSelector({Key? key}) : super(key: key);
+  const ThemeSelector({super.key});
 
   @override
   State<ThemeSelector> createState() => _ThemeSelectorState();
@@ -97,7 +97,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
+          color: Colors.grey.withAlpha((255 * 0.1).round()),
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Icon(
@@ -136,7 +136,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: themeData.primaryColor.withOpacity(0.1),
+                color: themeData.primaryColor.withAlpha((255 * 0.1).round()),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -183,7 +183,7 @@ class _ThemeSelectorState extends State<ThemeSelector> {
         color: color,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.grey.withOpacity(0.3),
+          color: Colors.grey.withAlpha((255 * 0.3).round()),
           width: 1,
         ),
       ),

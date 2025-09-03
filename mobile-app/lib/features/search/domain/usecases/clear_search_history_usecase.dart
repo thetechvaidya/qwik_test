@@ -1,9 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../repositories/search_repository.dart';
+import 'package:qwiktest_mobile/core/error/failures.dart';
+import 'package:qwiktest_mobile/core/usecases/usecase.dart';
+import 'package:qwiktest_mobile/features/search/domain/repositories/search_repository.dart';
 
-/// Use case for clearing all search history
 class ClearSearchHistoryUseCase implements UseCase<void, NoParams> {
   final SearchRepository repository;
 

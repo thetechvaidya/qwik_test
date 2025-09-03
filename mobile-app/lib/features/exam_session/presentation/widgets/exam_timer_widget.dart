@@ -61,14 +61,15 @@ class ExamTimerWidget extends StatelessWidget {
                 Text(
                   'Time Remaining',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: _getTextColor().withOpacity(0.8),
+                    color: _getTextColor().withAlpha((255 * 0.8).round()),
                   ),
                 ),
             ],
           ),
           
           // Progress indicator (if enabled)
-          if (showProgress && totalDuration.inSeconds > 0) ..[            const SizedBox(width: 12),
+          if (showProgress && totalDuration.inSeconds > 0) ...[
+            const SizedBox(width: 12),
             SizedBox(
               width: 40,
               height: 40,
@@ -189,11 +190,11 @@ class CompactExamTimerWidget extends StatelessWidget {
 
   Color _getBackgroundColor() {
     if (isCritical) {
-      return AppColors.error.withOpacity(0.1);
+      return AppColors.error.withAlpha((255 * 0.1).round());
     } else if (isWarning) {
-      return AppColors.warning.withOpacity(0.1);
+      return AppColors.warning.withAlpha((255 * 0.1).round());
     } else {
-      return AppColors.primary.withOpacity(0.1);
+      return AppColors.primary.withAlpha((255 * 0.1).round());
     }
   }
 

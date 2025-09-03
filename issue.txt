@@ -1,0 +1,167 @@
+
+Update the registration screen to remove leftover social-auth UI artifacts.
+
+Context from thread: We dropped social authentication in the simplified scope and removed the SocialAuthButtons widget and import. The Register page still shows an 'OR' divider intended to separate email registration from social sign-in, which no longer exists. The Login page already removed this.
+
+Steps:
+1. Open `lib/features/authentication/presentation/pages/register_page.dart`.
+2. Remove the divider Row that renders two `Divider()` widgets with the centered 'OR' `Text` under the 'Create Account' button.
+3. Remove any adjacent `SizedBox` spacing that was only used to separate the social section.
+4. Verify there are no imports or comments referencing social auth left in this file.
+5. Build to ensure no UI/layout regressions; confirm the form flows directly from the register button to the sign-in link.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart
+
+
+Fix email validators across auth screens.
+
+Steps:
+1. Open files:
+   - `lib/features/authentication/presentation/pages/forgot_password_page.dart`
+   - `lib/features/authentication/presentation/pages/login_page.dart`
+   - `lib/features/authentication/presentation/pages/register_page.dart`
+2. Replace the current email RegExp with:
+   `RegExp(r'^[\w\.-]+@([\w-]+\.)+[A-Za-z]{2,}$')`
+3. Ensure no extra escaping introduces a literal `$`. Keep the `r''` raw string prefix.
+4. Run quick tests to validate common valid emails (e.g., user+tag@example.co.uk) and that invalid formats are rejected.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart
+
+
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\answer_options_widget.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\answer_options_widget.dart
+
+
+Fix home navigation after authentication to match the current router.
+
+Context: The app's home route is `AppRouter.home` (`'/home'`), but several pages navigate to `'/dashboard'`, which is not registered. This causes navigation failures.
+
+Steps:
+1. Open:
+   - `lib/features/authentication/presentation/pages/login_page.dart`
+   - `lib/features/authentication/presentation/pages/register_page.dart`
+   - `lib/features/authentication/presentation/pages/splash_page.dart`
+2. Replace all occurrences of `context.go('/dashboard')` with `AppRouter.goToHome(context)` (import `core/router/app_router.dart`) or `context.go(AppRouter.home)`.
+3. Ensure imports are added: `import '../../../../core/router/app_router.dart';` where needed.
+4. Run the app and confirm successful navigation to the DashboardPage at `'/home'` after login/register/splash.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\splash_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\splash_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+
+
+Wire up missing feature DI and BlocProviders for Dashboard, Profile, and Results.
+
+Context from thread and code:
+- `DashboardPage` (`lib/features/dashboard/presentation/pages/dashboard_page.dart`) reads `DashboardBloc`.
+- `ProfilePage` and `EditProfilePage` read `ProfileBloc`.
+- `ResultsPage` reads `ResultsBloc`.
+- `lib/core/di/service_locator.dart` has commented placeholders for these features.
+- `app_router.dart` currently constructs pages directly without providing these blocs.
+
+Steps:
+1. In `lib/core/di/service_locator.dart`:
+   - Add concrete registrations for each feature: data sources (remote/local if applicable), repositories, use cases, and finally `sl.registerFactory<...Bloc>(() => ...Bloc(...usecases));`.
+2. In `lib/core/router/app_router.dart`:
+   - Wrap the `builder` of each route using these pages with appropriate `BlocProvider` or `MultiBlocProvider`. Example:
+     - Home route: `BlocProvider(create: (_) => sl<DashboardBloc>(), child: DashboardPage(userId: userId))`
+     - Profile route: `BlocProvider(create: (_) => sl<ProfileBloc>(), child: ProfilePage(userId: userId))`
+     - (If you plan to expose results via a route) wrap `ResultsPage` similarly with `ResultsBloc`.
+3. Alternatively, if pages should own their blocs, provide `BlocProvider` at the page entry widget build instead of the router, still constructing blocs via `sl`.
+4. Build and run; verify these pages no longer throw a missing provider exception and that events dispatched in `initState` are handled.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\profile_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\profile_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\results_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\results\presentation\pages\results_page.dart
+
+
+Fix service locator usage in pages to avoid undefined identifier errors.
+
+Steps:
+1. Open `lib/features/exams/presentation/pages/exam_detail_page.dart`:
+   - Replace `getIt<ExamBloc>()` with `sl<ExamBloc>()`.
+   - Ensure `import '../../../../core/di/service_locator.dart';` is present.
+2. Open `lib/features/exam_session/presentation/pages/exam_taking_page.dart`:
+   - Replace `getIt<ExamSessionBloc>()` with `sl<ExamSessionBloc>()`.
+   - Ensure the same import is present.
+3. Build to confirm no more `getIt`-related errors.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\pages\exam_taking_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+
+
+Resolve ThemeBloc provisioning for Settings.
+
+Options:
+A) Provide ThemeBloc
+1. Add ThemeBloc DI registration in `lib/core/di/service_locator.dart` (and any dependencies).
+2. In `lib/main.dart`, add `BlocProvider<ThemeBloc>(create: (_) => sl<ThemeBloc>())` to the `MultiBlocProvider`.
+3. Keep existing SettingsPage theme UI.
+
+B) Remove Theme dependency (to match simplified scope)
+1. In `lib/features/settings/presentation/pages/settings_page.dart`, remove imports/usages of `ThemeBloc`, `ThemeEvent`, `ThemeState`, and `ThemeSelector`.
+2. Remove the Appearance/Theme tile and any theme-related code paths.
+3. Keep only settings that the web app supports.
+
+Choose one path and update accordingly to avoid runtime exceptions.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\pages\settings_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\pages\settings_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+
+
+Clean up Firebase usage to match the simplified feature set.
+
+Steps:
+1. Open `pubspec.yaml` and remove:
+   - `firebase_messaging`
+   - `firebase_performance`
+   - Optionally `firebase_analytics` if not used.
+2. In `lib/main.dart`, delete the call to `FirebaseService.instance.initialize()` and any try/catch specific to messaging/performance.
+3. In `lib/core/di/service_locator.dart`, remove `FirebaseService` registration and any imports if it’s not used elsewhere.
+4. Run `flutter pub get` and perform a full rebuild to ensure the app compiles without the removed packages.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\pubspec.yaml\c:\Users\goela\Desktop\Trie\mobile-app\pubspec.yaml
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
+
+
+Unify navigation and fix route/helper mismatch.
+
+Steps:
+1. Replace string paths with AppRouter helpers in auth pages and elsewhere:
+   - Login/Register/Splash/ForgotPassword: import `core/router/app_router.dart` and call `AppRouter.goToLogin(context)`, `AppRouter.goToHome(context)`, etc.
+2. Align the exam-result route:
+   - Option A: Change the nested route under exams to `path: 'result'` so it resolves to `/exams/:examId/result` and matches `AppRouter.examResult` and helpers.
+   - Option B: Keep the absolute route `/exam-result/:examId` and update `AppRouter.examResult` constant and `goToExamResult`/`pushExamResult` helpers accordingly.
+3. Search for any remaining hardcoded path strings and replace them to prevent future drift.
+
+
+### Referred Files
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\login_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\register_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart
+- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\splash_page.dart\c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\splash_page.dart

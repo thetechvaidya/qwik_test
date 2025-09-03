@@ -7,7 +7,7 @@ import '../bloc/settings_state.dart';
 import 'settings_tile.dart';
 
 class NotificationSettings extends StatefulWidget {
-  const NotificationSettings({Key? key}) : super(key: key);
+  const NotificationSettings({super.key});
 
   @override
   State<NotificationSettings> createState() => _NotificationSettingsState();
@@ -68,7 +68,7 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                           Icon(
                             Icons.error_outline,
                             size: 48,
-                            color: Colors.red.withOpacity(0.6),
+                            color: Colors.red.withAlpha((255 * 0.6).round()),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -333,7 +333,7 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                 notificationSettings.copyWith(quietHoursEnabled: value),
               ),
             ),
-            if (notificationSettings.quietHoursEnabled ?? false) ..[
+            if (notificationSettings.quietHoursEnabled ?? false) ...[
               SettingsTile(
                 icon: Icons.schedule,
                 title: 'Start Time',

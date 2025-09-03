@@ -1,31 +1,15 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../../../exams/domain/entities/search_history.dart';
-import '../repositories/search_repository.dart';
+import 'package:qwiktest_mobile/core/error/failures.dart';
+import 'package:qwiktest_mobile/core/usecases/usecase.dart';
+import 'package:qwiktest_mobile/features/search/domain/repositories/search_repository.dart';
 
-/// Use case for getting search history
-class GetSearchHistoryUseCase implements UseCase<List<SearchHistory>, GetSearchHistoryParams> {
+class GetSearchHistoryUseCase implements UseCase<List<String>, NoParams> {
   final SearchRepository repository;
 
   GetSearchHistoryUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<SearchHistory>>> call(GetSearchHistoryParams params) async {
-    return await repository.getSearchHistory(
-      limit: params.limit,
-      category: params.category,
-    );
+  Future<Either<Failure, List<String>>> call(NoParams params) async {
+    return await repository.getSearchHistory();
   }
-}
-
-/// Parameters for getting search history
-class GetSearchHistoryParams {
-  final int limit;
-  final String? category;
-
-  const GetSearchHistoryParams({
-    this.limit = 20,
-    this.category,
-  });
 }

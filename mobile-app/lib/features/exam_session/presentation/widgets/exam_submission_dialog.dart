@@ -91,7 +91,7 @@ class ExamSubmissionDialog extends StatelessWidget {
             ),
           ),
           
-          if (unansweredCount > 0) ..[
+          if (unansweredCount > 0) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),

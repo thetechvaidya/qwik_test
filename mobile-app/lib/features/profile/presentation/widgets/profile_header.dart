@@ -93,7 +93,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (profile.email.isNotEmpty) ..[
+            if (profile.email.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
                 profile.email,
@@ -103,7 +103,7 @@ class ProfileHeader extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-            if (profile.bio != null && profile.bio!.isNotEmpty) ..[
+            if (profile.bio != null && profile.bio!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),

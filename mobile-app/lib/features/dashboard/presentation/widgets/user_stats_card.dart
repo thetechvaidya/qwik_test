@@ -61,7 +61,7 @@ class UserStatsCard extends StatelessWidget {
         const SizedBox(height: 16),
         
         // Subject-wise Progress
-        if (userStats.subjectProgress.isNotEmpty) ..[
+        if (userStats.subjectProgress.isNotEmpty) ...[
           Text(
             'Subject Progress',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(

@@ -21,53 +21,10 @@ class PerformanceTrendModel extends PerformanceTrend {
     required super.examIds,
   });
 
-  factory PerformanceTrendModel.fromJson(Map<String, dynamic> json) {
-    return PerformanceTrendModel(
-      id: json['id'] as String,
-      date: DateTime.parse(json['date'] as String),
-      score: (json['score'] as num).toDouble(),
-      examCount: json['examCount'] as int,
-      totalTimeSpent: Duration(
-        minutes: json['totalTimeSpentMinutes'] as int? ?? 0,
-      ),
-      category: json['category'] as String,
-      period: TrendPeriod.values.firstWhere(
-        (e) => e.name == json['period'],
-        orElse: () => TrendPeriod.daily,
-      ),
-      metadata: Map<String, dynamic>.from(
-        json['metadata'] as Map<String, dynamic>? ?? {},
-      ),
-      accuracy: (json['accuracy'] as num?)?.toDouble(),
-      questionsAnswered: json['questionsAnswered'] as int?,
-      correctAnswers: json['correctAnswers'] as int?,
-      averageTimePerQuestion: json['averageTimePerQuestionSeconds'] != null
-          ? Duration(seconds: json['averageTimePerQuestionSeconds'] as int)
-          : null,
-      examIds: (json['examIds'] as List<dynamic>?)?
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
-    );
-  }
+  factory PerformanceTrendModel.fromJson(Map<String, dynamic> json) =>
+      _$PerformanceTrendModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'date': date.toIso8601String(),
-      'score': score,
-      'examCount': examCount,
-      'totalTimeSpentMinutes': totalTimeSpent.inMinutes,
-      'category': category,
-      'period': period.name,
-      'metadata': metadata,
-      'accuracy': accuracy,
-      'questionsAnswered': questionsAnswered,
-      'correctAnswers': correctAnswers,
-      'averageTimePerQuestionSeconds': averageTimePerQuestion?.inSeconds,
-      'examIds': examIds,
-    };
-  }
+  Map<String, dynamic> toJson() => _$PerformanceTrendModelToJson(this);
 
   /// Create from entity
   factory PerformanceTrendModel.fromEntity(PerformanceTrend entity) {

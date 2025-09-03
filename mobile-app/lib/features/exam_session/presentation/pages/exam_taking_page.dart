@@ -18,14 +18,14 @@ import '../../../../core/di/service_locator.dart';
 
 /// Main page for taking an exam session
 class ExamTakingPage extends StatefulWidget {
-  final String sessionId;
+  final String? sessionId;
   final String? examId; // For starting new session
 
   const ExamTakingPage({
     super.key,
-    required this.sessionId,
+    this.sessionId,
     this.examId,
-  });
+  }) : assert(sessionId != null || examId != null, 'Either sessionId or examId must be provided');
 
   @override
   State<ExamTakingPage> createState() => _ExamTakingPageState();
@@ -41,13 +41,13 @@ class _ExamTakingPageState extends State<ExamTakingPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _examSessionBloc = getIt<ExamSessionBloc>();
+    _examSessionBloc = sl<ExamSessionBloc>();
     
     // Load or start exam session
     if (widget.examId != null) {
       _examSessionBloc.add(StartExamSessionEvent(examId: widget.examId!));
-    } else {
-      _examSessionBloc.add(LoadExamSessionEvent(sessionId: widget.sessionId));
+    } else if (widget.sessionId != null) {
+      _examSessionBloc.add(LoadExamSessionEvent(sessionId: widget.sessionId!));
     }
   }
 

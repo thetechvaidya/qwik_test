@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/responsive/responsive_builder.dart';
 import '../../core/responsive/screen_size.dart';
+import 'package:flutter/gestures.dart';
 import 'navigation_item.dart';
 import 'app_navigation_bar.dart';
 import 'app_navigation_rail.dart';

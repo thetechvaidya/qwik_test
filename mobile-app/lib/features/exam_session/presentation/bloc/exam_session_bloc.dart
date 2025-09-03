@@ -92,21 +92,34 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
         occurredAt: DateTime.now(),
       )),
       (session) {
-        if (session.questions.isNotEmpty) {
-          _startTimer(session.remainingTimeSeconds);
-          emit(ExamSessionActive(
-            session: session,
-            currentQuestion: session.questions[session.currentQuestionIndex],
-            answers: session.answers,
-            remainingTimeSeconds: session.remainingTimeSeconds,
-            lastUpdated: DateTime.now(),
-          ));
-        } else {
+        if (session.questions.isEmpty) {
           emit(ExamSessionError(
             message: 'No questions found in exam session',
             occurredAt: DateTime.now(),
           ));
+          return;
         }
+
+        // Validate question types
+        final unsupportedQuestions = _validateQuestionTypes(session.questions);
+        if (unsupportedQuestions.isNotEmpty) {
+          final unsupportedTypes = unsupportedQuestions.map((q) => q.type.toString()).toSet().join(', ');
+          emit(ExamSessionError(
+            message: 'Exam contains unsupported question types: $unsupportedTypes. Please contact support.',
+            errorCode: 'UNSUPPORTED_QUESTION_TYPES',
+            occurredAt: DateTime.now(),
+          ));
+          return;
+        }
+
+        _startTimer(session.remainingTimeSeconds);
+        emit(ExamSessionActive(
+          session: session,
+          currentQuestion: session.questions[session.currentQuestionIndex],
+          answers: session.answers,
+          remainingTimeSeconds: session.remainingTimeSeconds,
+          lastUpdated: DateTime.now(),
+        ));
       },
     );
   }
@@ -138,6 +151,18 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
             abandonedAt: session.submittedAt ?? DateTime.now(),
           ));
         } else {
+          // Validate question types for active sessions
+          final unsupportedQuestions = _validateQuestionTypes(session.questions);
+          if (unsupportedQuestions.isNotEmpty) {
+            final unsupportedTypes = unsupportedQuestions.map((q) => q.type.toString()).toSet().join(', ');
+            emit(ExamSessionError(
+              message: 'Exam contains unsupported question types: $unsupportedTypes. Please contact support.',
+              errorCode: 'UNSUPPORTED_QUESTION_TYPES',
+              occurredAt: DateTime.now(),
+            ));
+            return;
+          }
+
           _startTimer(session.remainingTimeSeconds);
           emit(ExamSessionActive(
             session: session,
@@ -604,6 +629,17 @@ class ExamSessionBloc extends Bloc<ExamSessionEvent, ExamSessionState> {
       isPassed: isPassed,
       completedAt: session.submittedAt ?? DateTime.now(),
     ));
+  }
+
+  /// Validate question types and return unsupported questions
+  List<Question> _validateQuestionTypes(List<Question> questions) {
+    const supportedTypes = {
+      QuestionType.multipleChoice,
+      QuestionType.trueFalse,
+      QuestionType.singleChoice,
+    };
+
+    return questions.where((question) => !supportedTypes.contains(question.type)).toList();
   }
 
   /// Map failure to user-friendly message

@@ -4,9 +4,6 @@ import '../../domain/entities/search_result.dart';
 import '../../domain/usecases/search_usecase.dart';
 import '../../domain/usecases/get_search_suggestions_usecase.dart';
 import '../../domain/usecases/manage_search_history_usecase.dart';
-import '../../domain/usecases/get_search_history_usecase.dart';
-import '../../domain/usecases/clear_search_history_usecase.dart';
-import '../../domain/usecases/remove_search_history_usecase.dart';
 import '../../domain/entities/search_suggestion.dart';
 import '../../domain/entities/search_history.dart';
 
@@ -204,23 +201,14 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final SearchUseCase _searchUseCase;
   final GetSearchSuggestionsUseCase _getSearchSuggestionsUseCase;
   final ManageSearchHistoryUseCase _manageSearchHistoryUseCase;
-  final GetSearchHistoryUseCase _getSearchHistoryUseCase;
-  final ClearSearchHistoryUseCase _clearSearchHistoryUseCase;
-  final RemoveSearchHistoryUseCase _removeSearchHistoryUseCase;
 
   SearchBloc({
     required SearchUseCase searchUseCase,
     required GetSearchSuggestionsUseCase getSearchSuggestionsUseCase,
     required ManageSearchHistoryUseCase manageSearchHistoryUseCase,
-    required GetSearchHistoryUseCase getSearchHistoryUseCase,
-    required ClearSearchHistoryUseCase clearSearchHistoryUseCase,
-    required RemoveSearchHistoryUseCase removeSearchHistoryUseCase,
   })  : _searchUseCase = searchUseCase,
         _getSearchSuggestionsUseCase = getSearchSuggestionsUseCase,
         _manageSearchHistoryUseCase = manageSearchHistoryUseCase,
-        _getSearchHistoryUseCase = getSearchHistoryUseCase,
-        _clearSearchHistoryUseCase = clearSearchHistoryUseCase,
-        _removeSearchHistoryUseCase = removeSearchHistoryUseCase,
         super(const SearchInitial()) {
     on<PerformSearchEvent>(_onPerformSearch);
     on<LoadMoreSearchResultsEvent>(_onLoadMoreSearchResults);
@@ -339,8 +327,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     GetSearchHistoryEvent event,
     Emitter<SearchState> emit,
   ) async {
-    final params = GetSearchHistoryParams(limit: event.limit);
-    final result = await _getSearchHistoryUseCase(params);
+    final result = await _manageSearchHistoryUseCase.getHistory(limit: event.limit);
 
     result.fold(
       (failure) => emit(SearchError(failure.message)),
@@ -352,7 +339,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     ClearSearchHistoryEvent event,
     Emitter<SearchState> emit,
   ) async {
-    final result = await _clearSearchHistoryUseCase(const NoParams());
+    final result = await _manageSearchHistoryUseCase.clearHistory();
 
     result.fold(
       (failure) => emit(SearchError(failure.message)),
@@ -367,8 +354,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     RemoveSearchHistoryEvent event,
     Emitter<SearchState> emit,
   ) async {
-    final params = RemoveSearchHistoryParams(id: event.id);
-    final result = await _removeSearchHistoryUseCase(params);
+    final result = await _manageSearchHistoryUseCase.removeHistoryItem(event.id);
 
     result.fold(
       (failure) => emit(SearchError(failure.message)),

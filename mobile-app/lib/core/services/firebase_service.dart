@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
+import '../config/environment_config.dart';
 
 /// Centralized Firebase service for analytics, crashlytics, and performance monitoring
 class FirebaseService {
@@ -14,24 +15,33 @@ class FirebaseService {
   late final FirebaseCrashlytics _crashlytics;
   late final FirebasePerformance _performance;
   
-  /// Initialize Firebase services
+  /// Initialize Firebase services based on environment
   Future<void> initialize() async {
     try {
       _analytics = FirebaseAnalytics.instance;
       _crashlytics = FirebaseCrashlytics.instance;
       _performance = FirebasePerformance.instance;
       
-      // Enable crashlytics collection in release mode
-      await _crashlytics.setCrashlyticsCollectionEnabled(!kDebugMode);
+      // Enable crashlytics collection only in production
+      await _crashlytics.setCrashlyticsCollectionEnabled(EnvironmentConfig.isProduction);
       
-      // Enable analytics collection
-      await _analytics.setAnalyticsCollectionEnabled(true);
+      // Enable analytics collection based on environment
+      final enableAnalytics = EnvironmentConfig.isProduction || EnvironmentConfig.isStaging;
+      await _analytics.setAnalyticsCollectionEnabled(enableAnalytics);
       
-      if (kDebugMode) {
-        print('Firebase services initialized successfully');
+      // Enable performance monitoring only in production and staging
+      if (EnvironmentConfig.isProduction || EnvironmentConfig.isStaging) {
+        await _performance.setPerformanceCollectionEnabled(true);
+      }
+      
+      if (EnvironmentConfig.enableDebugLogging) {
+        print('Firebase services initialized successfully for ${EnvironmentConfig.environmentName}');
+        print('Analytics enabled: $enableAnalytics');
+        print('Crashlytics enabled: ${EnvironmentConfig.isProduction}');
+        print('Performance monitoring enabled: ${EnvironmentConfig.isProduction || EnvironmentConfig.isStaging}');
       }
     } catch (e) {
-      if (kDebugMode) {
+      if (EnvironmentConfig.enableDebugLogging) {
         print('Error initializing Firebase services: $e');
       }
     }

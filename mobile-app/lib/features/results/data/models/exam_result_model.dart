@@ -4,14 +4,17 @@ import 'question_result_model.dart';
 
 part 'exam_result_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class ExamResultModel extends ExamResult {
+  @override
+  final List<QuestionResultModel> questionResults;
+
   const ExamResultModel({
     required super.id,
     required super.examId,
     required super.examTitle,
     required super.userId,
-    required super.questionResults,
+    required this.questionResults,
     required super.totalScore,
     required super.maxScore,
     required super.timeSpent,
@@ -26,75 +29,12 @@ class ExamResultModel extends ExamResult {
     super.certificateUrl,
     super.sharedAt,
     super.notes,
-  });
+  }) : super(questionResults: questionResults);
 
-  factory ExamResultModel.fromJson(Map<String, dynamic> json) {
-    return ExamResultModel(
-      id: json['id'] as String,
-      examId: json['examId'] as String,
-      examTitle: json['examTitle'] as String,
-      userId: json['userId'] as String,
-      questionResults: (json['questionResults'] as List<dynamic>)
-          .map((e) => QuestionResultModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      totalScore: (json['totalScore'] as num).toDouble(),
-      maxScore: (json['maxScore'] as num).toDouble(),
-      timeSpent: Duration(
-        milliseconds: json['timeSpentMs'] as int,
-      ),
-      startedAt: DateTime.parse(json['startedAt'] as String),
-      completedAt: json['completedAt'] != null
-          ? DateTime.parse(json['completedAt'] as String)
-          : null,
-      status: ExamStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => ExamStatus.inProgress,
-      ),
-      category: json['category'] as String,
-      difficulty: ExamDifficulty.values.firstWhere(
-        (e) => e.name == json['difficulty'],
-        orElse: () => ExamDifficulty.medium,
-      ),
-      tags: (json['tags'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-      metadata: Map<String, dynamic>.from(
-        json['metadata'] as Map<String, dynamic>? ?? {},
-      ),
-      feedback: json['feedback'] as String?,
-      certificateUrl: json['certificateUrl'] as String?,
-      sharedAt: json['sharedAt'] != null
-          ? DateTime.parse(json['sharedAt'] as String)
-          : null,
-      notes: json['notes'] as String?,
-    );
-  }
+  factory ExamResultModel.fromJson(Map<String, dynamic> json) =>
+      _$ExamResultModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'examId': examId,
-      'examTitle': examTitle,
-      'userId': userId,
-      'questionResults': questionResults
-          .map((e) => (e as QuestionResultModel).toJson())
-          .toList(),
-      'totalScore': totalScore,
-      'maxScore': maxScore,
-      'timeSpentMs': timeSpent.inMilliseconds,
-      'startedAt': startedAt.toIso8601String(),
-      'completedAt': completedAt?.toIso8601String(),
-      'status': status.name,
-      'category': category,
-      'difficulty': difficulty.name,
-      'tags': tags,
-      'metadata': metadata,
-      'feedback': feedback,
-      'certificateUrl': certificateUrl,
-      'sharedAt': sharedAt?.toIso8601String(),
-      'notes': notes,
-    };
-  }
+  Map<String, dynamic> toJson() => _$ExamResultModelToJson(this);
 
   /// Create from entity
   factory ExamResultModel.fromEntity(ExamResult entity) {
@@ -124,13 +64,14 @@ class ExamResultModel extends ExamResult {
   }
 
   /// Convert to entity
+  @override
   ExamResult toEntity() {
     return ExamResult(
       id: id,
       examId: examId,
       examTitle: examTitle,
       userId: userId,
-      questionResults: questionResults,
+      questionResults: questionResults.map((e) => e.toEntity()).toList(),
       totalScore: totalScore,
       maxScore: maxScore,
       timeSpent: timeSpent,
@@ -175,7 +116,7 @@ class ExamResultModel extends ExamResult {
       examId: examId ?? this.examId,
       examTitle: examTitle ?? this.examTitle,
       userId: userId ?? this.userId,
-      questionResults: questionResults ?? this.questionResults.cast<QuestionResultModel>(),
+      questionResults: questionResults ?? this.questionResults,
       totalScore: totalScore ?? this.totalScore,
       maxScore: maxScore ?? this.maxScore,
       timeSpent: timeSpent ?? this.timeSpent,

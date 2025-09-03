@@ -157,11 +157,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       onAvatarTap: _showAvatarOptions,
                     ),
                     const SizedBox(height: 24),
-                    if (stats != null) ..[
+                    if (stats != null) ...[
                       ProfileStatsCard(stats: stats),
                       const SizedBox(height: 16),
                     ],
-                    if (subscriptionInfo != null) ..[
+                    if (subscriptionInfo != null) ...[
                       SubscriptionInfoCard(subscriptionInfo: subscriptionInfo),
                       const SizedBox(height: 16),
                     ],

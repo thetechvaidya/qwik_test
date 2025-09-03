@@ -190,7 +190,7 @@ class RecentActivitiesSection extends StatelessWidget {
                               fontSize: 12,
                             ),
                       ),
-                      if (activity.metadata.isNotEmpty) ..[
+                      if (activity.metadata.isNotEmpty) ...[
                         const SizedBox(width: 16),
                         ..._buildMetadataTags(context, activity.metadata),
                       ],

@@ -10,10 +10,9 @@ import '../bloc/theme_state.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/theme_selector.dart';
-import '../widgets/notification_settings.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -87,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     Icon(
                       Icons.error_outline,
                       size: 64,
-                      color: Colors.red.withOpacity(0.6),
+                      color: Colors.red.withAlpha((255 * 0.6).round()),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -125,12 +124,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildAppearanceSection(context),
-                    const SizedBox(height: 24),
-                    _buildNotificationSection(context),
-                    const SizedBox(height: 24),
-                    _buildPreferencesSection(context),
-                    const SizedBox(height: 24),
-                    _buildDataSection(context),
                     const SizedBox(height: 24),
                     _buildAboutSection(context),
                   ],
@@ -178,103 +171,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationSection(BuildContext context) {
-    return SettingsSection(
-      title: 'Notifications',
-      children: [
-        SettingsTile(
-          icon: Icons.notifications,
-          title: 'Notification Settings',
-          subtitle: 'Manage your notification preferences',
-          onTap: () => _showNotificationSettings(context),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildPreferencesSection(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-      builder: (context, state) {
-        if (state is! SettingsLoaded) {
-          return const SizedBox.shrink();
-        }
-        
-        return SettingsSection(
-          title: 'Preferences',
-          children: [
-            SettingsTile.switchTile(
-              icon: Icons.offline_pin,
-              title: 'Offline Mode',
-              subtitle: 'Download content for offline access',
-              value: state.settings.offlineMode,
-              onChanged: (value) {
-                final updatedSettings = state.settings.copyWith(
-                  offlineMode: value,
-                );
-                context.read<SettingsBloc>().add(
-                  SettingsUpdateRequested(settings: updatedSettings),
-                );
-              },
-            ),
-            SettingsTile.switchTile(
-              icon: Icons.auto_awesome,
-              title: 'Auto-sync',
-              subtitle: 'Automatically sync your progress',
-              value: state.settings.autoSync,
-              onChanged: (value) {
-                final updatedSettings = state.settings.copyWith(
-                  autoSync: value,
-                );
-                context.read<SettingsBloc>().add(
-                  SettingsUpdateRequested(settings: updatedSettings),
-                );
-              },
-            ),
-            SettingsTile.switchTile(
-              icon: Icons.analytics,
-              title: 'Analytics',
-              subtitle: 'Help improve the app with usage data',
-              value: state.settings.analyticsEnabled,
-              onChanged: (value) {
-                final updatedSettings = state.settings.copyWith(
-                  analyticsEnabled: value,
-                );
-                context.read<SettingsBloc>().add(
-                  SettingsUpdateRequested(settings: updatedSettings),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildDataSection(BuildContext context) {
-    return SettingsSection(
-      title: 'Data & Storage',
-      children: [
-        SettingsTile(
-          icon: Icons.storage,
-          title: 'Storage Usage',
-          subtitle: 'View app storage usage',
-          onTap: () => _showStorageInfo(context),
-        ),
-        SettingsTile(
-          icon: Icons.cloud_sync,
-          title: 'Sync Data',
-          subtitle: 'Sync your data with the cloud',
-          onTap: () => _syncData(context),
-        ),
-        SettingsTile(
-          icon: Icons.delete_sweep,
-          title: 'Clear Cache',
-          subtitle: 'Free up space by clearing cache',
-          onTap: () => _showClearCacheDialog(context),
-        ),
-      ],
-    );
-  }
 
   Widget _buildAboutSection(BuildContext context) {
     return SettingsSection(
@@ -284,21 +181,6 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: Icons.info,
           title: 'App Version',
           subtitle: '1.0.0',
-        ),
-        SettingsTile(
-          icon: Icons.description,
-          title: 'Terms of Service',
-          onTap: () => _showTermsOfService(context),
-        ),
-        SettingsTile(
-          icon: Icons.privacy_tip,
-          title: 'Privacy Policy',
-          onTap: () => _showPrivacyPolicy(context),
-        ),
-        SettingsTile(
-          icon: Icons.help,
-          title: 'Help & Support',
-          onTap: () => _showHelpSupport(context),
         ),
       ],
     );
@@ -366,76 +248,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showNotificationSettings(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => const NotificationSettings(),
-    );
-  }
 
-  void _showStorageInfo(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Storage Usage'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('App Data: 25.3 MB'),
-            Text('Cache: 12.7 MB'),
-            Text('Offline Content: 156.2 MB'),
-            Divider(),
-            Text('Total: 194.2 MB', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _syncData(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Syncing data...'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showClearCacheDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Cache'),
-        content: const Text('This will clear all cached data and free up storage space. Continue?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Cache cleared successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showResetDialog() {
     showDialog(
@@ -463,15 +276,5 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  void _showTermsOfService(BuildContext context) {
-    // Navigate to terms of service page
-  }
 
-  void _showPrivacyPolicy(BuildContext context) {
-    // Navigate to privacy policy page
-  }
-
-  void _showHelpSupport(BuildContext context) {
-    // Navigate to help and support page
-  }
 }

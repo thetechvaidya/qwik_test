@@ -1,25 +1,15 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
-import '../repositories/search_repository.dart';
+import 'package:qwiktest_mobile/core/error/failures.dart';
+import 'package:qwiktest_mobile/core/usecases/usecase.dart';
+import 'package:qwiktest_mobile/features/search/domain/repositories/search_repository.dart';
 
-/// Use case for removing a specific search history item
-class RemoveSearchHistoryUseCase implements UseCase<void, RemoveSearchHistoryParams> {
+class RemoveSearchHistoryUseCase implements UseCase<void, String> {
   final SearchRepository repository;
 
   RemoveSearchHistoryUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(RemoveSearchHistoryParams params) async {
-    return await repository.removeSearchHistory(params.historyId);
+  Future<Either<Failure, void>> call(String params) async {
+    return await repository.removeSearchHistory(params);
   }
-}
-
-/// Parameters for removing search history
-class RemoveSearchHistoryParams {
-  final String historyId;
-
-  const RemoveSearchHistoryParams({
-    required this.historyId,
-  });
 }

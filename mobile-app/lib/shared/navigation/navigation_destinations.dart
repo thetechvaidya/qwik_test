@@ -23,23 +23,7 @@ class NavigationDestinations {
     tooltip: 'View Exams',
   );
 
-  /// Practice destination
-  static const NavigationItem practice = NavigationItem(
-    icon: Icons.school_outlined,
-    selectedIcon: Icons.school,
-    label: 'Practice',
-    route: '/practice',
-    tooltip: 'Practice Questions',
-  );
 
-  /// Progress/Analytics destination
-  static const NavigationItem progress = NavigationItem(
-    icon: Icons.analytics_outlined,
-    selectedIcon: Icons.analytics,
-    label: 'Progress',
-    route: '/progress',
-    tooltip: 'View Progress',
-  );
 
   /// Profile destination
   static const NavigationItem profile = NavigationItem(
@@ -59,48 +43,18 @@ class NavigationDestinations {
     tooltip: 'App Settings',
   );
 
-  /// Notifications destination
-  static const NavigationItem notifications = NavigationItem(
-    icon: Icons.notifications_outlined,
-    selectedIcon: Icons.notifications,
-    label: 'Notifications',
-    route: '/notifications',
-    tooltip: 'View Notifications',
-  );
 
-  /// Help/Support destination
-  static const NavigationItem help = NavigationItem(
-    icon: Icons.help_outline,
-    selectedIcon: Icons.help,
-    label: 'Help',
-    route: '/help',
-    tooltip: 'Get Help',
-  );
-
-  /// About destination
-  static const NavigationItem about = NavigationItem(
-    icon: Icons.info_outline,
-    selectedIcon: Icons.info,
-    label: 'About',
-    route: '/about',
-    tooltip: 'About App',
-  );
 
   /// Main navigation destinations (primary navigation)
   static const List<NavigationItem> mainDestinations = [
     home,
     exams,
-    practice,
-    progress,
     profile,
   ];
 
   /// Secondary navigation destinations (drawer/menu items)
   static const List<NavigationItem> secondaryDestinations = [
     settings,
-    notifications,
-    help,
-    about,
   ];
 
   /// All navigation destinations
@@ -128,7 +82,7 @@ class NavigationDestinations {
       }
       // Check if the route starts with the destination route (for nested routes)
       // e.g., '/exams/:id' should match '/exams'
-      if (route.startsWith(items[i].route + '/') || 
+      if (route.startsWith('${items[i].route}/') || 
           (items[i].route != '/' && route.startsWith(items[i].route))) {
         return i;
       }
@@ -155,24 +109,14 @@ class NavigationDestinations {
     return secondaryDestinations.any((item) => item.route == route);
   }
 
-  /// Get navigation items with badges (for notifications, etc.)
+  /// Get navigation items with badges
   static List<NavigationItem> getDestinationsWithBadges({
     List<NavigationItem>? destinations,
-    int? notificationCount,
     Map<String, Widget>? customBadges,
   }) {
     final targetDestinations = destinations ?? mainDestinations;
     
     return targetDestinations.map((item) {
-      // Add notification badge
-      if (item.route == '/notifications' && notificationCount != null && notificationCount > 0) {
-        return item.copyWith(
-          badge: notificationCount > 99
-              ? const Text('99+')
-              : Text(notificationCount.toString()),
-        );
-      }
-
       // Add custom badges
       if (customBadges != null && customBadges.containsKey(item.route)) {
         return item.copyWith(badge: customBadges[item.route]);
@@ -185,8 +129,6 @@ class NavigationDestinations {
   /// Get disabled navigation items based on user permissions or app state
   static List<NavigationItem> getDestinationsWithPermissions({
     bool canAccessExams = true,
-    bool canAccessPractice = true,
-    bool canAccessProgress = true,
     bool canAccessProfile = true,
     Map<String, bool>? customPermissions,
   }) {
@@ -197,12 +139,6 @@ class NavigationDestinations {
       switch (item.route) {
         case '/exams':
           isEnabled = canAccessExams;
-          break;
-        case '/practice':
-          isEnabled = canAccessPractice;
-          break;
-        case '/progress':
-          isEnabled = canAccessProgress;
           break;
         case '/profile':
           isEnabled = canAccessProfile;
@@ -238,7 +174,7 @@ extension NavigationDestinationsExtension on List<NavigationItem> {
         return i;
       }
       // Check if the route starts with the destination route (for nested routes)
-      if (route.startsWith(this[i].route + '/') || 
+      if (route.startsWith('${this[i].route}/') || 
           (this[i].route != '/' && route.startsWith(this[i].route))) {
         return i;
       }

@@ -11,7 +11,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/auth_header.dart';
 
-import '../widgets/social_auth_buttons.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,11 +48,11 @@ class _LoginPageState extends State<LoginPage> {
 
 
   void _navigateToRegister() {
-    context.go('/register');
+    context.go(AppRouter.register);
   }
 
   void _navigateToForgotPassword() {
-    context.go('/forgot-password');
+    context.go(AppRouter.forgotPassword);
   }
 
   void _showErrorSnackBar(String message) {
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            context.go('/dashboard');
+            context.go(AppRouter.home);
           } else if (state is AuthError) {
             _showErrorSnackBar(state.message);
           }
@@ -110,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your email';
                           }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$').hasMatch(value)) {
+                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                             return 'Please enter a valid email';
                           }
                           return null;
@@ -195,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       
                       // Social Authentication
-                      const SocialAuthButtons(),
+      
                       
                       const SizedBox(height: 32),
                       

@@ -31,14 +31,13 @@ class AnswerOptionsWidget extends StatelessWidget {
         return _buildSingleChoiceOptions();
       case QuestionType.multipleChoice:
         return _buildMultipleChoiceOptions();
-      case QuestionType.fillInTheBlank:
-        return _buildFillInTheBlankOptions();
-      case QuestionType.essay:
-        return _buildEssayOptions();
-      case QuestionType.matching:
-        return _buildMatchingOptions();
-      case QuestionType.ordering:
-        return _buildOrderingOptions();
+      default:
+        return const Center(
+          child: Text(
+            'Unsupported question type',
+            style: TextStyle(color: Colors.red),
+          ),
+        );
     }
   }
 
@@ -96,79 +95,7 @@ class AnswerOptionsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFillInTheBlankOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Fill in the blank:',
-          style: AppTextStyles.titleSmall.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: TextEditingController(
-            text: selectedAnswer?.textAnswer ?? '',
-          ),
-          onChanged: (value) => _handleTextAnswer(value),
-          enabled: !isReviewMode,
-          decoration: InputDecoration(
-            hintText: 'Enter your answer here...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            filled: true,
-            fillColor: AppColors.surface,
-          ),
-          maxLines: 3,
-          minLines: 1,
-        ),
-      ],
-    );
-  }
 
-  Widget _buildEssayOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Essay Answer:',
-          style: AppTextStyles.titleSmall.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: TextEditingController(
-            text: selectedAnswer?.textAnswer ?? '',
-          ),
-          onChanged: (value) => _handleTextAnswer(value),
-          enabled: !isReviewMode,
-          decoration: InputDecoration(
-            hintText: 'Write your essay answer here...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            filled: true,
-            fillColor: AppColors.surface,
-          ),
-          maxLines: 10,
-          minLines: 5,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMatchingOptions() {
-    // TODO: Implement matching question type
-    return const Text('Matching questions not yet implemented');
-  }
-
-  Widget _buildOrderingOptions() {
-    // TODO: Implement ordering question type
-    return const Text('Ordering questions not yet implemented');
-  }
 
   Widget _buildSingleChoiceOption({
     required Option option,
@@ -342,7 +269,8 @@ class AnswerOptionsWidget extends StatelessWidget {
             height: 1.4,
           ),
         ),
-        if (option.imageUrl != null) ..[          const SizedBox(height: 8),
+        if (option.imageUrl != null) ...[
+          const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: CachedNetworkImageWidget(
@@ -483,17 +411,5 @@ class AnswerOptionsWidget extends StatelessWidget {
     onAnswerSelected(answer);
   }
 
-  void _handleTextAnswer(String text) {
-    final answer = Answer(
-      questionId: question.id,
-      selectedOptionIds: [],
-      textAnswer: text,
-      timeSpent: selectedAnswer?.timeSpent ?? 0,
-      answeredAt: DateTime.now(),
-      isCorrect: false, // Text answers need manual grading
-      score: 0, // Will be set during grading
-    );
-    
-    onAnswerSelected(answer);
-  }
+
 }

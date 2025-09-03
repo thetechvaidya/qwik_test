@@ -102,7 +102,7 @@ class ExamEmptyState extends StatelessWidget {
             _buildTitle(context),
             const SizedBox(height: 12),
             _buildMessage(context),
-            if (showAction && (onActionPressed != null || _getDefaultAction() != null)) ..[
+            if (showAction && (onActionPressed != null || _getDefaultAction() != null)) ...[
               const SizedBox(height: 32),
               _buildActionButton(context),
             ],

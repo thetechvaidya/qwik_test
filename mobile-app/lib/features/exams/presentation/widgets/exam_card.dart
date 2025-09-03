@@ -43,17 +43,17 @@ class ExamCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
-              if (!isCompact) ..[
+              if (!isCompact) ...[
                 const SizedBox(height: 8),
                 _buildDescription(context),
               ],
               const SizedBox(height: 12),
               _buildMetadata(context),
-              if (showProgress && exam.userProgress != null) ..[
+              if (showProgress && exam.userProgress != null) ...[
                 const SizedBox(height: 12),
                 _buildProgress(context),
               ],
-              if (!isCompact) ..[
+              if (!isCompact) ...[
                 const SizedBox(height: 12),
                 _buildActions(context),
               ],
@@ -97,7 +97,7 @@ class ExamCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (exam.categoryName != null) ..[
+              if (exam.categoryName != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   exam.categoryName!,
@@ -244,7 +244,7 @@ class ExamCard extends StatelessWidget {
             _getProgressColor(progressPercentage),
           ),
         ),
-        if (progress.lastAttemptAt != null) ..[
+        if (progress.lastAttemptAt != null) ...[
           const SizedBox(height: 4),
           Text(
             'Last attempt: ${DateFormatter.formatRelative(progress.lastAttemptAt!)}',
@@ -278,7 +278,7 @@ class ExamCard extends StatelessWidget {
         ),
         
         // Secondary actions
-        if (progress != null && progress.isStarted) ..[
+        if (progress != null && progress.isStarted) ...[
           const SizedBox(width: 8),
           OutlinedButton(
             onPressed: onTap,

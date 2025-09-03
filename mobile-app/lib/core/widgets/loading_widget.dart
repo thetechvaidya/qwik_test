@@ -31,7 +31,7 @@ class LoadingWidget extends StatelessWidget {
               ),
             ),
           ),
-          if (showMessage && message != null) ..[
+          if (showMessage && message != null) ...[
             const SizedBox(height: 16),
             Text(
               message!,

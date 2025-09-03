@@ -41,14 +41,12 @@ class QuestionContentWidget extends StatelessWidget {
           _buildQuestionText(),
           
           // Question image (if available)
-          if (question.imageUrl != null) ..[            const SizedBox(height: 16),
+          if (question.imageUrl != null) ...[
+            const SizedBox(height: 16),
             _buildQuestionImage(),
           ],
           
-          // Additional content or attachments
-          if (question.attachments?.isNotEmpty == true) ..[            const SizedBox(height: 16),
-            _buildAttachments(),
-          ],
+          // Note: Attachment functionality has been simplified
         ],
       ),
     );
@@ -94,7 +92,8 @@ class QuestionContentWidget extends StatelessWidget {
               if (showDifficulty || showMarks)
                 Row(
                   children: [
-                    if (showDifficulty) ..[                      _buildDifficultyChip(),
+                    if (showDifficulty) ...[
+                      _buildDifficultyChip(),
                       if (showMarks) const SizedBox(width: 8),
                     ],
                     if (showMarks) _buildMarksChip(),
@@ -155,53 +154,7 @@ class QuestionContentWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildAttachments() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Attachments',
-          style: AppTextStyles.titleSmall.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...question.attachments!.map((attachment) => _buildAttachmentItem(attachment)),
-      ],
-    );
-  }
 
-  Widget _buildAttachmentItem(String attachment) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            _getAttachmentIcon(attachment),
-            size: 20,
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _getAttachmentName(attachment),
-              style: AppTextStyles.bodyMedium,
-            ),
-          ),
-          IconButton(
-            onPressed: () => _openAttachment(attachment),
-            icon: const Icon(Icons.open_in_new),
-            iconSize: 20,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDifficultyChip() {
     final difficulty = question.difficulty;
@@ -275,37 +228,5 @@ class QuestionContentWidget extends StatelessWidget {
     }
   }
 
-  IconData _getAttachmentIcon(String attachment) {
-    final extension = attachment.split('.').last.toLowerCase();
-    switch (extension) {
-      case 'pdf':
-        return Icons.picture_as_pdf;
-      case 'doc':
-      case 'docx':
-        return Icons.description;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return Icons.image;
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-        return Icons.video_file;
-      case 'mp3':
-      case 'wav':
-        return Icons.audio_file;
-      default:
-        return Icons.attach_file;
-    }
-  }
 
-  String _getAttachmentName(String attachment) {
-    return attachment.split('/').last;
-  }
-
-  void _openAttachment(String attachment) {
-    // TODO: Implement attachment opening logic
-    // This could open in a web view, download, or use a file viewer
-  }
 }

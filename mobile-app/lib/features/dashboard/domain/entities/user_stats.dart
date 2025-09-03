@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'performance_trend.dart';
+
 /// Entity representing user performance statistics
 class UserStats extends Equatable {
   final int totalExams;
@@ -61,99 +63,5 @@ class UserStats extends Equatable {
     if (averageScore >= 80) return PerformanceRating.good;
     if (averageScore >= 70) return PerformanceRating.average;
     if (averageScore >= 60) return PerformanceRating.belowAverage;
-    return PerformanceRating.needsImprovement;
+    return PerformanceRating.poor;
   }
-
-  /// Get weekly progress percentage
-  double get weeklyProgressPercentage {
-    if (weeklyGoal == 0) return 0.0;
-    return (totalExams / weeklyGoal * 100).clamp(0.0, 100.0);
-  }
-
-  /// Get monthly progress percentage
-  double get monthlyProgressPercentage {
-    if (monthlyGoal == 0) return 0.0;
-    return (totalExams / monthlyGoal * 100).clamp(0.0, 100.0);
-  }
-
-  /// Get average time per exam in minutes
-  double get averageTimePerExam {
-    if (totalExams == 0) return 0.0;
-    return totalTimeSpent / totalExams;
-  }
-
-  /// Get performance trend (improving, declining, stable)
-  PerformanceTrend get performanceTrend {
-    if (performanceTrends.length < 2) return PerformanceTrend.stable;
-    
-    final recent = performanceTrends.take(3).toList();
-    final older = performanceTrends.skip(3).take(3).toList();
-    
-    if (recent.isEmpty || older.isEmpty) return PerformanceTrend.stable;
-    
-    final recentAvg = recent.reduce((a, b) => a + b) / recent.length;
-    final olderAvg = older.reduce((a, b) => a + b) / older.length;
-    
-    final difference = recentAvg - olderAvg;
-    
-    if (difference > 5) return PerformanceTrend.improving;
-    if (difference < -5) return PerformanceTrend.declining;
-    return PerformanceTrend.stable;
-  }
-
-  /// Format total time spent as human readable string
-  String get formattedTotalTime {
-    final hours = totalTimeSpent ~/ 60;
-    final minutes = totalTimeSpent % 60;
-    
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-    return '${minutes}m';
-  }
-
-  @override
-  List<Object?> get props => [
-        totalExams,
-        completedToday,
-        currentStreak,
-        totalPoints,
-        averageScore,
-        totalTimeSpent,
-        performanceTrends,
-        totalCorrectAnswers,
-        totalQuestions,
-        longestStreak,
-        lastExamDate,
-        weeklyGoal,
-        monthlyGoal,
-      ];
-
-  @override
-  String toString() {
-    return 'UserStats(totalExams: $totalExams, currentStreak: $currentStreak, averageScore: $averageScore)';
-  }
-}
-
-/// Enum for streak status
-enum StreakStatus {
-  active,
-  atRisk,
-  broken,
-}
-
-/// Enum for performance rating
-enum PerformanceRating {
-  excellent,
-  good,
-  average,
-  belowAverage,
-  needsImprovement,
-}
-
-/// Enum for performance trend
-enum PerformanceTrend {
-  improving,
-  declining,
-  stable,
-}

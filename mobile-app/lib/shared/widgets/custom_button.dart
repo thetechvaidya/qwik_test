@@ -374,13 +374,13 @@ class CustomButton extends StatelessWidget {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
-          return backgroundColor.withOpacity(0.12);
+          return backgroundColor.withAlpha((255 * 0.12).round());
         }
         return backgroundColor;
       }),
       foregroundColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
-          return foregroundColor.withOpacity(0.38);
+          return foregroundColor.withAlpha((255 * 0.38).round());
         }
         return foregroundColor;
       }),
@@ -401,7 +401,7 @@ class CustomButton extends StatelessWidget {
           ? WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.disabled)) {
                 return BorderSide(
-                  color: borderColor.withOpacity(0.12),
+                  color: borderColor.withAlpha((255 * 0.12).round()),
                   width: AppDimensions.inputBorderWidth,
                 );
               }
@@ -418,13 +418,13 @@ class CustomButton extends StatelessWidget {
       ),
       overlayColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.pressed)) {
-          return foregroundColor.withOpacity(0.12);
+          return foregroundColor.withAlpha((255 * 0.12).round());
         }
         if (states.contains(WidgetState.hovered)) {
-          return foregroundColor.withOpacity(0.08);
+          return foregroundColor.withAlpha((255 * 0.08).round());
         }
         if (states.contains(WidgetState.focused)) {
-          return foregroundColor.withOpacity(0.12);
+          return foregroundColor.withAlpha((255 * 0.12).round());
         }
         return null;
       }),

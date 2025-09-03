@@ -5,9 +5,6 @@ import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/user_stats_card.dart';
-import '../widgets/achievements_section.dart';
-import '../widgets/recent_activities_section.dart';
-import '../widgets/performance_trends_chart.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../../core/widgets/error_widget.dart';
 
@@ -136,30 +133,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         // User Stats Card
                         if (state.userStats != null)
                           UserStatsCard(userStats: state.userStats!),
-                        const SizedBox(height: 16),
-                        
-                        // Performance Trends Chart
-                        if (state.performanceTrends != null && state.performanceTrends!.isNotEmpty)
-                          PerformanceTrendsChart(
-                            trends: state.performanceTrends!,
-                            userId: widget.userId,
-                          ),
-                        const SizedBox(height: 16),
-                        
-                        // Achievements Section
-                        if (state.achievements != null)
-                          AchievementsSection(
-                            achievements: state.achievements!,
-                            userId: widget.userId,
-                          ),
-                        const SizedBox(height: 16),
-                        
-                        // Recent Activities Section
-                        if (state.recentActivities != null)
-                          RecentActivitiesSection(
-                            activities: state.recentActivities!,
-                            userId: widget.userId,
-                          ),
                         const SizedBox(height: 32),
                       ]),
                     ),
