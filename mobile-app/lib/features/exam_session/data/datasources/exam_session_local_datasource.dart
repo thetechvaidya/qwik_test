@@ -86,7 +86,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
     try {
       await _examSessionsBox.put(session.sessionId, session);
     } catch (e) {
-      throw CacheException(message: 'Failed to cache exam session: $e');
+      throw CacheException('Failed to cache exam session: $e');
     }
   }
 
@@ -95,7 +95,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
     try {
       return _examSessionsBox.get(sessionId);
     } catch (e) {
-      throw CacheException(message: 'Failed to get cached exam session: $e');
+      throw CacheException('Failed to get cached exam session: $e');
     }
   }
 
@@ -107,7 +107,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
     try {
       await _sessionQuestionsBox.put(sessionId, questions);
     } catch (e) {
-      throw CacheException(message: 'Failed to cache session questions: $e');
+      throw CacheException('Failed to cache session questions: $e');
     }
   }
 
@@ -116,7 +116,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
     try {
       return _sessionQuestionsBox.get(sessionId);
     } catch (e) {
-      throw CacheException(message: 'Failed to get cached session questions: $e');
+      throw CacheException('Failed to get cached session questions: $e');
     }
   }
 
@@ -133,7 +133,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
       
       await _sessionAnswersBox.put(sessionId, existingAnswers);
     } catch (e) {
-      throw CacheException(message: 'Failed to cache answer: $e');
+      throw CacheException('Failed to cache answer: $e');
     }
   }
 
@@ -142,7 +142,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
     try {
       return _sessionAnswersBox.get(sessionId) ?? <AnswerModel>[];
     } catch (e) {
-      throw CacheException(message: 'Failed to get cached answers: $e');
+      throw CacheException('Failed to get cached answers: $e');
     }
   }
 
@@ -160,7 +160,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
       
       await _sessionAnswersBox.put(sessionId, existingAnswers);
     } catch (e) {
-      throw CacheException(message: 'Failed to update cached answer: $e');
+      throw CacheException('Failed to update cached answer: $e');
     }
   }
 
@@ -172,7 +172,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
         session.status == 'active' || session.status == 'paused'
       ).toList();
     } catch (e) {
-      throw CacheException(message: 'Failed to get cached active sessions: $e');
+      throw CacheException('Failed to get cached active sessions: $e');
     }
   }
 
@@ -184,7 +184,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
       await _sessionAnswersBox.delete(sessionId);
       await _sessionProgressBox.delete(sessionId);
     } catch (e) {
-      throw CacheException(message: 'Failed to remove cached session: $e');
+      throw CacheException('Failed to remove cached session: $e');
     }
   }
 
@@ -196,7 +196,7 @@ class ExamSessionLocalDataSourceImpl implements ExamSessionLocalDataSource {
       await _sessionAnswersBox.clear();
       await _sessionProgressBox.clear();
     } catch (e) {
-      throw CacheException(message: 'Failed to clear all cached sessions: $e');
+      throw CacheException('Failed to clear all cached sessions: $e');
     }
   }
 

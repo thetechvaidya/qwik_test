@@ -40,7 +40,7 @@ class ExamSession extends Equatable {
   final String examId;
   final Exam exam;
   final List<Question> questions;
-  final Map<String, Answer> answers; // keyed by questionId
+  final List<Answer> answers;
   final int currentQuestionIndex;
   final DateTime startedAt;
   final DateTime expiresAt;
@@ -58,7 +58,7 @@ class ExamSession extends Equatable {
     required this.examId,
     required this.exam,
     required this.questions,
-    this.answers = const {},
+    this.answers = const [],
     this.currentQuestionIndex = 0,
     required this.startedAt,
     required this.expiresAt,
@@ -102,7 +102,11 @@ class ExamSession extends Equatable {
 
   /// Get answer for a question
   Answer? getAnswer(String questionId) {
-    return answers[questionId];
+    try {
+      return answers.firstWhere((answer) => answer.questionId == questionId);
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Get progress percentage (0.0 to 1.0)
@@ -206,7 +210,7 @@ class ExamSession extends Equatable {
     String? examId,
     Exam? exam,
     List<Question>? questions,
-    Map<String, Answer>? answers,
+    List<Answer>? answers,
     int? currentQuestionIndex,
     DateTime? startedAt,
     DateTime? expiresAt,

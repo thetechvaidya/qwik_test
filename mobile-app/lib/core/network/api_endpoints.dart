@@ -36,6 +36,18 @@ class ApiEndpoints {
   // Quiz endpoints
   static const String quizzes = '$_apiPrefix/quizzes';
   static String quizDetail(String quizId) => '$_apiPrefix/quizzes/$quizId';
+
+  // Exam Session endpoints
+  static const String examSessions = '$_apiPrefix/exam-sessions';
+  static String examSessionDetail(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId';
+  static String examSessionQuestions(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId/questions';
+  static String examSessionAnswers(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId/answers';
+  static String examSessionSubmit(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId/submit';
+  static const String activeExamSessions = '$_apiPrefix/exam-sessions/active';
+  static String abandonExamSession(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId/abandon';
+  
+  // Additional exam session endpoints
+  static String examSessionSyncAnswers(String sessionId) => '$_apiPrefix/exam-sessions/$sessionId/sync-answers';
   static const String featuredQuizzes = '$_apiPrefix/quizzes/featured';
   static const String popularQuizzes = '$_apiPrefix/quizzes/popular';
   static String quizQuestions(String quizId) => '$_apiPrefix/quizzes/$quizId/questions';

@@ -4,6 +4,18 @@ import '../../domain/entities/user.dart';
 abstract class AuthState extends Equatable {
   const AuthState();
 
+  // Add this getter to provide access to user across all states
+  User? get user {
+    if (this is AuthAuthenticated) {
+      return (this as AuthAuthenticated).user;
+    } else if (this is AuthError) {
+      return (this as AuthError).user;
+    } else if (this is AuthProfileUpdateSuccess) {
+      return (this as AuthProfileUpdateSuccess).user;
+    }
+    return null;
+  }
+
   @override
   List<Object?> get props => [];
 }
@@ -101,6 +113,18 @@ class AuthPasswordResetLoading extends AuthState {
 /// State when password reset request is successful
 class AuthPasswordResetSuccess extends AuthState {
   const AuthPasswordResetSuccess();
+}
+
+/// State when password reset request fails
+class AuthPasswordResetFailure extends AuthState {
+  const AuthPasswordResetFailure({
+    required this.message,
+  });
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
 }
 
 /// State when password reset confirmation is in progress

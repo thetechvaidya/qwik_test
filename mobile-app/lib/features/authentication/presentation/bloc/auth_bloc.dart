@@ -370,4 +370,20 @@ class AuthBloc extends Bloc<events.AuthEvent, states.AuthState> {
       }
     }
   }
+
+  /// Maps failure objects to user-friendly error messages
+  String _mapFailureToMessage(Failure failure) {
+    switch (failure.runtimeType) {
+      case ServerFailure:
+        return 'Server error occurred. Please try again later.';
+      case NetworkFailure:
+        return 'Network connection error. Please check your internet connection.';
+      case AuthFailure:
+        return 'Authentication failed. Please check your credentials.';
+      case ValidationFailure:
+        return 'Invalid input. Please check your data.';
+      default:
+        return failure.message ?? 'An unexpected error occurred.';
+    }
+  }
 }

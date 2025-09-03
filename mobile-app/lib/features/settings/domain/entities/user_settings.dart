@@ -30,10 +30,7 @@ class UserSettings extends Equatable {
     return preferences.theme;
   }
 
-  /// Checks if biometric authentication is enabled
-  bool isBiometricEnabled() {
-    return security['biometric_enabled'] as bool? ?? false;
-  }
+
 
   /// Gets language preference
   String getLanguage() {

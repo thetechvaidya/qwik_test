@@ -17,6 +17,26 @@ class AppConstants {
   static const String userDataKey = 'user_data';
   static const String themeKey = 'theme_mode';
   static const String languageKey = 'language';
+
+  // Cache Keys
+  static const String examCacheKey = 'cached_exams';
+  static const String categoryCacheKey = 'cached_categories';
+  static const String searchHistoryKey = 'search_history';
+  static const String offlineDataKey = 'offline_data';
+
+  // Session Constants
+  static const String sessionTokenKey = 'session_token';
+  static const String sessionExpiryKey = 'session_expiry';
+
+  // Error Messages
+  static const String networkErrorMessage = 'Network connection error';
+  static const String serverErrorMessage = 'Server error occurred';
+  static const String authErrorMessage = 'Authentication failed';
+  static const String cacheErrorMessage = 'Cache operation failed';
+
+  // Pagination
+  static const int defaultPageSize = 20;
+  static const int maxPageSize = 100;
   
 
   

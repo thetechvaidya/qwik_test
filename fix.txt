@@ -2,219 +2,270 @@ I have created the following plan after thorough exploration and analysis of the
 
 ### Observations
 
-After reviewing the user's clarification, I understand they want to simplify the Flutter app by removing complex features and keeping only core functionality that matches their web application and API documentation. The current codebase has many advanced features like biometric authentication, complex charts, achievement systems, and detailed analytics that are causing compilation errors and adding unnecessary complexity. The goal is to create a clean, minimal mobile app with just the essential features.
+The exams module has a fundamental **entity structure mismatch** causing most compilation errors:
+
+1. **ExamModel vs Exam entity divergence**: ExamModel has fields like `imageUrl`, `totalQuestions`, `passingScore` while Exam entity has `questionCount`, `categoryName`, etc.
+
+2. **Missing UI properties**: Widgets access `requirements`, `topics`, `correctAnswers`, `incorrectAnswers` that don't exist in current entities.
+
+3. **Enum extension gaps**: UI calls `examType.displayName` but ExamType enum lacks this extension.
+
+4. **Search integration**: ExamBloc uses SearchExamsUseCase correctly, but entity inconsistencies cause conflicts.
+
+The solution requires redesigning the entity layer to match both the data model and UI expectations.
 
 ### Approach
 
-The cleanup strategy focuses on **feature simplification and removal** rather than fixing complex features. I'll remove all advanced features not essential to the core exam-taking experience, delete files related to biometric auth, charts, achievements, and complex analytics. The remaining app will have basic authentication, exam browsing, exam taking, simple profile, and basic settings - all aligned with the API documentation. This approach creates a maintainable, lightweight mobile app that focuses on the core value proposition.
+I'll fix the exams module compilation errors by **aligning the entity structure** with what the UI expects and what the ExamModel provides. The core strategy is to:
+
+1. **Redesign the Exam entity** to include all properties used by UI widgets and available from ExamModel
+2. **Update ExamUserProgress entity** to include missing progress tracking properties
+3. **Add missing enum extensions** for display names and icons
+4. **Fix ExamModel conversion methods** to properly map between model and entity
+5. **Remove search functionality conflicts** by using proper repository interfaces
+
+This approach maintains clean architecture while ensuring all UI components have access to the data they need. I'll avoid over-engineering by keeping the entity structure simple and focused on actual usage patterns.
 
 ### Reasoning
 
-I initially analyzed the codebase to fix all compilation errors by adding missing dependencies and creating missing entities. However, the user clarified they prefer removing complex features entirely rather than fixing them. I reviewed the API documentation to identify core features that should remain and identified advanced features that can be safely removed to simplify the codebase and eliminate compilation errors.
+I analyzed the exams module files and found that the main compilation errors stem from a fundamental mismatch between the ExamModel (which has comprehensive fields like imageUrl, totalQuestions, passingScore) and the current Exam entity (which has a minimal structure with different field names). The UI widgets are trying to access properties that don't exist in the current entity structure. I also found that ExamUserProgress is missing several properties that the UI expects, and some enum extensions are missing. The search functionality integration is architecturally sound but requires consistent entity structures.
+
+## Mermaid Diagram
+
+sequenceDiagram
+    participant UI as Exam Detail Page
+    participant Bloc as Exam Bloc
+    participant Entity as Exam Entity
+    participant Model as Exam Model
+    participant API as Remote Data Source
+    
+    Note over UI,API: Exam Module Compilation Fixes
+    
+    UI->>Bloc: LoadExamDetailEvent
+    Bloc->>API: Fetch exam data
+    API->>Model: Return ExamModel with all fields
+    Note over Model: imageUrl, totalQuestions, passingScore, etc.
+    
+    Model->>Entity: Convert to updated Exam entity
+    Note over Entity: Add missing properties: requirements, topics, userProgress
+    
+    Entity->>Entity: Apply enum extensions
+    Note over Entity: examType.displayName, difficulty.color
+    
+    Entity->>Bloc: Return comprehensive Exam entity
+    Bloc->>UI: ExamDetailLoaded state
+    
+    UI->>UI: Access all required properties
+    Note over UI: exam.totalQuestions, exam.requirements, exam.userProgress.correctAnswers
+    
+    Note over UI,API: All compilation errors resolved
 
 ## Proposed File Changes
 
-### mobile-app\pubspec.yaml(MODIFY)
-
-Remove complex dependencies that are not needed for core functionality:
-
-1. Remove any references to `local_auth` - we'll eliminate biometric authentication
-2. Remove any references to `fl_chart` - we'll eliminate complex charts
-3. Remove any references to `shimmer` - we'll use simple loading indicators
-4. Keep only essential dependencies: flutter_bloc, dio, shared_preferences, hive, get_it, go_router, firebase_core, firebase_analytics, flutter_secure_storage (for basic token storage), cached_network_image, connectivity_plus, dartz, jwt_decoder
-
-This removes the complex features while keeping the core functionality needed for authentication, networking, state management, and basic storage.
-
-### mobile-app\lib\core\storage\secure_token_storage.dart(MODIFY)
-
-Simplify the secure token storage by removing biometric authentication features:
-
-1. Remove all imports related to `local_auth`
-2. Remove the `LocalAuthentication` instance and related methods
-3. Remove `getAvailableBiometrics()` method
-4. Remove any biometric authentication logic from token storage/retrieval methods
-5. Keep only basic secure storage functionality using `flutter_secure_storage`
-6. Simplify to just store/retrieve tokens without biometric verification
-
-This maintains secure token storage while removing the complex biometric authentication that was causing compilation errors.
-
-### mobile-app\lib\features\dashboard(DELETE)
-
-Remove the entire dashboard feature as it contains complex analytics, charts, and achievement systems that are not core to the exam-taking functionality. The dashboard had dependencies on fl_chart, complex performance analytics, achievement tracking, and detailed user statistics that add unnecessary complexity.
-
-The core functionality (viewing available exams, taking exams, viewing results) can be accessed directly from the main navigation without needing a complex dashboard.
-
-### mobile-app\lib\features\results(DELETE)
-
-Remove the entire results feature as it contains complex performance analytics, study recommendations, and detailed charts that are not essential for core functionality. This feature had dependencies on fl_chart, complex analytics entities, and advanced recommendation systems.
-
-Basic exam results can be shown immediately after exam completion in the exam session feature, keeping it simple and focused.
-
-### mobile-app\lib\core\di\service_locator.dart(MODIFY)
-
-Simplify the dependency injection by removing registrations for deleted features:
-
-1. Remove all imports and registrations related to dashboard feature
-2. Remove all imports and registrations related to results feature
-3. Remove any complex analytics or achievement-related dependencies
-4. Keep only core feature registrations: authentication, exams, exam_session, profile (simplified), search (basic), settings (basic)
-5. Fix remaining import path issues for existing features
-6. Ensure all remaining dependencies can be resolved
-
-This creates a clean, minimal dependency injection setup focused on core functionality.
-
-### mobile-app\lib\features\profile(MODIFY)
+### mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
 
 References: 
 
-- MOBILE_API_DOCUMENTATION.md
+- mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
+- mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
 
-Simplify the profile feature to include only basic functionality:
+Completely redesign the Exam entity to include all properties used by UI widgets and available from ExamModel:
 
-1. Keep basic user profile display (name, email, avatar)
-2. Remove complex statistics and analytics
-3. Remove subscription management features
-4. Remove user search functionality
-5. Keep basic profile editing capabilities
-6. Remove any widgets that depend on deleted features (profile_stats_card, subscription_info_card)
-7. Update the profile page to show only essential user information
+1. **Replace the current minimal structure** with a comprehensive entity that includes:
+   - Basic info: `id`, `title`, `description`, `imageUrl`
+   - Exam details: `duration` (as Duration?), `totalQuestions` (rename from questionCount), `totalMarks`, `passingScore`
+   - Classification: `difficulty` (as ExamDifficulty enum), `examType` (as ExamType enum), `categoryId`, `categoryName`, `subcategory`
+   - Metadata: `tags` (List<String>), `requirements` (List<String>), `topics` (List<String>)
+   - Timestamps: `createdAt`, `updatedAt`, `scheduledAt`, `expiresAt`
+   - Status: `isActive`, `isPaid`, `price`, `currency`, `status` (as ExamStatus enum), `isFavorite`
+   - Nested objects: `stats` (ExamStats), `userProgress` (ExamUserProgress?)
 
-This aligns with the basic profile endpoints in the API documentation (/profile, /profile update).
+2. **Add copyWith method** to support state updates (favorite toggle, progress updates)
 
-### mobile-app\lib\features\settings(MODIFY)
+3. **Add computed properties** like `formattedDuration`, `difficultyColor`, `statusColor` for UI convenience
+
+4. **Update ExamStats entity** to match what ExamModel provides: `totalAttempts`, `averageScore`, `highestScore`, `lowestScore`, `passCount`, `failCount`, `passRate`, `averageCompletionTime`
+
+This creates a single source of truth that satisfies both the data layer and UI requirements.
+Add missing enum extensions and status enums:
+
+1. **Add ExamStatus enum** with values: `draft`, `published`, `archived`, `suspended`
+
+2. **Update ExamType enum** to include `live` value (currently missing) and add extension:
+   ```
+   extension ExamTypeExtension on ExamType {
+     String get displayName { /* return user-friendly names */ }
+     IconData get icon { /* return appropriate icons */ }
+   }
+   ```
+
+3. **Update ExamDifficulty enum** to use string values that match the API: `beginner`, `intermediate`, `advanced`, `expert`
+
+4. **Add ExamDifficultyExtension** with color helpers:
+   ```
+   extension ExamDifficultyExtension on ExamDifficulty {
+     Color get color { /* return difficulty-specific colors */ }
+     String get description { /* return difficulty descriptions */ }
+   }
+   ```
+
+These extensions provide the display helpers that UI widgets are trying to access.
+Update the ExamUserProgress entity to include all properties that UI widgets expect:
+
+1. **Add missing progress tracking properties**:
+   - `answeredQuestions` (int) - number of questions answered
+   - `correctAnswers` (int) - number of correct answers
+   - `incorrectAnswers` (int) - number of incorrect answers
+   - `timeSpent` (Duration) - time spent on exam
+   - `score` (double?) - current score if available
+
+2. **Keep existing properties**: `userId`, `examId`, `completionPercentage`, `lastAttemptAt`, `isStarted`, `isCompleted`
+
+3. **Add computed properties**:
+   - `accuracy` getter: `correctAnswers / answeredQuestions * 100`
+   - `remainingQuestions` method that takes total questions as parameter
+   - `formattedTimeSpent` getter for UI display
+
+4. **Add copyWith method** for easy state updates during exam taking
+
+This ensures all progress-related properties that the exam detail page tries to access are available.
+
+### mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
 
 References: 
 
-- MOBILE_API_DOCUMENTATION.md
+- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
 
-Simplify the settings feature to include only basic app preferences:
+Fix the ExamModel conversion methods to properly map between the updated entity structure:
 
-1. Keep basic theme selection (light/dark)
-2. Keep basic language preferences
-3. Remove complex offline preferences and sync settings
-4. Remove advanced notification settings
-5. Remove font size and auto-lock timeout settings
-6. Keep basic app preferences that align with the API documentation
-7. Remove any widgets with const constructor issues
-8. Focus on settings that are actually supported by the backend API
+1. **Update `toEntity()` method** to map all ExamModel fields to the new Exam entity structure:
+   - Map `totalQuestions` to `totalQuestions` (keep same name)
+   - Convert `duration` (int minutes) to `Duration(minutes: duration)`
+   - Map `category` to `categoryName` and add `categoryId` if available
+   - Map string enums to proper enum values using existing helper methods
+   - Handle nested `stats` conversion properly
+   - Set default values for missing fields like `requirements`, `topics` (empty lists)
+   - Map `isFavorite` from user preferences if available
 
-This creates a minimal settings screen with only essential configuration options.
+2. **Update `fromEntity()` method** to reverse the mapping:
+   - Convert `Duration` back to int minutes
+   - Convert enums back to string values
+   - Handle all new entity fields appropriately
+
+3. **Add null safety and fallbacks** for fields that might not be available from the API
+
+4. **Update ExamStatsModel conversion** to match the updated ExamStats entity structure
+
+This ensures seamless conversion between the data layer and domain layer.
+
+### mobile-app\lib\features\exams\presentation\pages\exam_detail_page.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+
+Update the exam detail page to use the correct entity properties and handle missing data gracefully:
+
+1. **Fix property access** to match the updated Exam entity:
+   - Use `exam.totalQuestions` instead of `exam.questionCount`
+   - Access `exam.userProgress?.correctAnswers` etc. with null safety
+   - Use `exam.requirements` and `exam.topics` directly
+   - Access `exam.examType.displayName` using the new extension
+
+2. **Add null safety checks** for optional properties:
+   - Check if `exam.userProgress` exists before accessing its properties
+   - Handle missing `requirements` and `topics` gracefully
+   - Provide fallback values for missing data
+
+3. **Update progress calculations** to use the new ExamUserProgress properties:
+   - Use `progress.answeredQuestions`, `progress.correctAnswers`, `progress.incorrectAnswers`
+   - Calculate remaining questions as `exam.totalQuestions - progress.answeredQuestions`
+
+4. **Fix enum usage** to use the new extensions:
+   - `exam.examType.displayName` for display text
+   - `exam.difficulty.color` for difficulty badge colors
+
+This ensures the UI compiles and displays data correctly with the updated entity structure.
+
+### mobile-app\lib\features\exams\presentation\bloc\exam_bloc.dart(MODIFY)
+
+References: 
+
+- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
+- mobile-app\lib\features\search\domain\usecases\search_exams_usecase.dart
+
+Fix the ExamBloc to work with the updated entity structure and resolve search functionality conflicts:
+
+1. **Update exam list operations** to use the new Exam entity structure:
+   - Fix `_onToggleExamFavorite` to use the new `copyWith` method on Exam entity
+   - Update `_onUpdateExamProgress` to properly update the `userProgress` field
+   - Ensure all exam operations work with the comprehensive entity
+
+2. **Fix search integration** by ensuring consistent entity usage:
+   - Verify that SearchExamsUseCase returns the same Exam entity type
+   - Ensure search filters align with the new entity structure
+   - Remove any duplicate search logic if it exists
+
+3. **Add missing passingScore handling** in exam completion logic:
+   - Use `exam.passingScore` instead of hardcoded values
+   - Handle cases where passingScore might be null
+
+4. **Update error handling** to provide better user feedback:
+   - Add specific error messages for different failure types
+   - Ensure error states preserve the previous loaded state when possible
+
+This ensures the bloc layer works correctly with the updated entity structure and integrates properly with the search functionality.
 
 ### mobile-app\lib\features\exams\data\repositories\exam_repository_impl.dart(MODIFY)
 
 References: 
 
-- MOBILE_API_DOCUMENTATION.md
+- mobile-app\lib\features\exams\data\models\exam_model.dart(MODIFY)
+- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
 
-Simplify the exam repository by removing complex features:
+Update the exam repository implementation to work with the new entity structure:
 
-1. Remove methods related to UserExamProgress tracking
-2. Remove complex analytics and recommendation features
-3. Keep core methods: getExams, getExamDetail, getCategories, searchExams
-4. Align with the API endpoints documented in MOBILE_API_DOCUMENTATION.md
-5. Remove any dependencies on deleted entities or features
-6. Focus on basic exam browsing and retrieval functionality
+1. **Fix entity conversion** in all repository methods:
+   - Ensure `getExams()` properly converts ExamModel list to Exam entity list
+   - Update `getExamDetail()` to handle the comprehensive entity structure
+   - Fix `searchExams()` to return consistent Exam entities
 
-This creates a clean repository focused on core exam management.
+2. **Add missing field handling** for new entity properties:
+   - Handle `requirements` and `topics` fields (provide empty lists if not available from API)
+   - Manage `userProgress` data integration if it comes from a separate endpoint
+   - Set appropriate default values for missing optional fields
+
+3. **Update error handling** to be more specific:
+   - Provide better error messages for different API failure scenarios
+   - Handle cases where partial data is available
+
+4. **Ensure search method compatibility** with the search module:
+   - Verify that the search method signature matches what SearchExamsUseCase expects
+   - Ensure consistent filtering and pagination handling
+
+This ensures the repository layer properly bridges between the data models and the updated domain entities.
 
 ### mobile-app\lib\features\exams\domain\repositories\exam_repository.dart(MODIFY)
 
 References: 
 
-- MOBILE_API_DOCUMENTATION.md
+- mobile-app\lib\features\search\domain\usecases\search_exams_usecase.dart
+- mobile-app\lib\features\exams\domain\entities\exam.dart(MODIFY)
 
-Simplify the exam repository interface to match the simplified implementation:
+Update the exam repository interface to match the implementation and ensure consistency:
 
-1. Remove methods related to UserExamProgress tracking
-2. Remove complex analytics and recommendation methods
-3. Keep core methods that align with API documentation: getExams, getExamDetail, getCategories, searchExams
-4. Remove any references to deleted entities
-5. Ensure method signatures match the API endpoints
+1. **Verify method signatures** align with the updated entity structure:
+   - Ensure all methods return the updated Exam entity type
+   - Check that search method parameters match what SearchExamsUseCase expects
+   - Verify pagination and filtering parameter types
 
-This creates a clean interface focused on core exam functionality.
+2. **Add missing method documentation** for clarity:
+   - Document expected behavior for optional fields like `requirements`, `topics`
+   - Clarify how `userProgress` data is handled
+   - Document error scenarios and expected failure types
 
-### mobile-app\lib\features\exams\domain\usecases(MODIFY)
+3. **Ensure search integration compatibility**:
+   - Verify that the `searchExams` method signature matches what the search module expects
+   - Ensure consistent return types and error handling
 
-References: 
-
-- MOBILE_API_DOCUMENTATION.md
-
-Simplify exam use cases to include only core functionality:
-
-1. Keep: GetExamsUseCase, GetExamDetailUseCase, GetCategoriesUseCase, SearchExamsUseCase
-2. Remove: GetFeaturedExamsUseCase, GetRecentExamsUseCase, GetPopularExamsUseCase (these can be handled by GetExamsUseCase with filters)
-3. Remove any use cases related to complex progress tracking or analytics
-4. Fix import path in SearchExamsUseCase to use correct repository name
-5. Ensure all remaining use cases align with API endpoints
-
-This creates a minimal set of use cases focused on core exam browsing functionality.
-
-### mobile-app\lib\features\search(MODIFY)
-
-References: 
-
-- MOBILE_API_DOCUMENTATION.md
-
-Simplify the search feature to basic functionality:
-
-1. Keep basic search functionality that aligns with API endpoints (/search, /search/suggestions)
-2. Remove complex search analytics and reporting features
-3. Keep basic search history management
-4. Remove advanced search features not supported by the API
-5. Fix any missing parameter classes (RemoveSearchHistoryParams)
-6. Focus on simple search and suggestions functionality
-
-This creates a basic search feature that matches the API documentation.
-
-### mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(MODIFY)
-
-References: 
-
-- MOBILE_API_DOCUMENTATION.md
-
-Simplify the exam session entity:
-
-1. Fix the import path for Exam entity: `import '../../../exams/domain/entities/exam.dart'`
-2. Remove dependency on complex ExamSettings entity
-3. Use simple properties instead of complex settings object
-4. Keep core properties: sessionId, examId, startedAt, expiresAt, currentQuestion, totalQuestions, status
-5. Remove any references to deleted features or complex entities
-
-This aligns with the exam session endpoints in the API documentation.
-
-### mobile-app\lib\shared\navigation\navigation_destinations.dart(MODIFY)
-
-Update navigation destinations to remove deleted features:
-
-1. Remove dashboard navigation destination
-2. Remove results navigation destination
-3. Keep core destinations: exams, exam sessions, profile, settings
-4. Update navigation structure to focus on core functionality
-5. Ensure all destinations point to existing features
-
-This creates a clean navigation structure focused on essential features.
-
-### mobile-app\lib\core\router\app_router.dart(MODIFY)
-
-Update the app router to remove routes for deleted features:
-
-1. Remove dashboard routes
-2. Remove results routes
-3. Remove complex profile routes (stats, subscription)
-4. Keep core routes: authentication, exams, exam sessions, basic profile, basic settings
-5. Update route guards and navigation logic
-6. Ensure all routes point to existing pages
-
-This creates a clean routing structure focused on core functionality.
-
-### mobile-app\lib\main.dart(MODIFY)
-
-Update main.dart to remove references to deleted features:
-
-1. Remove any BLoC providers for deleted features (dashboard, results)
-2. Keep core BLoC providers: AuthBloc, ThemeBloc
-3. Ensure dependency injection initialization works with simplified service locator
-4. Remove any imports related to deleted features
-5. Keep the app structure simple and focused on core functionality
-
-This ensures the app starts correctly with only the essential features.
+This ensures the repository interface is consistent with both the implementation and the search module requirements.

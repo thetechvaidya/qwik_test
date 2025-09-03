@@ -75,7 +75,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<AuthTokenModel?> getAuthToken() async {
     try {
       // Try to get the full token entity first
-      final tokenEntity = await _tokenStorage.getAuthTokenEntity(requireBiometric: false);
+      final tokenEntity = await _tokenStorage.getAuthTokenEntity();
       if (tokenEntity != null) {
         return AuthTokenModel.fromEntity(tokenEntity);
       }

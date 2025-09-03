@@ -77,14 +77,14 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         return ExamSessionModel.fromJson(response.data['data']);
       } else {
         throw ServerException(
-          message: 'Failed to start exam session',
-          statusCode: response.statusCode,
+          'Failed to start exam session',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
       throw _handleDioException(e);
     } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
+      throw ServerException('Unexpected error occurred: $e');
     }
   }
 
@@ -97,8 +97,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         return ExamSessionModel.fromJson(response.data['data']);
       } else {
         throw ServerException(
-          message: 'Failed to fetch exam session',
-          statusCode: response.statusCode,
+          'Failed to fetch exam session',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -120,8 +120,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
             .toList();
       } else {
         throw ServerException(
-          message: 'Failed to fetch session questions',
-          statusCode: response.statusCode,
+          'Failed to fetch session questions',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -155,8 +155,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         return AnswerModel.fromJson(response.data['data']);
       } else {
         throw ServerException(
-          message: 'Failed to submit answer',
-          statusCode: response.statusCode,
+          'Failed to submit answer',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -181,8 +181,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         return ExamSessionModel.fromJson(response.data['data']);
       } else {
         throw ServerException(
-          message: 'Failed to update exam session',
-          statusCode: response.statusCode,
+          'Failed to update exam session',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -203,8 +203,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         return ExamSessionModel.fromJson(response.data['data']);
       } else {
         throw ServerException(
-          message: 'Failed to submit exam session',
-          statusCode: response.statusCode,
+          'Failed to submit exam session',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -226,8 +226,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
             .toList();
       } else {
         throw ServerException(
-          message: 'Failed to fetch active exam sessions',
-          statusCode: response.statusCode,
+          'Failed to fetch active exam sessions',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -243,14 +243,14 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
       final requestData = reason != null ? {'reason': reason} : null;
       
       final response = await _dio.post(
-        ApiEndpoints.examSessionAbandon(sessionId),
+        ApiEndpoints.abandonExamSession(sessionId),
         data: requestData,
       );
 
       if (response.statusCode != 200) {
         throw ServerException(
-          message: 'Failed to abandon exam session',
-          statusCode: response.statusCode,
+          'Failed to abandon exam session',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -282,8 +282,8 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
             .toList();
       } else {
         throw ServerException(
-          message: 'Failed to sync answers',
-          statusCode: response.statusCode,
+          'Failed to sync answers',
+          code: response.statusCode,
         );
       }
     } on DioException catch (e) {
@@ -304,15 +304,15 @@ class ExamSessionRemoteDataSourceImpl implements ExamSessionRemoteDataSource {
         final statusCode = e.response?.statusCode;
         final message = e.response?.data?['message'] ?? 'Server error';
         return ServerException(
-          message: message,
-          statusCode: statusCode,
+          message,
+          code: statusCode,
         );
       case DioExceptionType.cancel:
         return NetworkException(message: 'Request cancelled');
       case DioExceptionType.connectionError:
         return NetworkException(message: 'No internet connection');
       default:
-        return ServerException(message: 'Unexpected error occurred');
+        return ServerException('Unexpected error occurred');
     }
   }
 }

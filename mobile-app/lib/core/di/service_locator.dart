@@ -200,7 +200,6 @@ Future<void> initializeDependencies() async {
       await dataSource.init();
       return dataSource;
     },
-    preResolve: true,
   );
   sl.registerLazySingleton<ExamRemoteDataSource>(
     () => ExamRemoteDataSourceImpl(
@@ -224,7 +223,6 @@ Future<void> initializeDependencies() async {
       await dataSource.init();
       return dataSource;
     },
-    preResolve: true,
   );
   sl.registerLazySingleton<SearchRemoteDataSource>(
     () => SearchRemoteDataSourceImpl(

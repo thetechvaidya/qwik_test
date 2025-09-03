@@ -32,6 +32,7 @@ class Exam {
   final ExamStats stats;
   final ExamType examType;
   final ExamUserProgress? userProgress;
+  final double? passingScore;
 
   Exam({
     required this.id,
@@ -46,6 +47,7 @@ class Exam {
     required this.stats,
     required this.examType,
     this.userProgress,
+    this.passingScore,
   });
 }
 

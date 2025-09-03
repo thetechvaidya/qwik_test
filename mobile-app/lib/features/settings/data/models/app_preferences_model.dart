@@ -12,7 +12,7 @@ class AppPreferencesModel extends AppPreferences {
     @HiveField(0) super.theme = 'system',
     @HiveField(1) super.language = 'en',
     // Removed unused fields: timezone, fontSize, soundEnabled, vibrationEnabled,
-    // animationsEnabled, autoLockEnabled, autoLockTimeout, biometricEnabled,
+    // animationsEnabled, autoLockEnabled, autoLockTimeout, biometricEnabled (removed),
     // crashReportingEnabled, analyticsEnabled, performanceMonitoringEnabled,
     // highContrastMode, reduceMotion, screenReaderSupport, offlinePreferences
   });
