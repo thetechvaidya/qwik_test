@@ -69,53 +69,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Either<Failure, NotificationSettings>> getNotificationSettings(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteNotifications = await remoteDataSource.getNotificationSettings(userId);
-        await localDataSource.cacheNotificationSettings(remoteNotifications);
-        return Right(remoteNotifications);
-      } on ServerException {
-        try {
-          final localNotifications = await localDataSource.getCachedNotificationSettings(userId);
-          return Right(localNotifications);
-        } on CacheException {
-          return Left(ServerFailure('Failed to load notification settings from server and cache'));
-        }
-      }
-    } else {
-      try {
-        final localNotifications = await localDataSource.getCachedNotificationSettings(userId);
-        return Right(localNotifications);
-      } on CacheException {
-        return Left(CacheFailure('Failed to load notification settings from cache'));
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> updateNotificationSettings(
-    NotificationSettings settings,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.updateNotificationSettings(settings.userId, settings.toJson());
-        await localDataSource.cacheNotificationSettings(settings);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure('Failed to update notification settings'));
-      }
-    } else {
-      try {
-        await localDataSource.cacheNotificationSettings(settings);
-        return const Right(null);
-      } on CacheException {
-        return Left(CacheFailure('Failed to cache notification settings'));
-      }
-    }
-  }
-
-  @override
   Future<Either<Failure, AppPreferences>> getAppPreferences() async {
     try {
       final localPreferences = await localDataSource.getCachedAppPreferences();

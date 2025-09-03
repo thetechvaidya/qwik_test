@@ -109,7 +109,7 @@ Future<void> initializeDependencies() async {
 
   // Core services
   sl.registerLazySingleton<SecureTokenStorage>(
-    () => SecureTokenStorage(),
+    () => SecureTokenStorage(storage: sl<FlutterSecureStorage>()),
   );
   sl.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(sl<Connectivity>()),

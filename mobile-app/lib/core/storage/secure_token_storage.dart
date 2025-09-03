@@ -7,14 +7,9 @@ import '../../features/authentication/data/models/auth_token_model.dart';
 import '../../features/authentication/domain/entities/auth_token.dart';
 /// Secure token storage service
 class SecureTokenStorage {
-  static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_unlock_this_device,
-    ),
-  );
+  final FlutterSecureStorage _storage;
+
+  SecureTokenStorage({required FlutterSecureStorage storage}) : _storage = storage;
 
   static const String _tokenExpirationKey = 'token_expiration';
   static const String _authTokenEntityKey = 'auth_token_json';
@@ -142,8 +137,15 @@ class SecureTokenStorage {
           final expirationTime = DateTime.fromMillisecondsSinceEpoch(
             int.parse(expirationString),
           );
-          issuedAt = DateTime.now();
-          expiresIn = expirationTime.difference(issuedAt).inSeconds;
+          final now = DateTime.now();
+          
+          // For backward compatibility, estimate original issue time
+          // by subtracting a reasonable token lifetime from expiration
+          issuedAt = expirationTime.subtract(Duration(seconds: 3600)); // Assume 1 hour lifetime
+          
+          // Calculate remaining time until expiration
+          final remainingTime = expirationTime.difference(now).inSeconds;
+          expiresIn = remainingTime > 0 ? remainingTime : 0;
         } catch (e) {
           // Use default values if parsing fails
         }

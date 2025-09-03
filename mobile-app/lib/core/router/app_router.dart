@@ -163,10 +163,10 @@ class AppRouter {
             name: 'profile',
             builder: (context, state) {
               final authBloc = context.read<AuthBloc>();
-              final userId = authBloc.state.user?.id ?? '';
+              final userId = authBloc.state.user?.id;
               return BlocProvider(
                 create: (context) => sl<ProfileBloc>()..add(ProfileLoadRequested(userId: userId)),
-                child: ProfilePage(userId: userId),
+                child: ProfilePage(userId: userId ?? ''),
               );
             },
             routes: [
@@ -175,10 +175,10 @@ class AppRouter {
                 name: 'edit-profile',
                 builder: (context, state) {
                   final authBloc = context.read<AuthBloc>();
-                  final userId = authBloc.state.user?.id ?? '';
+                  final userId = authBloc.state.user?.id;
                   return BlocProvider(
                     create: (context) => sl<ProfileBloc>()..add(ProfileLoadRequested(userId: userId)),
-                    child: EditProfilePage(userId: userId),
+                    child: EditProfilePage(userId: userId ?? ''),
                   );
                 },
               ),
@@ -354,4 +354,12 @@ class AppRouter {
   static void pushExamTaking(BuildContext context, String examId) => 
       context.push(examTaking.replaceAll(':examId', examId));
   static void pushEditProfile(BuildContext context) => context.push(editProfile);
+
+  /// Reset the router instance for hot reload lifecycle management
+  static void reset() {
+    _router?.dispose();
+    _router = null;
+    _refreshStream?.dispose();
+    _refreshStream = null;
+  }
 }

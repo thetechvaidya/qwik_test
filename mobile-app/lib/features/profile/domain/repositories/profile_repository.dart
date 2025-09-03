@@ -6,6 +6,9 @@ import '../entities/user_profile.dart';
 
 abstract class ProfileRepository {
   Future<Either<Failure, UserProfile>> getUserProfile(String userId);
+
+  /// Get current user profile
+  Future<Either<Failure, UserProfile>> getCurrentUserProfile();
   Future<Either<Failure, UserProfile>> updateUserProfile(
     String userId,
     Map<String, dynamic> updates,

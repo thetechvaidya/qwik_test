@@ -6,6 +6,9 @@ import '../models/user_profile_model.dart';
 abstract class ProfileRemoteDataSource {
   /// Get user profile by ID
   Future<UserProfileModel> getUserProfile(String userId);
+  
+  /// Get current user profile (without ID)
+  Future<UserProfileModel> getCurrentUserProfile();
 
   /// Update user profile
   Future<UserProfileModel> updateUserProfile({
@@ -97,6 +100,32 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       throw DioException(
         requestOptions: RequestOptions(path: '/profile/$userId'),
         message: 'Unexpected error getting user profile: $e',
+      );
+    }
+  }
+
+  @override
+  Future<UserProfileModel> getCurrentUserProfile() async {
+    try {
+      final response = await _dio.get(
+        ApiEndpoints.profile,
+      );
+
+      if (response.statusCode == 200) {
+        return UserProfileModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          message: 'Failed to get current user profile with status code: ${response.statusCode}',
+        );
+      }
+    } on DioException {
+      rethrow;
+    } catch (e) {
+      throw DioException(
+        requestOptions: RequestOptions(path: ApiEndpoints.profile),
+        message: 'Unexpected error getting current user profile: $e',
       );
     }
   }

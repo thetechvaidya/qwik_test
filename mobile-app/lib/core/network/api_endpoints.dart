@@ -29,8 +29,7 @@ class ApiEndpoints {
   static String examQuestions(String examId) => '$_apiPrefix/exams/$examId/questions';
   static String startExam(String examId) => '$_apiPrefix/exams/$examId/start';
   static String submitExam(String examId) => '$_apiPrefix/exams/$examId/submit';
-  static String examResult(String examId) => '$_apiPrefix/exams/$examId/result';
-  static String examResults(String examId) => '$_apiPrefix/exams/$examId/results';
+
   static String favoriteExam(String examId) => '$_apiPrefix/exams/$examId/favorite';
   static String unfavoriteExam(String examId) => '$_apiPrefix/exams/$examId/unfavorite';
   

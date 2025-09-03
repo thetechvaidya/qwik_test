@@ -10,10 +10,10 @@ abstract class ProfileEvent extends Equatable {
 /// Event to load user profile
 class ProfileLoadRequested extends ProfileEvent {
   const ProfileLoadRequested({
-    required this.userId,
+    this.userId,
   });
 
-  final String userId;
+  final String? userId;
 
   @override
   List<Object?> get props => [userId];

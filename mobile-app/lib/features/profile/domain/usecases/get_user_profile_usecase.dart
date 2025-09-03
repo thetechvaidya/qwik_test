@@ -12,19 +12,23 @@ class GetUserProfileUseCase implements UseCase<UserProfile, GetUserProfileParams
 
   @override
   Future<Either<Failure, UserProfile>> call(GetUserProfileParams params) async {
-    return await _repository.getUserProfile(params.userId);
+    if (params.userId != null) {
+      return await _repository.getUserProfile(params.userId!);
+    } else {
+      return await _repository.getCurrentUserProfile();
+    }
   }
 }
 
 class GetUserProfileParams extends Equatable {
   const GetUserProfileParams({
-    required this.userId,
+    this.userId,
   });
 
-  final String userId;
+  final String? userId;
 
   @override
-  List<Object> get props => [userId];
+  List<Object?> get props => [userId];
 
   @override
   String toString() => 'GetUserProfileParams(userId: $userId)';

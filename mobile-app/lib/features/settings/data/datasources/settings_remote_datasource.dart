@@ -11,11 +11,7 @@ abstract class SettingsRemoteDataSource {
   /// Update user settings
   Future<UserSettingsModel> updateUserSettings(UserSettingsModel settings);
 
-  /// Get notification settings
-  Future<NotificationSettingsModel> getNotificationSettings(String userId);
 
-  /// Update notification settings
-  Future<NotificationSettingsModel> updateNotificationSettings(NotificationSettingsModel settings);
 
   /// Get app preferences
   Future<AppPreferencesModel> getAppPreferences(String userId);
@@ -126,56 +122,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     }
   }
 
-  @override
-  Future<NotificationSettingsModel> getNotificationSettings(String userId) async {
-    try {
-      final response = await _dio.get('${ApiEndpoints.notificationSettings}');
-      
-      if (response.statusCode == 200) {
-        return NotificationSettingsModel.fromJson(response.data['data']);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get notification settings',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/api/v1/users/$userId/settings/notifications'),
-        message: 'Unexpected error: $e',
-      );
-    }
-  }
 
-  @override
-  Future<NotificationSettingsModel> updateNotificationSettings(NotificationSettingsModel settings) async {
-    try {
-      final response = await _dio.put(
-        '${ApiEndpoints.notificationSettings}',
-        data: settings.toJson(),
-      );
-      
-      if (response.statusCode == 200) {
-        return NotificationSettingsModel.fromJson(response.data['data']);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to update notification settings',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/api/v1/users/${settings.userId}/settings/notifications'),
-        message: 'Unexpected error: $e',
-      );
-    }
-  }
 
   @override
   Future<AppPreferencesModel> getAppPreferences(String userId) async {

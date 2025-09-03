@@ -18,14 +18,7 @@ abstract class ProfileLocalDataSource {
   // - getUserAchievements, cacheUserAchievements, clearCachedUserAchievements (achievements)
   // - getUserActivity, cacheUserActivity, clearCachedUserActivity (activity)
 
-  /// Get cached search results
-  Future<List<UserProfileModel>?> getCachedSearchResults(String query);
 
-  /// Cache search results
-  Future<void> cacheSearchResults(String query, List<UserProfileModel> results);
-
-  /// Clear cached search results
-  Future<void> clearCachedSearchResults(String query);
 
   /// Get cached leaderboard
   Future<List<Map<String, dynamic>>?> getCachedLeaderboard({
@@ -69,7 +62,6 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   static const String _subscriptionPrefix = 'subscription_';
   static const String _achievementsPrefix = 'achievements_';
   static const String _activityPrefix = 'activity_';
-  static const String _searchPrefix = 'search_';
   static const String _leaderboardPrefix = 'leaderboard_';
   static const String _timestampSuffix = '_timestamp';
 
@@ -130,45 +122,7 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
     }
   }
 
-  @override
-  Future<List<UserProfileModel>?> getCachedSearchResults(String query) async {
-    try {
-      final key = '$_searchPrefix${query.toLowerCase()}';
-      final cached = _hiveBox.get(key);
-      if (cached is List) {
-        return cached.cast<UserProfileModel>();
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
 
-  @override
-  Future<void> cacheSearchResults(String query, List<UserProfileModel> results) async {
-    try {
-      final key = '$_searchPrefix${query.toLowerCase()}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, results);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
-
-  @override
-  Future<void> clearCachedSearchResults(String query) async {
-    try {
-      final key = '$_searchPrefix${query.toLowerCase()}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
 
   @override
   Future<List<Map<String, dynamic>>?> getCachedLeaderboard({
@@ -232,7 +186,6 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
           key.startsWith(_subscriptionPrefix) ||
           key.startsWith(_achievementsPrefix) ||
           key.startsWith(_activityPrefix) ||
-          key.startsWith(_searchPrefix) ||
           key.startsWith(_leaderboardPrefix)
         )) {
           keysToDelete.add(key);

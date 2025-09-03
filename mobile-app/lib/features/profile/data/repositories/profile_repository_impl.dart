@@ -40,6 +40,26 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, UserProfile>> getCurrentUserProfile() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final remoteProfile = await remoteDataSource.getCurrentUserProfile();
+        await localDataSource.cacheUserProfile(remoteProfile);
+        return Right(remoteProfile);
+      } on ServerException {
+        return Left(ServerFailure());
+      }
+    } else {
+      try {
+        final localProfile = await localDataSource.getCachedUserProfile('current');
+        return Right(localProfile);
+      } on CacheException {
+        return Left(CacheFailure());
+      }
+    }
+  }
+
+  @override
   Future<Either<Failure, UserProfile>> updateUserProfile(
     String userId,
     Map<String, dynamic> updates,
@@ -162,30 +182,23 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, List<UserProfile>>> searchUsers(
-    String query,
-    int page,
-    int limit,
-  ) async {
+    String query, {
+    int page = 1,
+    int limit = 20,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final searchResults = await remoteDataSource.searchUsers(query, page, limit);
-        await localDataSource.cacheSearchResults(query, page, searchResults);
+        final searchResults = await remoteDataSource.searchUsers(
+          query: query,
+          limit: limit,
+          offset: (page - 1) * limit,
+        );
         return Right(searchResults);
       } on ServerException {
-        try {
-          final cachedResults = await localDataSource.getCachedSearchResults(query, page);
-          return Right(cachedResults);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
+        return Left(ServerFailure());
       }
     } else {
-      try {
-        final cachedResults = await localDataSource.getCachedSearchResults(query, page);
-        return Right(cachedResults);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
+      return Left(ServerFailure());
     }
   }
 

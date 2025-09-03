@@ -14,14 +14,7 @@ abstract class SettingsLocalDataSource {
   /// Clear cached user settings
   Future<void> clearCachedUserSettings(String userId);
 
-  /// Get cached notification settings
-  Future<NotificationSettingsModel?> getCachedNotificationSettings(String userId);
 
-  /// Cache notification settings
-  Future<void> cacheNotificationSettings(NotificationSettingsModel settings);
-
-  /// Clear cached notification settings
-  Future<void> clearCachedNotificationSettings(String userId);
 
   /// Get cached app preferences
   Future<AppPreferencesModel?> getCachedAppPreferences(String userId);
@@ -94,8 +87,7 @@ abstract class SettingsLocalDataSource {
   /// Check if settings data is cached and fresh
   Future<bool> isSettingsDataFresh(String userId, {Duration maxAge = const Duration(hours: 1)});
 
-  /// Check if notification settings data is cached and fresh
-  Future<bool> isNotificationSettingsDataFresh(String userId, {Duration maxAge = const Duration(hours: 1)});
+
 
   /// Check if app preferences data is cached and fresh
   Future<bool> isAppPreferencesDataFresh(String userId, {Duration maxAge = const Duration(hours: 2)});
@@ -111,8 +103,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   final Box<dynamic> _hiveBox;
 
   // Cache keys
-  static const String _settingsPrefix = 'user_settings_';
-  static const String _notificationPrefix = 'notification_settings_';
+  static const String _userSettingsPrefix = 'user_settings_';
   static const String _preferencesPrefix = 'app_preferences_';
   static const String _offlinePrefix = 'offline_preferences_';
   static const String _themesKey = 'available_themes';
@@ -126,7 +117,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   @override
   Future<UserSettingsModel?> getCachedUserSettings(String userId) async {
     try {
-      final key = '$_settingsPrefix$userId';
+      final key = '$_userSettingsPrefix$userId';
       return _hiveBox.get(key) as UserSettingsModel?;
     } catch (e) {
       return null;
@@ -136,7 +127,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   @override
   Future<void> cacheUserSettings(UserSettingsModel settings) async {
     try {
-      final key = '$_settingsPrefix${settings.userId}';
+      final key = '$_userSettingsPrefix${settings.userId}';
       final timestampKey = '$key$_timestampSuffix';
       
       await _hiveBox.put(key, settings);
@@ -149,7 +140,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   @override
   Future<void> clearCachedUserSettings(String userId) async {
     try {
-      final key = '$_settingsPrefix$userId';
+      final key = '$_userSettingsPrefix$userId';
       final timestampKey = '$key$_timestampSuffix';
       
       await _hiveBox.delete(key);
@@ -159,41 +150,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     }
   }
 
-  @override
-  Future<NotificationSettingsModel?> getCachedNotificationSettings(String userId) async {
-    try {
-      final key = '$_notificationPrefix$userId';
-      return _hiveBox.get(key) as NotificationSettingsModel?;
-    } catch (e) {
-      return null;
-    }
-  }
 
-  @override
-  Future<void> cacheNotificationSettings(NotificationSettingsModel settings) async {
-    try {
-      final key = '$_notificationPrefix${settings.userId}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, settings);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
-
-  @override
-  Future<void> clearCachedNotificationSettings(String userId) async {
-    try {
-      final key = '$_notificationPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
 
   @override
   Future<AppPreferencesModel?> getCachedAppPreferences(String userId) async {
@@ -468,8 +425,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
       
       for (final key in _hiveBox.keys) {
         if (key is String && (
-          key.startsWith(_settingsPrefix) ||
-          key.startsWith(_notificationPrefix) ||
+          key.startsWith(_userSettingsPrefix) ||
           key.startsWith(_preferencesPrefix) ||
           key.startsWith(_offlinePrefix) ||
           key.startsWith(_dataUsagePrefix) ||
@@ -493,7 +449,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   @override
   Future<bool> isSettingsDataFresh(String userId, {Duration maxAge = const Duration(hours: 1)}) async {
     try {
-      final key = '$_settingsPrefix$userId$_timestampSuffix';
+      final key = '$_userSettingsPrefix$userId$_timestampSuffix';
       final timestamp = _hiveBox.get(key) as int?;
       
       if (timestamp == null) return false;
@@ -507,22 +463,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     }
   }
 
-  @override
-  Future<bool> isNotificationSettingsDataFresh(String userId, {Duration maxAge = const Duration(hours: 1)}) async {
-    try {
-      final key = '$_notificationPrefix$userId$_timestampSuffix';
-      final timestamp = _hiveBox.get(key) as int?;
-      
-      if (timestamp == null) return false;
-      
-      final cachedTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      final now = DateTime.now();
-      
-      return now.difference(cachedTime) <= maxAge;
-    } catch (e) {
-      return false;
-    }
-  }
+
 
   @override
   Future<bool> isAppPreferencesDataFresh(String userId, {Duration maxAge = const Duration(hours: 2)}) async {

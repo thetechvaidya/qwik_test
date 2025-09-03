@@ -33,13 +33,27 @@ class PaginatedResponse<T> extends Equatable {
         .map((item) => fromJsonT(item as Map<String, dynamic>))
         .toList();
 
+    final currentPage = json['current_page'] as int? ?? 1;
+    final lastPage = json['last_page'] as int? ?? 1;
+    
+    // Check if API provides hasMorePages directly, otherwise calculate it
+    final bool hasMorePages;
+    if (json.containsKey('has_more_pages')) {
+      hasMorePages = json['has_more_pages'] as bool? ?? false;
+    } else if (json.containsKey('hasMorePages')) {
+      hasMorePages = json['hasMorePages'] as bool? ?? false;
+    } else {
+      // Fallback to calculation based on current_page and last_page
+      hasMorePages = currentPage < lastPage;
+    }
+
     return PaginatedResponse<T>(
       data: dataList,
-      currentPage: json['current_page'] as int? ?? 1,
-      lastPage: json['last_page'] as int? ?? 1,
+      currentPage: currentPage,
+      lastPage: lastPage,
       total: json['total'] as int? ?? 0,
       perPage: json['per_page'] as int? ?? 15,
-      hasMorePages: (json['current_page'] as int? ?? 1) < (json['last_page'] as int? ?? 1),
+      hasMorePages: hasMorePages,
       nextPageUrl: json['next_page_url'] as String?,
       prevPageUrl: json['prev_page_url'] as String?,
     );
