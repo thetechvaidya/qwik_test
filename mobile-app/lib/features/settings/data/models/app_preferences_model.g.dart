@@ -41,26 +41,13 @@ class AppPreferencesModelAdapter extends TypeAdapter<AppPreferencesModel> {
 
 AppPreferencesModel _$AppPreferencesModelFromJson(Map<String, dynamic> json) =>
     AppPreferencesModel(
+      theme: json['theme'] as String? ?? 'system',
       language: json['language'] as String? ?? 'en',
-      timezone: json['timezone'] as String? ?? 'UTC',
-      fontSize: json['fontSize'] as String? ?? FontSize.medium,
-      soundEnabled: json['soundEnabled'] as bool? ?? true,
-      vibrationEnabled: json['vibrationEnabled'] as bool? ?? true,
-      animationsEnabled: json['animationsEnabled'] as bool? ?? true,
-      autoLockEnabled: json['autoLockEnabled'] as bool? ?? false,
-      autoLockTimeout: (json['autoLockTimeout'] as num?)?.toInt() ??
-          AutoLockTimeout.fiveMinutes,
     );
 
 Map<String, dynamic> _$AppPreferencesModelToJson(
         AppPreferencesModel instance) =>
     <String, dynamic>{
+      'theme': instance.theme,
       'language': instance.language,
-      'timezone': instance.timezone,
-      'fontSize': instance.fontSize,
-      'soundEnabled': instance.soundEnabled,
-      'vibrationEnabled': instance.vibrationEnabled,
-      'autoLockEnabled': instance.autoLockEnabled,
-      'autoLockTimeout': instance.autoLockTimeout,
-      'animationsEnabled': instance.animationsEnabled,
     };

@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_settings.dart';
-import '../../domain/entities/notification_settings.dart';
-import '../../domain/entities/app_preferences.dart';
+// Removed imports for notification_settings and app_preferences
 
 abstract class SettingsState extends Equatable {
   const SettingsState();
@@ -24,38 +23,28 @@ class SettingsLoading extends SettingsState {
 class SettingsLoaded extends SettingsState {
   const SettingsLoaded({
     required this.userSettings,
-    this.notificationSettings,
-    this.appPreferences,
     this.availableThemes = const [],
     this.availableLanguages = const [],
   });
 
   final UserSettings userSettings;
-  final NotificationSettings? notificationSettings;
-  final AppPreferences? appPreferences;
   final List<String> availableThemes;
   final List<String> availableLanguages;
 
   @override
   List<Object?> get props => [
         userSettings,
-        notificationSettings,
-        appPreferences,
         availableThemes,
         availableLanguages,
       ];
 
   SettingsLoaded copyWith({
     UserSettings? userSettings,
-    NotificationSettings? notificationSettings,
-    AppPreferences? appPreferences,
     List<String>? availableThemes,
     List<String>? availableLanguages,
   }) {
     return SettingsLoaded(
       userSettings: userSettings ?? this.userSettings,
-      notificationSettings: notificationSettings ?? this.notificationSettings,
-      appPreferences: appPreferences ?? this.appPreferences,
       availableThemes: availableThemes ?? this.availableThemes,
       availableLanguages: availableLanguages ?? this.availableLanguages,
     );
@@ -88,53 +77,7 @@ class SettingsUpdateSuccess extends SettingsState {
   List<Object?> get props => [userSettings, message];
 }
 
-/// State when updating notification settings
-class NotificationSettingsUpdating extends SettingsState {
-  const NotificationSettingsUpdating({
-    required this.currentSettings,
-  });
-
-  final NotificationSettings currentSettings;
-
-  @override
-  List<Object?> get props => [currentSettings];
-}
-
-/// State when notification settings update is successful
-class NotificationSettingsUpdateSuccess extends SettingsState {
-  const NotificationSettingsUpdateSuccess({
-    required this.notificationSettings,
-  });
-
-  final NotificationSettings notificationSettings;
-
-  @override
-  List<Object?> get props => [notificationSettings];
-}
-
-/// State when updating app preferences
-class AppPreferencesUpdating extends SettingsState {
-  const AppPreferencesUpdating({
-    required this.currentPreferences,
-  });
-
-  final AppPreferences currentPreferences;
-
-  @override
-  List<Object?> get props => [currentPreferences];
-}
-
-/// State when app preferences update is successful
-class AppPreferencesUpdateSuccess extends SettingsState {
-  const AppPreferencesUpdateSuccess({
-    required this.appPreferences,
-  });
-
-  final AppPreferences appPreferences;
-
-  @override
-  List<Object?> get props => [appPreferences];
-}
+// Removed notification and app preferences related states
 
 /// State when settings operation fails
 class SettingsError extends SettingsState {

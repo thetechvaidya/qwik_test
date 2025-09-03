@@ -21,6 +21,9 @@ class QuestionContentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if question type is supported
+    final isSupported = _isQuestionTypeSupported();
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -44,6 +47,12 @@ class QuestionContentWidget extends StatelessWidget {
           if (question.imageUrl != null) ...[
             const SizedBox(height: 16),
             _buildQuestionImage(),
+          ],
+          
+          // Unsupported question type warning
+          if (!isSupported) ...[
+            const SizedBox(height: 16),
+            _buildUnsupportedWarning(),
           ],
           
           // Note: Attachment functionality has been simplified
@@ -228,5 +237,48 @@ class QuestionContentWidget extends StatelessWidget {
     }
   }
 
+  bool _isQuestionTypeSupported() {
+    switch (question.type) {
+      case QuestionType.singleChoice:
+      case QuestionType.multipleChoice:
+      case QuestionType.trueFalse:
+        return true;
+      case QuestionType.fillInTheBlank:
+      case QuestionType.essay:
+      case QuestionType.matching:
+      case QuestionType.ordering:
+        return false;
+    }
+  }
 
+  Widget _buildUnsupportedWarning() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.warning,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'This question type (${_getQuestionTypeText()}) is not yet supported in the mobile app.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.warning,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

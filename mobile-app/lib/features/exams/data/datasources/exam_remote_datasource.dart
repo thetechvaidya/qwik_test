@@ -5,7 +5,7 @@ import '../../../../core/utils/pagination_utils.dart';
 import '../models/exam_model.dart';
 import '../models/category_model.dart';
 
-// UserExamProgressModel is defined in exam_model.dart, so it's already imported
+
 
 /// Abstract interface for exam remote data source
 abstract class ExamRemoteDataSource {
@@ -43,23 +43,7 @@ abstract class ExamRemoteDataSource {
     String? type,
   });
 
-  /// Get featured exams
-  Future<List<ExamModel>> getFeaturedExams({int limit = 10});
 
-  /// Get recent exams
-  Future<List<ExamModel>> getRecentExams({int limit = 10});
-
-  /// Get popular exams
-  Future<List<ExamModel>> getPopularExams({int limit = 10});
-
-  /// Get user's exam progress
-  Future<UserExamProgressModel?> getUserExamProgress(String examId);
-
-  /// Update user's exam progress
-  Future<UserExamProgressModel> updateUserExamProgress(
-    String examId,
-    Map<String, dynamic> progressData,
-  );
 }
 
 /// Implementation of exam remote data source
@@ -69,6 +53,24 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
   ExamRemoteDataSourceImpl({
     required Dio dio,
   }) : _dio = dio;
+
+  /// Maps UI sortBy values to API-expected parameter names
+  String _mapSortByToApiParam(String sortBy) {
+    switch (sortBy) {
+      case 'createdAt':
+        return 'created_at';
+      case 'updatedAt':
+        return 'updated_at';
+      case 'totalQuestions':
+        return 'total_questions';
+      case 'title':
+      case 'difficulty':
+      case 'duration':
+      case 'popularity':
+      default:
+        return sortBy; // These fields match API naming
+    }
+  }
 
   @override
   Future<PaginatedResponse<ExamModel>> getExams({
@@ -91,7 +93,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
         if (type != null) 'type': type,
         if (search != null) 'search': search,
         if (isActive != null) 'is_active': isActive,
-        if (sortBy != null) 'sort_by': sortBy,
+        if (sortBy != null) 'sort_by': _mapSortByToApiParam(sortBy),
         if (sortOrder != null) 'sort_order': sortOrder,
       };
 
@@ -231,129 +233,7 @@ class ExamRemoteDataSourceImpl implements ExamRemoteDataSource {
     }
   }
 
-  @override
-  Future<List<ExamModel>> getFeaturedExams({int limit = 10}) async {
-    try {
-      final response = await _dio.get(
-        ApiEndpoints.featuredExams,
-        queryParameters: {'limit': limit},
-      );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> examsJson = response.data['data'];
-        return examsJson.map((json) => ExamModel.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-          message: 'Failed to fetch featured exams',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
-  }
-
-  @override
-  Future<List<ExamModel>> getRecentExams({int limit = 10}) async {
-    try {
-      final response = await _dio.get(
-        ApiEndpoints.recentExams,
-        queryParameters: {'limit': limit},
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> examsJson = response.data['data'];
-        return examsJson.map((json) => ExamModel.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-          message: 'Failed to fetch recent exams',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
-  }
-
-  @override
-  Future<List<ExamModel>> getPopularExams({int limit = 10}) async {
-    try {
-      final response = await _dio.get(
-        ApiEndpoints.popularExams,
-        queryParameters: {'limit': limit},
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> examsJson = response.data['data'];
-        return examsJson.map((json) => ExamModel.fromJson(json)).toList();
-      } else {
-        throw ServerException(
-          message: 'Failed to fetch popular exams',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
-  }
-
-  @override
-  Future<UserExamProgressModel?> getUserExamProgress(String examId) async {
-    try {
-      final response = await _dio.get(ApiEndpoints.userExamAttempts(examId));
-
-      if (response.statusCode == 200) {
-        final data = response.data['data'];
-        return data != null ? UserExamProgressModel.fromJson(data) : null;
-      } else if (response.statusCode == 404) {
-        return null; // No progress found
-      } else {
-        throw ServerException(
-          message: 'Failed to fetch exam progress',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) {
-        return null; // No progress found
-      }
-      throw _handleDioException(e);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
-  }
-
-  @override
-  Future<UserExamProgressModel> updateUserExamProgress(
-    String examId,
-    Map<String, dynamic> progressData,
-  ) async {
-    try {
-      final response = await _dio.post(
-        ApiEndpoints.userExamAttempts(examId),
-        data: progressData,
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return UserExamProgressModel.fromJson(response.data['data']);
-      } else {
-        throw ServerException(
-          message: 'Failed to update exam progress',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      throw _handleDioException(e);
-    } catch (e) {
-      throw ServerException(message: 'Unexpected error occurred: $e');
-    }
-  }
 
   /// Handle Dio exceptions and convert to appropriate exceptions
   Exception _handleDioException(DioException e) {

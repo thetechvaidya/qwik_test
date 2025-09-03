@@ -48,21 +48,7 @@ abstract class SearchRepository {
   /// Check if search history exists for query
   Future<Either<Failure, bool>> hasSearchHistory(String query, {String? categoryId});
 
-  /// Report search analytics (fire and forget)
-  Future<void> reportSearchAnalytics({
-    required String query,
-    String? categoryId,
-    int? resultCount,
-    bool? hasResults,
-  });
 
-  /// Track search analytics with filters
-  Future<void> trackSearchAnalytics({
-    required String query,
-    required int resultCount,
-    String? categoryId,
-    Map<String, dynamic>? filters,
-  });
 
   /// Clear cached search suggestions
   Future<Either<Failure, void>> clearSearchSuggestions();

@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
-import '../widgets/profile_stats_card.dart';
 import '../widgets/profile_actions.dart';
-import '../widgets/subscription_info_card.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({
@@ -29,12 +27,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void _loadProfile() {
     context.read<ProfileBloc>().add(
       ProfileLoadRequested(userId: widget.userId),
-    );
-    context.read<ProfileBloc>().add(
-      ProfileStatsLoadRequested(userId: widget.userId),
-    );
-    context.read<ProfileBloc>().add(
-      ProfileSubscriptionLoadRequested(userId: widget.userId),
     );
   }
 
@@ -137,8 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ? state.currentProfile
                             : (state as ProfileError).currentProfile!;
 
-            final stats = state is ProfileLoaded ? state.stats : null;
-            final subscriptionInfo = state is ProfileLoaded ? state.subscriptionInfo : null;
+            // Removed stats and subscription info
             final isLoading = state is ProfileUpdating ||
                 state is ProfileAvatarUploading ||
                 state is ProfileRefreshing;
@@ -157,19 +148,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       onAvatarTap: _showAvatarOptions,
                     ),
                     const SizedBox(height: 24),
-                    if (stats != null) ...[
-                      ProfileStatsCard(stats: stats),
-                      const SizedBox(height: 16),
-                    ],
-                    if (subscriptionInfo != null) ...[
-                      SubscriptionInfoCard(subscriptionInfo: subscriptionInfo),
-                      const SizedBox(height: 16),
-                    ],
+                    // Removed stats and subscription cards
                     ProfileActions(
-                      profile: profile,
                       onEditProfile: _navigateToEditProfile,
-                      onViewAchievements: _navigateToAchievements,
-                      onViewActivity: _navigateToActivity,
                     ),
                   ],
                 ),
@@ -194,15 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
     // Navigator.of(context).pushNamed('/profile/edit', arguments: widget.userId);
   }
 
-  void _navigateToAchievements() {
-    // Navigate to achievements page
-    // Navigator.of(context).pushNamed('/profile/achievements', arguments: widget.userId);
-  }
 
-  void _navigateToActivity() {
-    // Navigate to activity page
-    // Navigator.of(context).pushNamed('/profile/activity', arguments: widget.userId);
-  }
 
   void _showAvatarOptions() {
     showModalBottomSheet(
@@ -212,22 +185,23 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Take Photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _takePhoto();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from Gallery'),
-              onTap: () {
-                Navigator.pop(context);
-                _chooseFromGallery();
-              },
-            ),
+            // TODO: Add image_picker dependency to enable photo/gallery options
+            // ListTile(
+            //   leading: const Icon(Icons.photo_camera),
+            //   title: const Text('Take Photo'),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     _takePhoto();
+            //   },
+            // ),
+            // ListTile(
+            //   leading: const Icon(Icons.photo_library),
+            //   title: const Text('Choose from Gallery'),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     _chooseFromGallery();
+            //   },
+            // ),
             ListTile(
               leading: const Icon(Icons.delete),
               title: const Text('Remove Avatar'),
@@ -242,15 +216,16 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _takePhoto() {
-    // Implement camera functionality
-    // This would typically use image_picker package
-  }
+  // TODO: Implement when image_picker dependency is added
+  // void _takePhoto() {
+  //   // Implement camera functionality
+  //   // This would typically use image_picker package
+  // }
 
-  void _chooseFromGallery() {
-    // Implement gallery selection
-    // This would typically use image_picker package
-  }
+  // void _chooseFromGallery() {
+  //   // Implement gallery selection
+  //   // This would typically use image_picker package
+  // }
 
   void _removeAvatar() {
     context.read<ProfileBloc>().add(

@@ -4,16 +4,12 @@ class ProfileActions extends StatelessWidget {
   const ProfileActions({
     Key? key,
     this.onEditProfile,
-    this.onViewAchievements,
-    this.onViewActivity,
     this.onSettings,
     this.onShare,
     this.isOwnProfile = true,
   }) : super(key: key);
 
   final VoidCallback? onEditProfile;
-  final VoidCallback? onViewAchievements;
-  final VoidCallback? onViewActivity;
   final VoidCallback? onSettings;
   final VoidCallback? onShare;
   final bool isOwnProfile;
@@ -54,24 +50,7 @@ class ProfileActions extends StatelessWidget {
         onTap: onEditProfile,
         color: Colors.blue,
       ),
-      const SizedBox(height: 12),
-      _buildActionButton(
-        context,
-        icon: Icons.emoji_events,
-        label: 'Achievements',
-        subtitle: 'View your accomplishments',
-        onTap: onViewAchievements,
-        color: Colors.orange,
-      ),
-      const SizedBox(height: 12),
-      _buildActionButton(
-        context,
-        icon: Icons.timeline,
-        label: 'Activity',
-        subtitle: 'See your learning progress',
-        onTap: onViewActivity,
-        color: Colors.green,
-      ),
+
       const SizedBox(height: 12),
       _buildActionButton(
         context,
@@ -95,24 +74,7 @@ class ProfileActions extends StatelessWidget {
 
   List<Widget> _buildOtherProfileActions(BuildContext context) {
     return [
-      _buildActionButton(
-        context,
-        icon: Icons.emoji_events,
-        label: 'Achievements',
-        subtitle: 'View their accomplishments',
-        onTap: onViewAchievements,
-        color: Colors.orange,
-      ),
-      const SizedBox(height: 12),
-      _buildActionButton(
-        context,
-        icon: Icons.timeline,
-        label: 'Activity',
-        subtitle: 'See their learning progress',
-        onTap: onViewActivity,
-        color: Colors.green,
-      ),
-      const SizedBox(height: 12),
+
       _buildActionButton(
         context,
         icon: Icons.share,

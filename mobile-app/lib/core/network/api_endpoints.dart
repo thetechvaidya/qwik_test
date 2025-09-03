@@ -56,7 +56,7 @@ class ApiEndpoints {
   static const String searchHistory = '$_apiPrefix/search/history';
   static const String trendingSearches = '$_apiPrefix/search/trending';
   static const String popularSearches = '$_apiPrefix/search/popular';
-  static const String searchAnalytics = '$_apiPrefix/search/analytics';
+
   
   // Favorites endpoints
   static const String favorites = '$_apiPrefix/favorites';

@@ -52,18 +52,7 @@ class SearchUseCase implements UseCase<PaginatedResponse<SearchResult>, SearchPa
             );
           }
 
-          // Track search analytics
-          if (params.trackAnalytics) {
-            await _searchRepository.trackSearchAnalytics(
-              query: params.query,
-              resultCount: results.length,
-              categoryId: params.categoryId,
-              filters: {
-                if (params.type != null) 'type': params.type!,
-                if (params.difficulty != null) 'difficulty': params.difficulty!,
-              },
-            );
-          }
+
 
           return Right(paginatedResponse);
         },
@@ -83,7 +72,7 @@ class SearchParams {
   final int page;
   final int limit;
   final bool saveToHistory;
-  final bool trackAnalytics;
+
 
   const SearchParams({
     required this.query,
@@ -93,7 +82,7 @@ class SearchParams {
     this.page = 1,
     this.limit = 20,
     this.saveToHistory = true,
-    this.trackAnalytics = true,
+
   });
 
   /// Create copy with updated properties
@@ -105,7 +94,7 @@ class SearchParams {
     int? page,
     int? limit,
     bool? saveToHistory,
-    bool? trackAnalytics,
+
   }) {
     return SearchParams(
       query: query ?? this.query,
@@ -115,7 +104,7 @@ class SearchParams {
       page: page ?? this.page,
       limit: limit ?? this.limit,
       saveToHistory: saveToHistory ?? this.saveToHistory,
-      trackAnalytics: trackAnalytics ?? this.trackAnalytics,
+
     );
   }
 
@@ -129,8 +118,7 @@ class SearchParams {
         other.difficulty == difficulty &&
         other.page == page &&
         other.limit == limit &&
-        other.saveToHistory == saveToHistory &&
-        other.trackAnalytics == trackAnalytics;
+        other.saveToHistory == saveToHistory;
   }
 
   @override
@@ -143,12 +131,12 @@ class SearchParams {
       page,
       limit,
       saveToHistory,
-      trackAnalytics,
+
     );
   }
 
   @override
   String toString() {
-    return 'SearchParams(query: $query, type: $type, categoryId: $categoryId, difficulty: $difficulty, page: $page, limit: $limit, saveToHistory: $saveToHistory, trackAnalytics: $trackAnalytics)';
+    return 'SearchParams(query: $query, type: $type, categoryId: $categoryId, difficulty: $difficulty, page: $page, limit: $limit, saveToHistory: $saveToHistory)';
   }
 }

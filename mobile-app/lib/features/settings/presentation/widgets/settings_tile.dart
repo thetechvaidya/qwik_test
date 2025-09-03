@@ -11,7 +11,7 @@ class SettingsTile extends StatelessWidget {
     this.enabled = true,
   });
 
-  const SettingsTile.switchTile({
+  SettingsTile.switchTile({
     super.key,
     required this.icon,
     required this.title,
@@ -25,7 +25,7 @@ class SettingsTile extends StatelessWidget {
        ),
        onTap = null;
 
-  const SettingsTile.sliderTile({
+  SettingsTile.sliderTile({
     super.key,
     required this.icon,
     required this.title,

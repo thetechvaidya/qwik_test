@@ -613,13 +613,14 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
     if (progress == null || !progress.isStarted) {
       _examBloc.add(StartExamEvent(examId: exam.id));
     } else if (progress.isCompleted) {
-      // Navigate to results page
+      // Show completion message and navigate back
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Navigating to results...'),
+          content: Text('Exam completed successfully!'),
           behavior: SnackBarBehavior.floating,
         ),
       );
+      Navigator.of(context).pop();
     } else {
       _examBloc.add(ResumeExamEvent(examId: exam.id));
     }
@@ -663,7 +664,7 @@ class _ExamDetailPageState extends State<ExamDetailPage> {
     if (progress == null || !progress.isStarted) {
       return 'Start Exam';
     } else if (progress.isCompleted) {
-      return 'View Results';
+      return 'Exam Completed';
     } else {
       return 'Continue Exam';
     }

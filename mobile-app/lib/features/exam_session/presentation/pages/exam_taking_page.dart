@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../bloc/exam_session_bloc.dart';
 import '../../domain/entities/answer.dart';
 import '../widgets/exam_header_widget.dart';
@@ -15,6 +16,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/error_widget.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/router/app_router.dart';
 
 /// Main page for taking an exam session
 class ExamTakingPage extends StatefulWidget {
@@ -450,8 +452,13 @@ class _ExamTakingPageState extends State<ExamTakingPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close dialog
+              // Safe navigation back to exams
+              if (Navigator.canPop(context)) {
+                Navigator.of(context).pop();
+              } else {
+                context.go(AppRouter.exams);
+              }
             },
             child: const Text('OK'),
           ),
@@ -470,8 +477,13 @@ class _ExamTakingPageState extends State<ExamTakingPage>
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close dialog
+              // Safe navigation back to exams
+              if (Navigator.canPop(context)) {
+                Navigator.of(context).pop();
+              } else {
+                context.go(AppRouter.exams);
+              }
             },
             child: const Text('OK'),
           ),

@@ -31,10 +31,8 @@ import '../../features/exams/domain/repositories/exam_repository.dart';
 import '../../features/exams/domain/usecases/get_exams_usecase.dart';
 import '../../features/exams/domain/usecases/get_exam_detail_usecase.dart';
 import '../../features/exams/domain/usecases/get_categories_usecase.dart';
-import '../../features/exams/domain/usecases/get_featured_exams_usecase.dart';
-import '../../features/exams/domain/usecases/get_recent_exams_usecase.dart';
-import '../../features/exams/domain/usecases/get_popular_exams_usecase.dart';
-import '../../features/exams/domain/usecases/search_exams_usecase.dart' as exam_search;
+
+import '../../features/search/domain/usecases/search_exams_usecase.dart';
 import '../../features/exams/presentation/bloc/exam_bloc.dart';
 
 // Search feature imports
@@ -42,15 +40,11 @@ import '../../features/search/data/datasources/search_local_datasource.dart';
 import '../../features/search/data/datasources/search_remote_datasource.dart';
 import '../../features/search/data/repositories/search_repository_impl.dart';
 import '../../features/search/domain/repositories/search_repository.dart';
-import '../../features/search/domain/usecases/search_usecase.dart';
-import '../../features/search/domain/usecases/search_exams_usecase.dart' as search_search;
 import '../../features/search/domain/usecases/get_search_suggestions_usecase.dart';
 import '../../features/search/domain/usecases/manage_search_history_usecase.dart';
-import '../../features/search/domain/usecases/get_search_history_usecase.dart' as search_get_history;
-import '../../features/search/domain/usecases/clear_search_history_usecase.dart' as search_clear_history;
-import '../../features/search/domain/usecases/remove_search_history_usecase.dart' as search_remove_history;
-import '../../features/search/domain/usecases/report_search_analytics_usecase.dart';
-import '../../features/search/presentation/bloc/search_bloc.dart';
+import '../../features/exams/presentation/bloc/search_bloc.dart' as exam_search_bloc;
+
+
 
 // Exam Session feature imports
 import '../../features/exam_session/data/datasources/exam_session_local_datasource.dart';
@@ -72,27 +66,13 @@ import '../../features/settings/data/repositories/settings_repository_impl.dart'
 import '../../features/settings/domain/repositories/settings_repository.dart';
 import '../../features/settings/domain/usecases/get_user_settings_usecase.dart';
 import '../../features/settings/domain/usecases/update_user_settings_usecase.dart';
-import '../../features/settings/domain/usecases/get_notification_settings_usecase.dart';
-import '../../features/settings/domain/usecases/get_app_preferences_usecase.dart';
+// Removed advanced settings use cases
 import '../../features/settings/domain/usecases/get_available_themes_usecase.dart';
 import '../../features/settings/domain/usecases/get_available_languages_usecase.dart';
 import '../../features/settings/presentation/bloc/settings_bloc.dart';
 import '../../features/settings/presentation/bloc/theme_bloc.dart';
 
-// Dashboard feature imports
-import '../../features/dashboard/data/datasources/dashboard_local_datasource.dart';
-import '../../features/dashboard/data/datasources/dashboard_remote_datasource.dart';
-import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
-import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
-import '../../features/dashboard/domain/usecases/get_dashboard_data.dart';
-import '../../features/dashboard/domain/usecases/get_user_stats.dart';
-import '../../features/dashboard/domain/usecases/get_achievements.dart';
-import '../../features/dashboard/domain/usecases/get_recent_activities.dart';
-import '../../features/dashboard/domain/usecases/get_performance_trends.dart';
-import '../../features/dashboard/domain/usecases/update_achievement_progress.dart';
-import '../../features/dashboard/domain/usecases/unlock_achievement.dart';
-import '../../features/dashboard/domain/usecases/add_recent_activity.dart';
-import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+
 
 // Profile feature imports
 import '../../features/profile/data/datasources/profile_local_datasource.dart';
@@ -102,9 +82,7 @@ import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_user_profile_usecase.dart';
 import '../../features/profile/domain/usecases/update_user_profile_usecase.dart';
 import '../../features/profile/domain/usecases/upload_avatar_usecase.dart';
-import '../../features/profile/domain/usecases/get_user_stats_usecase.dart';
-import '../../features/profile/domain/usecases/get_subscription_info_usecase.dart';
-import '../../features/profile/domain/usecases/search_users_usecase.dart';
+// Removed advanced profile use cases
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
 
 // Pagination utilities
@@ -216,12 +194,13 @@ Future<void> initializeDependencies() async {
   );
 
   // Exam data sources
-  sl.registerLazySingletonAsync<ExamLocalDataSource>(
+  sl.registerSingletonAsync<ExamLocalDataSource>(
     () async {
       final dataSource = ExamLocalDataSourceImpl();
       await dataSource.init();
       return dataSource;
     },
+    preResolve: true,
   );
   sl.registerLazySingleton<ExamRemoteDataSource>(
     () => ExamRemoteDataSourceImpl(
@@ -239,12 +218,13 @@ Future<void> initializeDependencies() async {
   );
 
   // Search data sources
-  sl.registerLazySingletonAsync<SearchLocalDataSource>(
+  sl.registerSingletonAsync<SearchLocalDataSource>(
     () async {
       final dataSource = SearchLocalDataSourceImpl();
       await dataSource.init();
       return dataSource;
     },
+    preResolve: true,
   );
   sl.registerLazySingleton<SearchRemoteDataSource>(
     () => SearchRemoteDataSourceImpl(
@@ -271,48 +251,25 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetCategoriesUseCase>(
     () => GetCategoriesUseCase(sl<ExamRepository>()),
   );
-  sl.registerLazySingleton<GetFeaturedExamsUseCase>(
-    () => GetFeaturedExamsUseCase(sl<ExamRepository>()),
-  );
-  sl.registerLazySingleton<GetRecentExamsUseCase>(
-    () => GetRecentExamsUseCase(sl<ExamRepository>()),
-  );
-  sl.registerLazySingleton<GetPopularExamsUseCase>(
-    () => GetPopularExamsUseCase(sl<ExamRepository>()),
-  );
-  sl.registerLazySingleton<exam_search.SearchExamsUseCase>(
-    () => exam_search.SearchExamsUseCase(sl<ExamRepository>()),
-  );
 
-  // Search use cases
-  sl.registerLazySingleton<SearchUseCase>(
-    () => SearchUseCase(
-      searchRepository: sl<SearchRepository>(),
-    ),
-  );
-  sl.registerLazySingleton<search_search.SearchExamsUseCase>(
-    () => search_search.SearchExamsUseCase(
-      examRepository: sl<ExamRepository>(),
-      searchRepository: sl<SearchRepository>(),
-    ),
-  );
+  sl.registerLazySingleton<SearchExamsUseCase>(() => SearchExamsUseCase(
+    examRepository: sl<ExamRepository>(),
+    searchRepository: sl<SearchRepository>(),
+  ));
+  // Search use cases (used by exam search functionality)
   sl.registerLazySingleton<GetSearchSuggestionsUseCase>(
     () => GetSearchSuggestionsUseCase(repository: sl<SearchRepository>()),
   );
   sl.registerLazySingleton<ManageSearchHistoryUseCase>(
     () => ManageSearchHistoryUseCase(repository: sl<SearchRepository>()),
   );
-  sl.registerLazySingleton<search_get_history.GetSearchHistoryUseCase>(
-    () => search_get_history.GetSearchHistoryUseCase(sl<SearchRepository>()),
-  );
-  sl.registerLazySingleton<search_clear_history.ClearSearchHistoryUseCase>(
-    () => search_clear_history.ClearSearchHistoryUseCase(sl<SearchRepository>()),
-  );
-  sl.registerLazySingleton<search_remove_history.RemoveSearchHistoryUseCase>(
-    () => search_remove_history.RemoveSearchHistoryUseCase(sl<SearchRepository>()),
-  );
-  sl.registerLazySingleton<ReportSearchAnalyticsUseCase>(
-    () => ReportSearchAnalyticsUseCase(repository: sl<SearchRepository>()),
+
+  // Exam Search BLoC
+  sl.registerFactory<exam_search_bloc.SearchBloc>(
+    () => exam_search_bloc.SearchBloc(
+      getSearchSuggestionsUseCase: sl<GetSearchSuggestionsUseCase>(),
+      manageSearchHistoryUseCase: sl<ManageSearchHistoryUseCase>(),
+    ),
   );
 
   // Pagination utilities
@@ -326,21 +283,11 @@ Future<void> initializeDependencies() async {
       getExamsUseCase: sl<GetExamsUseCase>(),
       getExamDetailUseCase: sl<GetExamDetailUseCase>(),
       getCategoriesUseCase: sl<GetCategoriesUseCase>(),
-      getFeaturedExamsUseCase: sl<GetFeaturedExamsUseCase>(),
-      getRecentExamsUseCase: sl<GetRecentExamsUseCase>(),
-      getPopularExamsUseCase: sl<GetPopularExamsUseCase>(),
-      searchExamsUseCase: sl<exam_search.SearchExamsUseCase>(),
+      searchExamsUseCase: sl<SearchExamsUseCase>(),
     ),
   );
 
-  // Search BLoC
-  sl.registerFactory<SearchBloc>(
-    () => SearchBloc(
-      searchUseCase: sl<SearchUseCase>(),
-      getSearchSuggestionsUseCase: sl<GetSearchSuggestionsUseCase>(),
-      manageSearchHistoryUseCase: sl<ManageSearchHistoryUseCase>(),
-    ),
-  );
+  // Removed unused search BLoC registration - search functionality is handled by exam-specific search
 
   // Firebase service
   sl.registerLazySingleton<FirebaseService>(() => FirebaseService.instance);
@@ -427,15 +374,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<GetAvailableThemesUseCase>(
     () => GetAvailableThemesUseCase(sl<SettingsRepository>()),
   );
-  sl.registerLazySingleton<GetNotificationSettingsUseCase>(
-    () => GetNotificationSettingsUseCase(sl<SettingsRepository>()),
-  );
-  sl.registerLazySingleton<GetAppPreferencesUseCase>(
-    () => GetAppPreferencesUseCase(sl<SettingsRepository>()),
-  );
-  sl.registerLazySingleton<GetAvailableThemesUseCase>(
-    () => GetAvailableThemesUseCase(sl<SettingsRepository>()),
-  );
+  // Removed advanced settings use cases registrations
   sl.registerLazySingleton<GetAvailableLanguagesUseCase>(
     () => GetAvailableLanguagesUseCase(sl<SettingsRepository>()),
   );
@@ -445,8 +384,6 @@ Future<void> initializeDependencies() async {
     () => SettingsBloc(
       getUserSettingsUseCase: sl<GetUserSettingsUseCase>(),
       updateUserSettingsUseCase: sl<UpdateUserSettingsUseCase>(),
-      getNotificationSettingsUseCase: sl<GetNotificationSettingsUseCase>(),
-      getAppPreferencesUseCase: sl<GetAppPreferencesUseCase>(),
       getAvailableThemesUseCase: sl<GetAvailableThemesUseCase>(),
       getAvailableLanguagesUseCase: sl<GetAvailableLanguagesUseCase>(),
     ),
@@ -459,68 +396,7 @@ Future<void> initializeDependencies() async {
     ),
   );
 
-  // Dashboard data sources
-  sl.registerLazySingleton<DashboardLocalDataSource>(
-    () => DashboardLocalDataSourceImpl(
-      hiveBox: sl<HiveService>().appBox,
-    ),
-  );
-  sl.registerLazySingleton<DashboardRemoteDataSource>(
-    () => DashboardRemoteDataSourceImpl(
-      dio: sl<DioClient>().dio,
-      baseUrl: AppConstants.baseUrl,
-    ),
-  );
 
-  // Dashboard repository
-  sl.registerLazySingleton<DashboardRepository>(
-    () => DashboardRepositoryImpl(
-      remoteDataSource: sl<DashboardRemoteDataSource>(),
-      localDataSource: sl<DashboardLocalDataSource>(),
-      networkInfo: sl<NetworkInfo>(),
-    ),
-  );
-
-  // Dashboard use cases
-  sl.registerLazySingleton<GetDashboardData>(
-    () => GetDashboardData(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<GetUserStats>(
-    () => GetUserStats(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<GetAchievements>(
-    () => GetAchievements(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<GetRecentActivities>(
-    () => GetRecentActivities(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<GetPerformanceTrends>(
-    () => GetPerformanceTrends(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<UpdateAchievementProgress>(
-    () => UpdateAchievementProgress(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<UnlockAchievement>(
-    () => UnlockAchievement(sl<DashboardRepository>()),
-  );
-  sl.registerLazySingleton<AddRecentActivity>(
-    () => AddRecentActivity(sl<DashboardRepository>()),
-  );
-
-  // Dashboard BLoC
-  sl.registerFactory<DashboardBloc>(
-    () => DashboardBloc(
-      getDashboardData: sl<GetDashboardData>(),
-      getUserStats: sl<GetUserStats>(),
-      getAchievements: sl<GetAchievements>(),
-      getRecentActivities: sl<GetRecentActivities>(),
-      getPerformanceTrends: sl<GetPerformanceTrends>(),
-      updateAchievementProgress: sl<UpdateAchievementProgress>(),
-      unlockAchievement: sl<UnlockAchievement>(),
-      addRecentActivity: sl<AddRecentActivity>(),
-      dashboardRepository: sl<DashboardRepository>(),
-    ),
-  );
 
   // Profile data sources
   sl.registerLazySingleton<ProfileLocalDataSource>(
@@ -553,15 +429,7 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton<UploadAvatarUseCase>(
     () => UploadAvatarUseCase(sl<ProfileRepository>()),
   );
-  sl.registerLazySingleton<GetUserStatsUseCase>(
-    () => GetUserStatsUseCase(sl<ProfileRepository>()),
-  );
-  sl.registerLazySingleton<GetSubscriptionInfoUseCase>(
-    () => GetSubscriptionInfoUseCase(sl<ProfileRepository>()),
-  );
-  sl.registerLazySingleton<SearchUsersUseCase>(
-    () => SearchUsersUseCase(sl<ProfileRepository>()),
-  );
+  // Removed advanced profile use cases registrations
 
   // Profile BLoC
   sl.registerFactory<ProfileBloc>(
@@ -569,25 +437,10 @@ Future<void> initializeDependencies() async {
       getUserProfileUseCase: sl<GetUserProfileUseCase>(),
       updateUserProfileUseCase: sl<UpdateUserProfileUseCase>(),
       uploadAvatarUseCase: sl<UploadAvatarUseCase>(),
-      getUserStatsUseCase: sl<GetUserStatsUseCase>(),
-      getSubscriptionInfoUseCase: sl<GetSubscriptionInfoUseCase>(),
-      searchUsersUseCase: sl<SearchUsersUseCase>(),
     ),
   );
 
-  // Results BLoC (placeholder - requires results dependencies)
-  // TODO: Add results use cases and repository registrations
-  // sl.registerFactory<ResultsBloc>(
-  //   () => ResultsBloc(
-  //     getExamResults: sl<GetExamResults>(),
-  //     submitExamResult: sl<SubmitExamResult>(),
-  //     getQuestionResults: sl<GetQuestionResults>(),
-  //     getPerformanceAnalytics: sl<GetPerformanceAnalytics>(),
-  //     getExamAnalysis: sl<GetExamAnalysis>(),
-  //     getStudyRecommendations: sl<GetStudyRecommendations>(),
-  //     resultsRepository: sl<ResultsRepository>(),
-  //   ),
-  // );
+
 
   // Wait for all async registrations to complete
   await sl.allReady();

@@ -83,18 +83,8 @@ class ClearSearchHistoryUseCase implements UseCase<void, NoParams> {
   }
 }
 
-/// Use case for removing search history item
-class RemoveSearchHistoryUseCase implements UseCase<void, RemoveSearchHistoryParams> {
-  final ManageSearchHistoryUseCase _manageSearchHistoryUseCase;
-
-  RemoveSearchHistoryUseCase({required ManageSearchHistoryUseCase manageSearchHistoryUseCase})
-      : _manageSearchHistoryUseCase = manageSearchHistoryUseCase;
-
-  @override
-  Future<Either<Failure, void>> call(RemoveSearchHistoryParams params) async {
-    return await _manageSearchHistoryUseCase.removeHistoryItem(params.id);
-  }
-}
+// Removed unused RemoveSearchHistoryUseCase and RemoveSearchHistoryParams
+// The functionality is available directly through ManageSearchHistoryUseCase.removeHistoryItem()
 
 /// Parameters for getting search history
 class GetSearchHistoryParams {

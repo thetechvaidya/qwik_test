@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/user_stats.dart';
-import '../../domain/entities/subscription_info.dart';
+// Removed imports for user_stats and subscription_info
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -24,26 +23,18 @@ class ProfileLoading extends ProfileState {
 class ProfileLoaded extends ProfileState {
   const ProfileLoaded({
     required this.profile,
-    this.stats,
-    this.subscriptionInfo,
   });
 
   final UserProfile profile;
-  final UserStats? stats;
-  final SubscriptionInfo? subscriptionInfo;
 
   @override
-  List<Object?> get props => [profile, stats, subscriptionInfo];
+  List<Object?> get props => [profile];
 
   ProfileLoaded copyWith({
     UserProfile? profile,
-    UserStats? stats,
-    SubscriptionInfo? subscriptionInfo,
   }) {
     return ProfileLoaded(
       profile: profile ?? this.profile,
-      stats: stats ?? this.stats,
-      subscriptionInfo: subscriptionInfo ?? this.subscriptionInfo,
     );
   }
 }
@@ -98,26 +89,7 @@ class ProfileAvatarUploadSuccess extends ProfileState {
   List<Object?> get props => [profile, avatarUrl];
 }
 
-/// State when searching users
-class ProfileSearchLoading extends ProfileState {
-  const ProfileSearchLoading();
-}
-
-/// State when user search is successful
-class ProfileSearchLoaded extends ProfileState {
-  const ProfileSearchLoaded({
-    required this.users,
-    required this.query,
-    required this.hasMore,
-  });
-
-  final List<UserProfile> users;
-  final String query;
-  final bool hasMore;
-
-  @override
-  List<Object?> get props => [users, query, hasMore];
-}
+// Removed ProfileSearchLoading and ProfileSearchLoaded states
 
 /// State when profile operation fails
 class ProfileError extends ProfileState {

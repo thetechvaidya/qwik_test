@@ -27,7 +27,8 @@ class ExamSessionModelAdapter extends TypeAdapter<ExamSessionModel> {
       expiresAt: fields[7] as DateTime,
       remainingTimeSeconds: fields[8] as int,
       status: fields[9] as String,
-      settings: fields[10] as ExamSettingsModel,
+      allowBackNavigation: fields[10] as bool,
+      isTimed: fields[15] as bool,
       metadata: (fields[11] as Map?)?.cast<String, dynamic>(),
       pausedAt: fields[12] as DateTime?,
       totalPauseDuration: fields[13] as int,
@@ -38,7 +39,7 @@ class ExamSessionModelAdapter extends TypeAdapter<ExamSessionModel> {
   @override
   void write(BinaryWriter writer, ExamSessionModel obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.sessionId)
       ..writeByte(1)
@@ -60,7 +61,9 @@ class ExamSessionModelAdapter extends TypeAdapter<ExamSessionModel> {
       ..writeByte(9)
       ..write(obj.status)
       ..writeByte(10)
-      ..write(obj.settings)
+      ..write(obj.allowBackNavigation)
+      ..writeByte(15)
+      ..write(obj.isTimed)
       ..writeByte(11)
       ..write(obj.metadata)
       ..writeByte(12)
@@ -105,8 +108,8 @@ ExamSessionModel _$ExamSessionModelFromJson(Map<String, dynamic> json) =>
       expiresAt: DateTime.parse(json['expires_at'] as String),
       remainingTimeSeconds: (json['remaining_time_seconds'] as num).toInt(),
       status: json['status'] as String? ?? 'active',
-      settings:
-          ExamSettingsModel.fromJson(json['settings'] as Map<String, dynamic>),
+      allowBackNavigation: json['allow_back_navigation'] as bool? ?? true,
+      isTimed: json['is_timed'] as bool? ?? true,
       metadata: json['metadata'] as Map<String, dynamic>?,
       pausedAt: json['paused_at'] == null
           ? null
@@ -129,7 +132,8 @@ Map<String, dynamic> _$ExamSessionModelToJson(ExamSessionModel instance) =>
       'expires_at': instance.expiresAt.toIso8601String(),
       'remaining_time_seconds': instance.remainingTimeSeconds,
       'status': instance.status,
-      'settings': instance.settings,
+      'allow_back_navigation': instance.allowBackNavigation,
+      'is_timed': instance.isTimed,
       'metadata': instance.metadata,
       'paused_at': instance.pausedAt?.toIso8601String(),
       'total_pause_duration': instance.totalPauseDuration,

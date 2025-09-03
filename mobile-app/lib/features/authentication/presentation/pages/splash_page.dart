@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/router/app_router.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 
@@ -65,7 +66,7 @@ class _SplashPageState extends State<SplashPage>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthAuthenticated) {
-          // Navigate to dashboard after a short delay
+          // Navigate to home after a short delay
           await Future.delayed(const Duration(milliseconds: 1500));
           if (!mounted) return;
           context.go(AppRouter.home);

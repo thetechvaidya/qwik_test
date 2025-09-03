@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 import '../models/user_settings_model.dart';
 import '../models/notification_settings_model.dart';
 import '../models/app_preferences_model.dart';
-import '../models/offline_preferences_model.dart';
+
 
 abstract class SettingsLocalDataSource {
   /// Get cached user settings
@@ -32,14 +32,7 @@ abstract class SettingsLocalDataSource {
   /// Clear cached app preferences
   Future<void> clearCachedAppPreferences(String userId);
 
-  /// Get cached offline preferences
-  Future<OfflinePreferencesModel?> getCachedOfflinePreferences(String userId);
 
-  /// Cache offline preferences
-  Future<void> cacheOfflinePreferences(OfflinePreferencesModel preferences);
-
-  /// Clear cached offline preferences
-  Future<void> clearCachedOfflinePreferences(String userId);
 
   /// Get cached available themes
   Future<List<Map<String, dynamic>>?> getCachedAvailableThemes();
@@ -107,8 +100,7 @@ abstract class SettingsLocalDataSource {
   /// Check if app preferences data is cached and fresh
   Future<bool> isAppPreferencesDataFresh(String userId, {Duration maxAge = const Duration(hours: 2)});
 
-  /// Check if offline preferences data is cached and fresh
-  Future<bool> isOfflinePreferencesDataFresh(String userId, {Duration maxAge = const Duration(hours: 2)});
+
 }
 
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
@@ -239,41 +231,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     }
   }
 
-  @override
-  Future<OfflinePreferencesModel?> getCachedOfflinePreferences(String userId) async {
-    try {
-      final key = '$_offlinePrefix$userId';
-      return _hiveBox.get(key) as OfflinePreferencesModel?;
-    } catch (e) {
-      return null;
-    }
-  }
 
-  @override
-  Future<void> cacheOfflinePreferences(OfflinePreferencesModel preferences) async {
-    try {
-      final key = '$_offlinePrefix${preferences.userId}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, preferences);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
-
-  @override
-  Future<void> clearCachedOfflinePreferences(String userId) async {
-    try {
-      final key = '$_offlinePrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
 
   @override
   Future<List<Map<String, dynamic>>?> getCachedAvailableThemes() async {
@@ -583,22 +541,7 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
     }
   }
 
-  @override
-  Future<bool> isOfflinePreferencesDataFresh(String userId, {Duration maxAge = const Duration(hours: 2)}) async {
-    try {
-      final key = '$_offlinePrefix$userId$_timestampSuffix';
-      final timestamp = _hiveBox.get(key) as int?;
-      
-      if (timestamp == null) return false;
-      
-      final cachedTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      final now = DateTime.now();
-      
-      return now.difference(cachedTime) <= maxAge;
-    } catch (e) {
-      return false;
-    }
-  }
+
 
   /// Helper method to check if any cached data is fresh
   Future<bool> _isDataFresh(String key, Duration maxAge) async {

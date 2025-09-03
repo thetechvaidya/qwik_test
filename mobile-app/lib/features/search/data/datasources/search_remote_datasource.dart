@@ -14,13 +14,7 @@ abstract class SearchRemoteDataSource {
   /// Get trending search queries
   Future<List<String>> getTrendingSearches({int limit = 10});
 
-  /// Report search analytics
-  Future<void> reportSearchAnalytics({
-    required String query,
-    String? categoryId,
-    int? resultCount,
-    bool? hasResults,
-  });
+
 }
 
 /// Implementation of search remote data source using Dio
@@ -98,48 +92,7 @@ class SearchRemoteDataSourceImpl implements SearchRemoteDataSource {
     }
   }
 
-  @override
-  Future<void> reportSearchAnalytics({
-    required String query,
-    String? categoryId,
-    int? resultCount,
-    bool? hasResults,
-  }) async {
-    try {
-      final data = {
-        'query': query,
-        'timestamp': DateTime.now().toIso8601String(),
-      };
-      
-      if (categoryId != null) {
-        data['category_id'] = categoryId;
-      }
-      
-      if (resultCount != null) {
-        data['result_count'] = resultCount;
-      }
-      
-      if (hasResults != null) {
-        data['has_results'] = hasResults;
-      }
 
-      final response = await _dio.post(
-        ApiEndpoints.searchAnalytics,
-        data: data,
-      );
-
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        throw ServerException(
-          message: 'Failed to report search analytics',
-          statusCode: response.statusCode,
-        );
-      }
-    } on DioException catch (e) {
-      // Don't throw for analytics failures, just log
-    } catch (e) {
-      // Don't throw for analytics failures, just log
-    }
-  }
 
   /// Handle Dio exceptions and convert to appropriate exceptions
   Exception _handleDioException(DioException e) {

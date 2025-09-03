@@ -1,168 +1,220 @@
-I have the following verification comments after thorough review and exploration of the codebase. Implement the comments by following the instructions in the comments verbatim:
+I have created the following plan after thorough exploration and analysis of the codebase. Follow the below plan verbatim. Trust the files and references. Do not re-verify what's written in the plan. Explore only when absolutely necessary. First implement all the proposed file changes and then I'll review all the changes together at the end.
 
----
-## Comment 1: Exam result route mismatches constant and GoRoute path causing 404 on navigation.
+### Observations
 
-Update `lib/core/router/app_router.dart`:
-- Replace the nested `GoRoute` under `':examId'` from `path: '/exam-result/:examId'` to `path: 'result'`.
-- Keep `name: 'exam-result'`.
-- Remove any leading `/` so it composes to `/exams/:examId/result`.
-- Verify `goToExamResult` and `pushExamResult` generate the same URL.
+After reviewing the user's clarification, I understand they want to simplify the Flutter app by removing complex features and keeping only core functionality that matches their web application and API documentation. The current codebase has many advanced features like biometric authentication, complex charts, achievement systems, and detailed analytics that are causing compilation errors and adding unnecessary complexity. The goal is to create a clean, minimal mobile app with just the essential features.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 2: DashboardPage requires DashboardBloc but no provider or DI registration exists.
+### Approach
 
-Implement DI and provider:
-1) Register Dashboard data sources, repository, use cases, and then:
-```
-sl.registerFactory<DashboardBloc>(() => DashboardBloc(
-  getDashboardData: sl<GetDashboardData>(),
-  getUserStats: sl<GetUserStats>(),
-  getAchievements: sl<GetAchievements>(),
-  getRecentActivities: sl<GetRecentActivities>(),
-  getPerformanceTrends: sl<GetPerformanceTrends>(),
-  updateAchievementProgress: sl<UpdateAchievementProgress>(),
-  unlockAchievement: sl<UnlockAchievement>(),
-  dashboardRepository: sl<DashboardRepository>(),
-));
-```
-2) Provide it. E.g., in router builder for `home`:
-```
-builder: (context, state) => BlocProvider(
-  create: (_) => sl<DashboardBloc>()..add(LoadDashboardData(userId: userId)),
-  child: DashboardPage(userId: userId),
-)
-```
+The cleanup strategy focuses on **feature simplification and removal** rather than fixing complex features. I'll remove all advanced features not essential to the core exam-taking experience, delete files related to biometric auth, charts, achievements, and complex analytics. The remaining app will have basic authentication, exam browsing, exam taking, simple profile, and basic settings - all aligned with the API documentation. This approach creates a maintainable, lightweight mobile app that focuses on the core value proposition.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\dashboard\presentation\pages\dashboard_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 3: ProfilePage/EditProfilePage depend on ProfileBloc without provider/DI and edit page has compile error.
+### Reasoning
 
-Do the following:
-- In `service_locator.dart`, register Profile repository/use cases and:
-```
-sl.registerFactory<ProfileBloc>(() => ProfileBloc(
-  getUserProfileUseCase: sl<GetUserProfileUseCase>(),
-  updateUserProfileUseCase: sl<UpdateUserProfileUseCase>(),
-  uploadAvatarUseCase: sl<UploadAvatarUseCase>(),
-  getUserStatsUseCase: sl<GetUserStatsUseCase>(),
-  getSubscriptionInfoUseCase: sl<GetSubscriptionInfoUseCase>(),
-));
-```
-- Wrap `ProfilePage` and `EditProfilePage` with `BlocProvider(create: (_) => sl<ProfileBloc>())` in router.
-- In `EditProfilePage._saveProfile()`, replace `widget.profile` with `_currentProfile!` and guard against null:
-```
-if (_currentProfile == null) return;
-final updatedProfile = _currentProfile!.copyWith(
-  name: _nameController.text.trim(),
-  email: _emailController.text.trim(),
-  bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
-);
-```
+I initially analyzed the codebase to fix all compilation errors by adding missing dependencies and creating missing entities. However, the user clarified they prefer removing complex features entirely rather than fixing them. I reviewed the API documentation to identify core features that should remain and identified advanced features that can be safely removed to simplify the codebase and eliminate compilation errors.
 
+## Proposed File Changes
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\profile_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\profile\presentation\pages\edit_profile_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
----
-## Comment 4: SettingsPage uses SettingsBloc but no provider exists in widget tree.
+### mobile-app\pubspec.yaml(MODIFY)
 
-Wrap `SettingsPage` with a provider in router:
-```
-builder: (context, state) => BlocProvider(
-  create: (_) => sl<SettingsBloc>()..add(const SettingsLoadRequested(userId: 'current_user')),
-  child: const SettingsPage(),
-)
-```
-Optionally add a top-level MultiBlocProvider in `main.dart` if you want it globally.
+Remove complex dependencies that are not needed for core functionality:
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\pages\settings_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
----
-## Comment 5: ThemeBloc is used in main.dart but not registered in DI, causing startup crash.
+1. Remove any references to `local_auth` - we'll eliminate biometric authentication
+2. Remove any references to `fl_chart` - we'll eliminate complex charts
+3. Remove any references to `shimmer` - we'll use simple loading indicators
+4. Keep only essential dependencies: flutter_bloc, dio, shared_preferences, hive, get_it, go_router, firebase_core, firebase_analytics, flutter_secure_storage (for basic token storage), cached_network_image, connectivity_plus, dartz, jwt_decoder
 
-Register ThemeBloc in `service_locator.dart`:
-```
-sl.registerFactory<ThemeBloc>(() => ThemeBloc());
-```
-Or, construct it directly in `main.dart` without DI:
-```
-BlocProvider(create: (_) => ThemeBloc()),
-```
+This removes the complex features while keeping the core functionality needed for authentication, networking, state management, and basic storage.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\di\service_locator.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\settings\presentation\bloc\theme_bloc.dart
----
-## Comment 6: ForgotPasswordPage is stubbed; does not call API, contrary to simplified plan.
+### mobile-app\lib\core\storage\secure_token_storage.dart(MODIFY)
 
-Implement real reset:
-- Add `requestPasswordReset(email)` to `AuthRemoteDataSource` and repository.
-- Expose a simple use case (optional) or call repository from the page via a small Cubit.
-- Replace delay with:
-```
-final success = await context.read<AuthBloc>().requestPasswordReset(_emailController.text);
-```
-- Show success/error accordingly.
+Simplify the secure token storage by removing biometric authentication features:
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\pages\forgot_password_page.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\data\datasources\auth_remote_datasource.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\bloc\auth_bloc.dart
----
-## Comment 7: AnswerOptionsWidget supports only MCQ/TF; ensure backend does not send unsupported types.
+1. Remove all imports related to `local_auth`
+2. Remove the `LocalAuthentication` instance and related methods
+3. Remove `getAvailableBiometrics()` method
+4. Remove any biometric authentication logic from token storage/retrieval methods
+5. Keep only basic secure storage functionality using `flutter_secure_storage`
+6. Simplify to just store/retrieve tokens without biometric verification
 
-Add a pre-check when starting a session (in `ExamSessionBloc` after loading questions):
-- If any question has a type not in {singleChoice, multipleChoice, trueFalse}, emit a user-friendly error and prevent starting.
-- Alternatively, hide unsupported type labels in `QuestionContentWidget` when types are unsupported.
+This maintains secure token storage while removing the complex biometric authentication that was causing compilation errors.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\answer_options_widget.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\widgets\question_content_widget.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\exam_session\presentation\bloc\exam_session_bloc.dart
----
-## Comment 8: Router guard includes biometric state in simplified scope; remove unused complexity.
+### mobile-app\lib\features\dashboard(DELETE)
 
-Update `AppRouter` to remove biometric-related branch and any references. Also verify `AuthBloc` no longer emits `AuthBiometricAuthRequired`. Clean related constants/strings if present.
+Remove the entire dashboard feature as it contains complex analytics, charts, and achievement systems that are not core to the exam-taking functionality. The dashboard had dependencies on fl_chart, complex performance analytics, achievement tracking, and detailed user statistics that add unnecessary complexity.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\router\app_router.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\features\authentication\presentation\bloc\auth_state.dart
----
-## Comment 9: Firebase initialization kept; confirm minimal analytics-only scope or remove per plan.
+The core functionality (viewing available exams, taking exams, viewing results) can be accessed directly from the main navigation without needing a complex dashboard.
 
-If not required:
-- Remove firebase_analytics, crashlytics, performance from `pubspec.yaml` and related code.
-- Simplify `FirebaseService` initialization or guard it behind a feature flag.
-If required:
-- Note in README that analytics/crash reporting are intentionally retained.
+### mobile-app\lib\features\results(DELETE)
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\main.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\services\firebase_service.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\pubspec.yaml
-- c:\Users\goela\Desktop\Trie\mobile-app\README.md
----
-## Comment 10: AppConstants.baseUrl is hardcoded; ensure alignment with MOBILE_API_DOCUMENTATION.md
+Remove the entire results feature as it contains complex performance analytics, study recommendations, and detailed charts that are not essential for core functionality. This feature had dependencies on fl_chart, complex analytics entities, and advanced recommendation systems.
 
-Update configuration:
-- Move base URL to env/config (e.g., `.env` or build-time flavors).
-- Ensure `core/network/api_endpoints.dart` composes base + `/api/mobile` correctly.
-- Document in README how to set base URL per environment.
+Basic exam results can be shown immediately after exam completion in the exam session feature, keeping it simple and focused.
 
-### Referred Files
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\constants\app_constants.dart
-- c:\Users\goela\Desktop\Trie\mobile-app\lib\core\network\api_endpoints.dart
-- c:\Users\goela\Desktop\Trie\MOBILE_API_DOCUMENTATION.md
----
+### mobile-app\lib\core\di\service_locator.dart(MODIFY)
+
+Simplify the dependency injection by removing registrations for deleted features:
+
+1. Remove all imports and registrations related to dashboard feature
+2. Remove all imports and registrations related to results feature
+3. Remove any complex analytics or achievement-related dependencies
+4. Keep only core feature registrations: authentication, exams, exam_session, profile (simplified), search (basic), settings (basic)
+5. Fix remaining import path issues for existing features
+6. Ensure all remaining dependencies can be resolved
+
+This creates a clean, minimal dependency injection setup focused on core functionality.
+
+### mobile-app\lib\features\profile(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the profile feature to include only basic functionality:
+
+1. Keep basic user profile display (name, email, avatar)
+2. Remove complex statistics and analytics
+3. Remove subscription management features
+4. Remove user search functionality
+5. Keep basic profile editing capabilities
+6. Remove any widgets that depend on deleted features (profile_stats_card, subscription_info_card)
+7. Update the profile page to show only essential user information
+
+This aligns with the basic profile endpoints in the API documentation (/profile, /profile update).
+
+### mobile-app\lib\features\settings(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the settings feature to include only basic app preferences:
+
+1. Keep basic theme selection (light/dark)
+2. Keep basic language preferences
+3. Remove complex offline preferences and sync settings
+4. Remove advanced notification settings
+5. Remove font size and auto-lock timeout settings
+6. Keep basic app preferences that align with the API documentation
+7. Remove any widgets with const constructor issues
+8. Focus on settings that are actually supported by the backend API
+
+This creates a minimal settings screen with only essential configuration options.
+
+### mobile-app\lib\features\exams\data\repositories\exam_repository_impl.dart(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the exam repository by removing complex features:
+
+1. Remove methods related to UserExamProgress tracking
+2. Remove complex analytics and recommendation features
+3. Keep core methods: getExams, getExamDetail, getCategories, searchExams
+4. Align with the API endpoints documented in MOBILE_API_DOCUMENTATION.md
+5. Remove any dependencies on deleted entities or features
+6. Focus on basic exam browsing and retrieval functionality
+
+This creates a clean repository focused on core exam management.
+
+### mobile-app\lib\features\exams\domain\repositories\exam_repository.dart(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the exam repository interface to match the simplified implementation:
+
+1. Remove methods related to UserExamProgress tracking
+2. Remove complex analytics and recommendation methods
+3. Keep core methods that align with API documentation: getExams, getExamDetail, getCategories, searchExams
+4. Remove any references to deleted entities
+5. Ensure method signatures match the API endpoints
+
+This creates a clean interface focused on core exam functionality.
+
+### mobile-app\lib\features\exams\domain\usecases(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify exam use cases to include only core functionality:
+
+1. Keep: GetExamsUseCase, GetExamDetailUseCase, GetCategoriesUseCase, SearchExamsUseCase
+2. Remove: GetFeaturedExamsUseCase, GetRecentExamsUseCase, GetPopularExamsUseCase (these can be handled by GetExamsUseCase with filters)
+3. Remove any use cases related to complex progress tracking or analytics
+4. Fix import path in SearchExamsUseCase to use correct repository name
+5. Ensure all remaining use cases align with API endpoints
+
+This creates a minimal set of use cases focused on core exam browsing functionality.
+
+### mobile-app\lib\features\search(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the search feature to basic functionality:
+
+1. Keep basic search functionality that aligns with API endpoints (/search, /search/suggestions)
+2. Remove complex search analytics and reporting features
+3. Keep basic search history management
+4. Remove advanced search features not supported by the API
+5. Fix any missing parameter classes (RemoveSearchHistoryParams)
+6. Focus on simple search and suggestions functionality
+
+This creates a basic search feature that matches the API documentation.
+
+### mobile-app\lib\features\exam_session\domain\entities\exam_session.dart(MODIFY)
+
+References: 
+
+- MOBILE_API_DOCUMENTATION.md
+
+Simplify the exam session entity:
+
+1. Fix the import path for Exam entity: `import '../../../exams/domain/entities/exam.dart'`
+2. Remove dependency on complex ExamSettings entity
+3. Use simple properties instead of complex settings object
+4. Keep core properties: sessionId, examId, startedAt, expiresAt, currentQuestion, totalQuestions, status
+5. Remove any references to deleted features or complex entities
+
+This aligns with the exam session endpoints in the API documentation.
+
+### mobile-app\lib\shared\navigation\navigation_destinations.dart(MODIFY)
+
+Update navigation destinations to remove deleted features:
+
+1. Remove dashboard navigation destination
+2. Remove results navigation destination
+3. Keep core destinations: exams, exam sessions, profile, settings
+4. Update navigation structure to focus on core functionality
+5. Ensure all destinations point to existing features
+
+This creates a clean navigation structure focused on essential features.
+
+### mobile-app\lib\core\router\app_router.dart(MODIFY)
+
+Update the app router to remove routes for deleted features:
+
+1. Remove dashboard routes
+2. Remove results routes
+3. Remove complex profile routes (stats, subscription)
+4. Keep core routes: authentication, exams, exam sessions, basic profile, basic settings
+5. Update route guards and navigation logic
+6. Ensure all routes point to existing pages
+
+This creates a clean routing structure focused on core functionality.
+
+### mobile-app\lib\main.dart(MODIFY)
+
+Update main.dart to remove references to deleted features:
+
+1. Remove any BLoC providers for deleted features (dashboard, results)
+2. Keep core BLoC providers: AuthBloc, ThemeBloc
+3. Ensure dependency injection initialization works with simplified service locator
+4. Remove any imports related to deleted features
+5. Keep the app structure simple and focused on core functionality
+
+This ensures the app starts correctly with only the essential features.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
@@ -22,7 +23,8 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _loadSettings();
+    // Settings are loaded by router, only load theme here
+    context.read<ThemeBloc>().add(ThemeLoadRequested());
   }
 
   void _loadSettings() {
@@ -180,7 +182,7 @@ class _SettingsPageState extends State<SettingsPage> {
         SettingsTile(
           icon: Icons.info,
           title: 'App Version',
-          subtitle: '1.0.0',
+          subtitle: AppConstants.appVersion,
         ),
       ],
     );

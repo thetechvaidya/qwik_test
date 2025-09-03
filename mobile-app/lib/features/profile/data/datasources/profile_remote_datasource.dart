@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../models/user_profile_model.dart';
-import '../models/user_stats_model.dart';
-import '../models/subscription_info_model.dart';
+// Removed unused imports: user_stats_model.dart, subscription_info_model.dart
 
 abstract class ProfileRemoteDataSource {
   /// Get user profile by ID
@@ -29,50 +28,10 @@ abstract class ProfileRemoteDataSource {
   /// Delete profile avatar
   Future<void> deleteAvatar(String userId);
 
-  /// Get user statistics
-  Future<UserStatsModel> getUserStats(String userId);
-
-  /// Update user statistics (typically called after exam completion)
-  Future<UserStatsModel> updateUserStats({
-    required String userId,
-    int? totalExamsTaken,
-    int? totalPoints,
-    double? averageScore,
-    int? bestScore,
-    int? currentStreak,
-    int? longestStreak,
-    int? totalStudyHours,
-    Map<String, int>? subjectScores,
-    Map<String, int>? categoryPerformance,
-    DateTime? lastExamDate,
-    DateTime? lastActiveDate,
-  });
-
-  /// Get subscription information
-  Future<SubscriptionInfoModel> getSubscriptionInfo(String userId);
-
-  /// Update subscription (upgrade/downgrade)
-  Future<SubscriptionInfoModel> updateSubscription({
-    required String userId,
-    required String planId,
-    required String paymentMethodId,
-  });
-
-  /// Cancel subscription
-  Future<void> cancelSubscription(String userId);
-
-  /// Reactivate subscription
-  Future<SubscriptionInfoModel> reactivateSubscription(String userId);
-
-  /// Get user achievements
-  Future<List<Map<String, dynamic>>> getUserAchievements(String userId);
-
-  /// Get user activity feed
-  Future<List<Map<String, dynamic>>> getUserActivity({
-    required String userId,
-    int limit = 20,
-    int offset = 0,
-  });
+  // Removed unused methods:
+  // - getUserStats, updateUserStats (user statistics)
+  // - getSubscriptionInfo, updateSubscription, cancelSubscription, reactivateSubscription (subscription)
+  // - getUserAchievements, getUserActivity (achievements/activity)
 
   /// Follow/unfollow user
   Future<void> toggleFollowUser({
@@ -120,7 +79,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<UserProfileModel> getUserProfile(String userId) async {
     try {
       final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/$userId',
+        '${ApiEndpoints.profile}/$userId',
       );
 
       if (response.statusCode == 200) {
@@ -170,7 +129,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (preferences != null) data['preferences'] = preferences;
 
       final response = await _dio.put(
-        '${ApiEndpoints.userProfile}/$userId',
+        '${ApiEndpoints.updateProfile}',
         data: data,
       );
 
@@ -201,7 +160,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       });
 
       final response = await _dio.post(
-        '${ApiEndpoints.userProfile}/$userId/avatar',
+        '${ApiEndpoints.uploadAvatar}',
         data: formData,
       );
 
@@ -228,7 +187,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<void> deleteAvatar(String userId) async {
     try {
       final response = await _dio.delete(
-        '${ApiEndpoints.userProfile}/$userId/avatar',
+        '${ApiEndpoints.uploadAvatar}',
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -248,254 +207,21 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     }
   }
 
-  @override
-  Future<UserStatsModel> getUserStats(String userId) async {
-    try {
-      final response = await _dio.get(
-        '${ApiEndpoints.userStats}/$userId',
-      );
+  // Removed getUserStats implementation
 
-      if (response.statusCode == 200) {
-        return UserStatsModel.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get user stats with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/stats/$userId'),
-        message: 'Unexpected error getting user stats: $e',
-      );
-    }
-  }
+  // Removed updateUserStats implementation
 
-  @override
-  Future<UserStatsModel> updateUserStats({
-    required String userId,
-    int? totalExamsTaken,
-    int? totalPoints,
-    double? averageScore,
-    int? bestScore,
-    int? currentStreak,
-    int? longestStreak,
-    int? totalStudyHours,
-    Map<String, int>? subjectScores,
-    Map<String, int>? categoryPerformance,
-    DateTime? lastExamDate,
-    DateTime? lastActiveDate,
-  }) async {
-    try {
-      final data = <String, dynamic>{};
-      if (totalExamsTaken != null) data['total_exams_taken'] = totalExamsTaken;
-      if (totalPoints != null) data['total_points'] = totalPoints;
-      if (averageScore != null) data['average_score'] = averageScore;
-      if (bestScore != null) data['best_score'] = bestScore;
-      if (currentStreak != null) data['current_streak'] = currentStreak;
-      if (longestStreak != null) data['longest_streak'] = longestStreak;
-      if (totalStudyHours != null) data['total_study_hours'] = totalStudyHours;
-      if (subjectScores != null) data['subject_scores'] = subjectScores;
-      if (categoryPerformance != null) data['category_performance'] = categoryPerformance;
-      if (lastExamDate != null) data['last_exam_date'] = lastExamDate.toIso8601String();
-      if (lastActiveDate != null) data['last_active_date'] = lastActiveDate.toIso8601String();
+  // Removed getSubscriptionInfo implementation
 
-      final response = await _dio.put(
-        '${ApiEndpoints.userStats}/$userId',
-        data: data,
-      );
+  // Removed updateSubscription implementation
 
-      if (response.statusCode == 200) {
-        return UserStatsModel.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to update user stats with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/stats/$userId'),
-        message: 'Unexpected error updating user stats: $e',
-      );
-    }
-  }
+  // Removed cancelSubscription implementation
 
-  @override
-  Future<SubscriptionInfoModel> getSubscriptionInfo(String userId) async {
-    try {
-      final response = await _dio.get(
-        '${ApiEndpoints.subscription}/$userId',
-      );
+  // Removed reactivateSubscription implementation
 
-      if (response.statusCode == 200) {
-        return SubscriptionInfoModel.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get subscription info with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/subscription/$userId'),
-        message: 'Unexpected error getting subscription info: $e',
-      );
-    }
-  }
+  // Removed getUserAchievements implementation
 
-  @override
-  Future<SubscriptionInfoModel> updateSubscription({
-    required String userId,
-    required String planId,
-    required String paymentMethodId,
-  }) async {
-    try {
-      final response = await _dio.post(
-        '${ApiEndpoints.subscription}/$userId/upgrade',
-        data: {
-          'plan_id': planId,
-          'payment_method_id': paymentMethodId,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return SubscriptionInfoModel.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to update subscription with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/subscription/$userId/upgrade'),
-        message: 'Unexpected error updating subscription: $e',
-      );
-    }
-  }
-
-  @override
-  Future<void> cancelSubscription(String userId) async {
-    try {
-      final response = await _dio.post(
-        '${ApiEndpoints.subscription}/$userId/cancel',
-      );
-
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to cancel subscription with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/subscription/$userId/cancel'),
-        message: 'Unexpected error canceling subscription: $e',
-      );
-    }
-  }
-
-  @override
-  Future<SubscriptionInfoModel> reactivateSubscription(String userId) async {
-    try {
-      final response = await _dio.post(
-        '${ApiEndpoints.subscription}/$userId/reactivate',
-      );
-
-      if (response.statusCode == 200) {
-        return SubscriptionInfoModel.fromJson(response.data as Map<String, dynamic>);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to reactivate subscription with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/subscription/$userId/reactivate'),
-        message: 'Unexpected error reactivating subscription: $e',
-      );
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getUserAchievements(String userId) async {
-    try {
-      final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/$userId/achievements',
-      );
-
-      if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(response.data['achievements'] ?? []);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get user achievements with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/profile/$userId/achievements'),
-        message: 'Unexpected error getting user achievements: $e',
-      );
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getUserActivity({
-    required String userId,
-    int limit = 20,
-    int offset = 0,
-  }) async {
-    try {
-      final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/$userId/activity',
-        queryParameters: {
-          'limit': limit,
-          'offset': offset,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        return List<Map<String, dynamic>>.from(response.data['activities'] ?? []);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get user activity with status code: ${response.statusCode}',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/profile/$userId/activity'),
-        message: 'Unexpected error getting user activity: $e',
-      );
-    }
-  }
+  // Removed getUserActivity implementation
 
   @override
   Future<void> toggleFollowUser({
@@ -506,7 +232,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     try {
       final endpoint = follow ? 'follow' : 'unfollow';
       final response = await _dio.post(
-        '${ApiEndpoints.userProfile}/$currentUserId/$endpoint/$targetUserId',
+        '${ApiEndpoints.profile}/$currentUserId/$endpoint/$targetUserId',
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -534,7 +260,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/$userId/followers',
+        '${ApiEndpoints.profile}/$userId/followers',
         queryParameters: {
           'limit': limit,
           'offset': offset,
@@ -568,7 +294,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/$userId/following',
+        '${ApiEndpoints.profile}/$userId/following',
         queryParameters: {
           'limit': limit,
           'offset': offset,
@@ -602,7 +328,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }) async {
     try {
       final response = await _dio.get(
-        '${ApiEndpoints.userProfile}/search',
+        '${ApiEndpoints.profile}/search',
         queryParameters: {
           'q': query,
           'limit': limit,

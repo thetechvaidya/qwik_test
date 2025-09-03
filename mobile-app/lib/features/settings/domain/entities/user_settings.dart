@@ -44,20 +44,14 @@ class UserSettings extends Equatable {
     return security['biometric_enabled'] as bool? ?? false;
   }
 
-  /// Checks if offline mode is enabled
-  bool isOfflineModeEnabled() {
-    return preferences.offlineSettings.autoDownloadEnabled;
-  }
+  // Removed offline mode method - offlineSettings no longer exists
 
   /// Gets language preference
   String getLanguage() {
     return preferences.language;
   }
 
-  /// Checks if auto-sync is enabled
-  bool isAutoSyncEnabled() {
-    return preferences.offlineSettings.autoSyncEnabled;
-  }
+  // Removed auto-sync method - offlineSettings no longer exists
 
   /// Gets privacy setting value
   T? getPrivacySetting<T>(String key) {

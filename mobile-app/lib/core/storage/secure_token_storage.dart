@@ -1,29 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:local_auth/local_auth.dart';
 import '../constants/app_constants.dart';
 import '../utils/auth_utils.dart';
 import '../../features/authentication/data/models/auth_token_model.dart';
 import '../../features/authentication/domain/entities/auth_token.dart';
-/// Enhanced secure token storage service with biometric authentication support
+/// Secure token storage service
 class SecureTokenStorage {
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(
       encryptedSharedPreferences: true,
-      keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_OAEPwithSHA_256andMGF1Padding,
-      storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
     ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );
 
-  static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _tokenExpirationKey = 'token_expiration';
   static const String _authTokenEntityKey = 'auth_token_json';
-  
-  final LocalAuthentication _localAuth = LocalAuthentication();
 
   /// Store raw token strings with expiration (backward-compatible method)
   Future<void> storeToken({
@@ -31,7 +25,6 @@ class SecureTokenStorage {
     required String refreshToken,
     required int expiresIn,
     DateTime? issuedAt,
-    bool enableBiometric = false,
   }) async {
     try {
       // Calculate expiration timestamp
@@ -55,18 +48,13 @@ class SecureTokenStorage {
         key: _tokenExpirationKey,
         value: expirationTime.millisecondsSinceEpoch.toString(),
       );
-      
-      // Enable biometric protection if requested and available
-      if (enableBiometric) {
-        await enableBiometricProtection();
-      }
     } catch (e) {
       throw Exception('Failed to store token: $e');
     }
   }
 
-  /// Store authentication token entity with optional biometric protection
-  Future<void> storeAuthTokenEntity(AuthToken token, {bool enableBiometric = false}) async {
+  /// Store authentication token entity
+  Future<void> storeAuthTokenEntity(AuthToken token) async {
     try {
       final tokenModel = AuthTokenModel.fromEntity(token);
       final tokenJson = jsonEncode(tokenModel.toJson());
@@ -97,11 +85,6 @@ class SecureTokenStorage {
         key: _tokenExpirationKey,
         value: expirationTime.millisecondsSinceEpoch.toString(),
       );
-      
-      // Enable biometric protection if requested and available
-      if (enableBiometric) {
-        await enableBiometricProtection();
-      }
     } catch (e) {
       throw Exception('Failed to store token: $e');
     }
@@ -116,20 +99,9 @@ class SecureTokenStorage {
     }
   }
 
-  /// Retrieve authentication token entity with biometric verification if enabled
-  Future<AuthToken?> getAuthTokenEntity({bool requireBiometric = true}) async {
+  /// Retrieve authentication token entity
+  Future<AuthToken?> getAuthTokenEntity() async {
     try {
-      // Check if biometric protection is enabled
-      final biometricEnabled = await isBiometricProtectionEnabled();
-      
-      // Perform biometric authentication if enabled and required
-      if (biometricEnabled && requireBiometric) {
-        final authenticated = await _authenticateWithBiometrics();
-        if (!authenticated) {
-          throw Exception('Biometric authentication failed');
-        }
-      }
-      
       final tokenJson = await _storage.read(key: _authTokenEntityKey);
       if (tokenJson == null) return null;
       
@@ -142,21 +114,10 @@ class SecureTokenStorage {
     }
   }
 
-  /// Retrieve authentication token with biometric verification if enabled (deprecated - use getAuthTokenEntity)
+  /// Retrieve authentication token (deprecated - use getAuthTokenEntity)
   @deprecated
-  Future<AuthToken?> getToken({bool requireBiometric = true}) async {
+  Future<AuthToken?> getToken() async {
     try {
-      // Check if biometric protection is enabled
-      final biometricEnabled = await isBiometricProtectionEnabled();
-      
-      // Perform biometric authentication if enabled and required
-      if (biometricEnabled && requireBiometric) {
-        final authenticated = await _authenticateWithBiometrics();
-        if (!authenticated) {
-          throw Exception('Biometric authentication failed');
-        }
-      }
-      
       // Try to get from entity storage first, fallback to legacy method
       final tokenJson = await _storage.read(key: _authTokenEntityKey);
       if (tokenJson != null) {
@@ -209,14 +170,13 @@ class SecureTokenStorage {
     }
   }
 
-  /// Clear all stored tokens and biometric settings
+  /// Clear all stored tokens
   Future<void> clearToken() async {
     try {
       await _storage.delete(key: AppConstants.accessTokenKey);
       await _storage.delete(key: AppConstants.refreshTokenKey);
       await _storage.delete(key: _authTokenEntityKey);
       await _storage.delete(key: _tokenExpirationKey);
-      await _storage.delete(key: _biometricEnabledKey);
     } catch (e) {
       throw Exception('Failed to clear tokens: $e');
     }
@@ -251,83 +211,7 @@ class SecureTokenStorage {
     }
   }
 
-  /// Enable biometric protection for token access
-  Future<bool> enableBiometricProtection() async {
-    try {
-      // Check if biometric authentication is available
-      final isAvailable = await _localAuth.canCheckBiometrics;
-      if (!isAvailable) return false;
-      
-      final availableBiometrics = await _localAuth.getAvailableBiometrics();
-      if (availableBiometrics.isEmpty) return false;
-      
-      // Test biometric authentication
-      final authenticated = await _authenticateWithBiometrics();
-      if (!authenticated) return false;
-      
-      // Store biometric enabled flag
-      await _storage.write(key: _biometricEnabledKey, value: 'true');
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
 
-  /// Disable biometric protection
-  Future<void> disableBiometricProtection() async {
-    try {
-      await _storage.delete(key: _biometricEnabledKey);
-    } catch (e) {
-      throw Exception('Failed to disable biometric protection: $e');
-    }
-  }
-
-  /// Check if biometric protection is enabled
-  Future<bool> isBiometricProtectionEnabled() async {
-    try {
-      final enabled = await _storage.read(key: _biometricEnabledKey);
-      return enabled == 'true';
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Check if biometric authentication is available on device
-  Future<bool> isBiometricAvailable() async {
-    try {
-      final isAvailable = await _localAuth.canCheckBiometrics;
-      if (!isAvailable) return false;
-      
-      final availableBiometrics = await _localAuth.getAvailableBiometrics();
-      return availableBiometrics.isNotEmpty;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// Get available biometric types
-  Future<List<BiometricType>> getAvailableBiometrics() async {
-    try {
-      return await _localAuth.getAvailableBiometrics();
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Perform biometric authentication
-  Future<bool> _authenticateWithBiometrics() async {
-    try {
-      return await _localAuth.authenticate(
-        localizedReason: 'Please authenticate to access your account',
-        options: const AuthenticationOptions(
-          biometricOnly: true,
-          stickyAuth: true,
-        ),
-      );
-    } catch (e) {
-      return false;
-    }
-  }
 
   /// Get token expiration time
   Future<DateTime?> getTokenExpirationTime() async {

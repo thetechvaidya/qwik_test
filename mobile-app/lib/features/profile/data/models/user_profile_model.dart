@@ -2,9 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:hive/hive.dart';
 import '../../domain/entities/user_profile.dart';
 import 'user_stats_model.dart';
-import 'subscription_info_model.dart';
 import '../../domain/entities/user_stats.dart';
-import '../../domain/entities/subscription_info.dart';
 
 part 'user_profile_model.g.dart';
 
@@ -15,9 +13,7 @@ class UserProfileModel extends UserProfile {
   @HiveField(8)
   final UserStatsModel? stats;
 
-  @override
-  @HiveField(9)
-  final SubscriptionInfoModel? subscription;
+  // Removed subscription field - not needed in simplified profile
 
   const UserProfileModel({
     @HiveField(0) required super.id,
@@ -29,11 +25,11 @@ class UserProfileModel extends UserProfile {
     @HiveField(6) super.website,
     @HiveField(7) super.socialLinks = const {},
     this.stats,
-    this.subscription,
+    // Removed subscription parameter - not needed in simplified profile
     @HiveField(10) super.preferences = const {},
     @HiveField(11) super.createdAt,
     @HiveField(12) super.updatedAt,
-  }) : super(stats: stats, subscription: subscription);
+  }) : super(stats: stats);
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
       _$UserProfileModelFromJson(json);
@@ -53,9 +49,7 @@ class UserProfileModel extends UserProfile {
       stats: profile.stats != null
           ? (profile.stats is UserStatsModel ? profile.stats as UserStatsModel : UserStatsModel.fromEntity(profile.stats!))
           : null,
-      subscription: profile.subscription != null
-          ? (profile.subscription is SubscriptionInfoModel ? profile.subscription as SubscriptionInfoModel : SubscriptionInfoModel.fromEntity(profile.subscription!))
-          : null,
+      // Removed subscription handling - not needed in simplified profile
       preferences: profile.preferences,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
@@ -73,7 +67,7 @@ class UserProfileModel extends UserProfile {
       website: website,
       socialLinks: socialLinks,
       stats: stats?.toEntity(),
-      subscription: subscription?.toEntity(),
+      // Removed subscription conversion - not needed in simplified profile
       preferences: preferences,
       createdAt: createdAt,
       updatedAt: updatedAt,
@@ -91,7 +85,7 @@ class UserProfileModel extends UserProfile {
     String? website,
     Map<String, String> socialLinks = const {},
     UserStatsModel? stats,
-    SubscriptionInfoModel? subscription,
+
     Map<String, dynamic> preferences = const {},
   }) {
     final now = DateTime.now();
@@ -105,7 +99,7 @@ class UserProfileModel extends UserProfile {
       website: website,
       socialLinks: socialLinks,
       stats: stats,
-      subscription: subscription,
+
       preferences: preferences,
       createdAt: now,
       updatedAt: now,
@@ -121,7 +115,7 @@ class UserProfileModel extends UserProfile {
     String? website,
     Map<String, String>? socialLinks,
     UserStatsModel? stats,
-    SubscriptionInfoModel? subscription,
+
     Map<String, dynamic>? preferences,
   }) {
     return UserProfileModel(
@@ -134,7 +128,7 @@ class UserProfileModel extends UserProfile {
       website: website ?? this.website,
       socialLinks: socialLinks ?? this.socialLinks,
       stats: stats ?? this.stats,
-      subscription: subscription ?? this.subscription,
+
       preferences: preferences ?? this.preferences,
       createdAt: createdAt,
       updatedAt: DateTime.now(),

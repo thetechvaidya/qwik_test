@@ -1,12 +1,13 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/utils/pagination_utils.dart';
 import '../../../exams/domain/entities/exam.dart';
 import '../../../exams/domain/repositories/exam_repository.dart';
 import '../repositories/search_repository.dart';
 
 /// Use case for searching exams with analytics tracking
-class SearchExamsUseCase implements UseCase<List<Exam>, SearchExamsParams> {
+class SearchExamsUseCase implements UseCase<PaginatedResponse<Exam>, SearchExamsParams> {
   final ExamRepository _examRepository;
   final SearchRepository _searchRepository;
 
@@ -18,7 +19,7 @@ class SearchExamsUseCase implements UseCase<List<Exam>, SearchExamsParams> {
         _searchRepository = searchRepository;
 
   @override
-  Future<Either<Failure, List<Exam>>> call(SearchExamsParams params) async {
+  Future<Either<Failure, PaginatedResponse<Exam>>> call(SearchExamsParams params) async {
     // Validate search query
     if (params.query.trim().isEmpty) {
       return const Left(ValidationFailure(message: 'Search query cannot be empty'));
@@ -28,14 +29,13 @@ class SearchExamsUseCase implements UseCase<List<Exam>, SearchExamsParams> {
       // Perform the search
       final result = await _examRepository.searchExams(
         query: params.query,
+        pagination: PaginationParams(
+          page: params.page,
+          perPage: params.limit,
+        ),
         categoryId: params.categoryId,
         difficulty: params.difficulty,
-        examType: params.examType,
-        minDuration: params.minDuration,
-        maxDuration: params.maxDuration,
-        isActive: params.isActive,
-        page: params.page,
-        limit: params.limit,
+        type: params.examType,
       );
 
       return result.fold(
@@ -53,15 +53,9 @@ class SearchExamsUseCase implements UseCase<List<Exam>, SearchExamsParams> {
             );
           }
 
-          // Report search analytics (fire and forget)
-          _searchRepository.reportSearchAnalytics(
-            query: params.query,
-            categoryId: params.categoryId,
-            resultCount: exams.length,
-            hasResults: exams.isNotEmpty,
-          );
+          // Note: Analytics reporting removed as ReportSearchAnalyticsUseCase was deleted
 
-          return Right(exams);
+          return Right(paginatedResponse);
         },
       );
     } catch (e) {

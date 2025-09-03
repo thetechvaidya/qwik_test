@@ -13,7 +13,7 @@ import '../widgets/exam_grid_item.dart';
 import '../widgets/exam_search_bar.dart';
 import '../widgets/exam_filter_bar.dart';
 import '../widgets/exam_sort_bottom_sheet.dart';
-import '../widgets/featured_exams_section.dart';
+
 import '../widgets/category_filter_chips.dart';
 
 /// Main page for displaying exam listings with search, filters, and pagination
@@ -64,8 +64,7 @@ class _ExamListPageState extends State<ExamListPage> {
     return BlocProvider(
       create: (context) => sl<ExamBloc>()
         ..add(const LoadExamsEvent())
-        ..add(const LoadCategoriesEvent())
-        ..add(const LoadFeaturedExamsEvent()),
+        ..add(const LoadCategoriesEvent()),
       child: Scaffold(
         appBar: _buildAppBar(context),
         body: BlocBuilder<ExamBloc, ExamState>(
@@ -193,15 +192,7 @@ class _ExamListPageState extends State<ExamListPage> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // Featured exams section (only show when not searching)
-          if (!state.isSearching && state.featuredExams.isNotEmpty)
-            SliverToBoxAdapter(
-              child: FeaturedExamsSection(
-                exams: state.featuredExams,
-                onExamTap: (exam) => _navigateToExamDetail(context, exam.id),
-              ),
-            ),
-          
+
           // Categories filter chips
           if (state.categories.isNotEmpty)
             SliverToBoxAdapter(

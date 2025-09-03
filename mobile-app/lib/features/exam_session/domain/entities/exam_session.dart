@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
-import '../../exams/domain/entities/exam.dart';
+import '../../../exams/domain/entities/exam.dart';
 import 'question.dart';
 import 'answer.dart';
+// Removed ExamSettings import - dependency removed
 
 /// Exam session status enumeration
 enum ExamSessionStatus {
@@ -45,7 +46,8 @@ class ExamSession extends Equatable {
   final DateTime expiresAt;
   final int remainingTimeSeconds;
   final ExamSessionStatus status;
-  final ExamSettings settings;
+  final bool allowBackNavigation;
+  final bool isTimed;
   final Map<String, dynamic>? metadata;
   final DateTime? pausedAt;
   final int totalPauseDuration; // in seconds
@@ -62,7 +64,8 @@ class ExamSession extends Equatable {
     required this.expiresAt,
     required this.remainingTimeSeconds,
     this.status = ExamSessionStatus.active,
-    required this.settings,
+    this.allowBackNavigation = true,
+    this.isTimed = true,
     this.metadata,
     this.pausedAt,
     this.totalPauseDuration = 0,
@@ -130,7 +133,7 @@ class ExamSession extends Equatable {
 
   /// Check if can navigate back
   bool canNavigateBack() {
-    if (!settings.allowBackNavigation) return false;
+    if (!allowBackNavigation) return false;
     return currentQuestionIndex > 0;
   }
 
@@ -142,7 +145,7 @@ class ExamSession extends Equatable {
   /// Check if can navigate to specific index
   bool canNavigateTo(int index) {
     if (index < 0 || index >= questions.length) return false;
-    if (!settings.allowBackNavigation && index < currentQuestionIndex) return false;
+    if (!allowBackNavigation && index < currentQuestionIndex) return false;
     return true;
   }
 
@@ -209,7 +212,8 @@ class ExamSession extends Equatable {
     DateTime? expiresAt,
     int? remainingTimeSeconds,
     ExamSessionStatus? status,
-    ExamSettings? settings,
+    bool? allowBackNavigation,
+    bool? isTimed,
     Map<String, dynamic>? metadata,
     DateTime? pausedAt,
     int? totalPauseDuration,
@@ -226,7 +230,8 @@ class ExamSession extends Equatable {
       expiresAt: expiresAt ?? this.expiresAt,
       remainingTimeSeconds: remainingTimeSeconds ?? this.remainingTimeSeconds,
       status: status ?? this.status,
-      settings: settings ?? this.settings,
+      allowBackNavigation: allowBackNavigation ?? this.allowBackNavigation,
+      isTimed: isTimed ?? this.isTimed,
       metadata: metadata ?? this.metadata,
       pausedAt: pausedAt ?? this.pausedAt,
       totalPauseDuration: totalPauseDuration ?? this.totalPauseDuration,
@@ -246,7 +251,8 @@ class ExamSession extends Equatable {
         expiresAt,
         remainingTimeSeconds,
         status,
-        settings,
+        allowBackNavigation,
+        isTimed,
         metadata,
         pausedAt,
         totalPauseDuration,

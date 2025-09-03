@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 // Import authentication features
 import '../../features/authentication/presentation/pages/splash_page.dart';
@@ -17,18 +17,14 @@ import 'go_router_refresh_stream.dart';
 // Import navigation components
 import '../../shared/navigation/navigation_scaffold.dart';
 import '../../shared/navigation/navigation_destinations.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/exams/presentation/pages/exam_list_page.dart';
 import '../../features/exams/presentation/pages/exam_detail_page.dart';
 import '../../features/exam_session/presentation/pages/exam_taking_page.dart';
-import '../../features/results/presentation/pages/results_page.dart';
-import '../../features/results/presentation/pages/exam_result_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/authentication/presentation/pages/forgot_password_page.dart';
-import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import '../../features/dashboard/presentation/bloc/dashboard_event.dart';
+
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../features/profile/presentation/bloc/profile_event.dart';
 import '../../features/settings/presentation/bloc/settings_bloc.dart';
@@ -72,19 +68,18 @@ class AppRouter {
   static const String sessionExpired = '/session-expired';
   
   // Main app routes (core features only)
-  static const String home = '/home';
   static const String exams = '/exams';
+  static const String home = exams; // Home redirects to exams
   static const String profile = '/profile';
   static const String settings = '/settings';
   
   // Detailed routes
   static const String examDetail = '/exams/:examId';
   static const String examTaking = '/exams/:examId/take';
-  static const String examResult = '/exams/:examId/result';
+
   static const String editProfile = '/profile/edit';
   
-  // Legacy route for backward compatibility
-  static const String dashboard = home;
+
 
   static GoRouter? _router;
   static GoRouterRefreshStream? _refreshStream;
@@ -97,7 +92,7 @@ class AppRouter {
       
       _router = GoRouter(
         initialLocation: splash,
-        debugLogDiagnostics: true,
+        debugLogDiagnostics: kDebugMode,
         refreshListenable: _refreshStream,
     routes: [
       // Splash route
@@ -137,18 +132,6 @@ class AppRouter {
         routes: [
           // Main navigation routes
           GoRoute(
-            path: home,
-            name: 'home',
-            builder: (context, state) {
-              final authBloc = context.read<AuthBloc>();
-              final userId = authBloc.state.user?.id ?? '';
-              return BlocProvider(
-                create: (_) => sl<DashboardBloc>()..add(LoadDashboardData(userId: userId)),
-                child: DashboardPage(userId: userId),
-              );
-            },
-          ),
-          GoRoute(
             path: exams,
             name: 'exams',
             builder: (context, state) => const ExamListPage(),
@@ -170,14 +153,7 @@ class AppRouter {
                       return ExamTakingPage(examId: examId);
                     },
                   ),
-                  GoRoute(
-                    path: 'result',
-                    name: 'exam-result',
-                    builder: (context, state) {
-                      final examId = state.pathParameters['examId']!;
-                      return ExamResultPage(examId: examId);
-                    },
-                  ),
+
                 ],
               ),
             ],
@@ -189,7 +165,7 @@ class AppRouter {
               final authBloc = context.read<AuthBloc>();
               final userId = authBloc.state.user?.id ?? '';
               return BlocProvider(
-                create: (context) => sl<ProfileBloc>()..add(LoadUserProfile(userId)),
+                create: (context) => sl<ProfileBloc>()..add(ProfileLoadRequested(userId: userId)),
                 child: ProfilePage(userId: userId),
               );
             },
@@ -201,7 +177,7 @@ class AppRouter {
                   final authBloc = context.read<AuthBloc>();
                   final userId = authBloc.state.user?.id ?? '';
                   return BlocProvider(
-                    create: (context) => sl<ProfileBloc>()..add(LoadUserProfile(userId)),
+                    create: (context) => sl<ProfileBloc>()..add(ProfileLoadRequested(userId: userId)),
                     child: EditProfilePage(userId: userId),
                   );
                 },
@@ -215,7 +191,7 @@ class AppRouter {
               final authBloc = context.read<AuthBloc>();
               final userId = authBloc.state.user?.id ?? '';
               return BlocProvider(
-                create: (context) => sl<SettingsBloc>()..add(LoadUserSettings(userId)),
+                create: (context) => sl<SettingsBloc>()..add(SettingsLoadRequested(userId: userId)),
                 child: const SettingsPage(),
               );
             },
@@ -368,8 +344,7 @@ class AppRouter {
       context.go(examDetail.replaceAll(':examId', examId));
   static void goToExamTaking(BuildContext context, String examId) => 
       context.go(examTaking.replaceAll(':examId', examId));
-  static void goToExamResult(BuildContext context, String examId) => 
-      context.go(examResult.replaceAll(':examId', examId));
+
   static void goToProfile(BuildContext context) => context.go(profile);
   static void goToSettings(BuildContext context) => context.go(settings);
 

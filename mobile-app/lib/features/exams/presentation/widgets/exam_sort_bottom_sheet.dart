@@ -20,7 +20,7 @@ class ExamSortBottomSheet extends StatefulWidget {
 
 class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
   late String selectedSortBy;
-  late SortOrder selectedSortOrder;
+  late String selectedSortOrder;
 
   @override
   void initState() {
@@ -68,7 +68,7 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
                   onPressed: () {
                     setState(() {
                       selectedSortBy = 'title';
-                      selectedSortOrder = SortOrder.ascending;
+                      selectedSortOrder = 'asc';
                     });
                   },
                   child: Text(
@@ -99,15 +99,15 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
                 const SizedBox(height: 8),
                 _buildOrderOption(
                   title: 'Ascending',
-                  subtitle: _getOrderSubtitle(SortOrder.ascending),
+                  subtitle: _getOrderSubtitle('asc'),
                   icon: Icons.arrow_upward,
-                  order: SortOrder.ascending,
+                  order: 'asc',
                 ),
                 _buildOrderOption(
                   title: 'Descending',
-                  subtitle: _getOrderSubtitle(SortOrder.descending),
+                  subtitle: _getOrderSubtitle('desc'),
                   icon: Icons.arrow_downward,
-                  order: SortOrder.descending,
+                  order: 'desc',
                 ),
               ],
             ),
@@ -192,7 +192,7 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
           child: Row(
             children: [
               Icon(
-                option.icon,
+                _iconFor(option.icon),
                 color: isSelected 
                     ? AppColors.primary 
                     : AppColors.textSecondary,
@@ -243,7 +243,7 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
     required String title,
     required String subtitle,
     required IconData icon,
-    required SortOrder order,
+    required String order,
   }) {
     final isSelected = selectedSortOrder == order;
     
@@ -318,50 +318,64 @@ class _ExamSortBottomSheetState extends State<ExamSortBottomSheet> {
     );
   }
 
+  IconData _iconFor(String iconName) {
+    switch (iconName) {
+      case 'calendar_today':
+        return Icons.calendar_today;
+      case 'sort_by_alpha':
+        return Icons.sort_by_alpha;
+      case 'trending_up':
+        return Icons.trending_up;
+      case 'timer':
+        return Icons.timer;
+      case 'quiz':
+        return Icons.quiz;
+      case 'star':
+        return Icons.star;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
   String? _getSortOptionDescription(String sortBy) {
     switch (sortBy) {
       case 'title':
         return 'Sort alphabetically by exam title';
-      case 'created_at':
+      case 'createdAt':
         return 'Sort by when the exam was created';
-      case 'updated_at':
-        return 'Sort by last modification date';
       case 'difficulty':
         return 'Sort by difficulty level';
       case 'duration':
         return 'Sort by exam duration';
-      case 'question_count':
+      case 'totalQuestions':
         return 'Sort by number of questions';
       case 'popularity':
         return 'Sort by exam popularity';
-      case 'rating':
-        return 'Sort by average user rating';
       default:
         return null;
     }
   }
 
-  String _getOrderSubtitle(SortOrder order) {
+  String _getOrderSubtitle(String order) {
+    final isAscending = order == 'asc';
     final sortOption = SortOption.availableOptions
         .firstWhere((option) => option.value == selectedSortBy);
     
     switch (selectedSortBy) {
       case 'title':
-        return order == SortOrder.ascending ? 'A to Z' : 'Z to A';
-      case 'created_at':
-      case 'updated_at':
-        return order == SortOrder.ascending ? 'Oldest first' : 'Newest first';
+        return isAscending ? 'A to Z' : 'Z to A';
+      case 'createdAt':
+        return isAscending ? 'Oldest first' : 'Newest first';
       case 'difficulty':
-        return order == SortOrder.ascending ? 'Easiest first' : 'Hardest first';
+        return isAscending ? 'Easiest first' : 'Hardest first';
       case 'duration':
-        return order == SortOrder.ascending ? 'Shortest first' : 'Longest first';
-      case 'question_count':
-        return order == SortOrder.ascending ? 'Fewest first' : 'Most first';
+        return isAscending ? 'Shortest first' : 'Longest first';
+      case 'totalQuestions':
+        return isAscending ? 'Fewest first' : 'Most first';
       case 'popularity':
-      case 'rating':
-        return order == SortOrder.ascending ? 'Lowest first' : 'Highest first';
+        return isAscending ? 'Lowest first' : 'Highest first';
       default:
-        return order == SortOrder.ascending ? 'Low to high' : 'High to low';
+        return isAscending ? 'Low to high' : 'High to low';
     }
   }
 

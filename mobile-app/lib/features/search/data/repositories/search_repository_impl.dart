@@ -268,45 +268,7 @@ class SearchRepositoryImpl implements SearchRepository {
     }
   }
 
-  @override
-  Future<void> reportSearchAnalytics({
-    required String query,
-    String? categoryId,
-    int? resultCount,
-    bool? hasResults,
-  }) async {
-    // Fire and forget - don't wait for completion or handle errors
-    if (await _networkInfo.isConnected) {
-      _remoteDataSource.reportSearchAnalytics(
-        query: query,
-        categoryId: categoryId,
-        resultCount: resultCount,
-        hasResults: hasResults,
-      ).catchError((e) {
-        // Silently handle errors for analytics
-      });
-    }
-  }
 
-  @override
-  Future<void> trackSearchAnalytics({
-    required String query,
-    required int resultCount,
-    String? categoryId,
-    Map<String, dynamic>? filters,
-  }) async {
-    // Fire and forget - don't wait for completion or handle errors
-    if (await _networkInfo.isConnected) {
-      _remoteDataSource.trackSearchAnalytics(
-        query: query,
-        resultCount: resultCount,
-        categoryId: categoryId,
-        filters: filters,
-      ).catchError((e) {
-        // Silently handle errors for analytics
-      });
-    }
-  }
 
   @override
   Future<Either<Failure, void>> clearSearchSuggestions() async {

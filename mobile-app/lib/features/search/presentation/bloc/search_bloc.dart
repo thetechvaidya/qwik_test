@@ -21,7 +21,6 @@ class PerformSearchEvent extends SearchEvent {
   final String? categoryId;
   final String? difficulty;
   final bool saveToHistory;
-  final bool trackAnalytics;
 
   const PerformSearchEvent({
     required this.query,
@@ -29,7 +28,6 @@ class PerformSearchEvent extends SearchEvent {
     this.categoryId,
     this.difficulty,
     this.saveToHistory = true,
-    this.trackAnalytics = true,
   });
 
   @override
@@ -39,7 +37,6 @@ class PerformSearchEvent extends SearchEvent {
         categoryId,
         difficulty,
         saveToHistory,
-        trackAnalytics,
       ];
 }
 
@@ -233,7 +230,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       page: 1,
       limit: 20,
       saveToHistory: event.saveToHistory,
-      trackAnalytics: event.trackAnalytics,
     );
 
     final result = await _searchUseCase(params);

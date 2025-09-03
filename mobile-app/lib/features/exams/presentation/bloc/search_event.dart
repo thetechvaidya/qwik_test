@@ -95,23 +95,7 @@ class GetPopularQueriesEvent extends SearchEvent {
   List<Object?> get props => [limit];
 }
 
-/// Event to report search analytics
-class ReportSearchAnalyticsEvent extends SearchEvent {
-  final String query;
-  final int resultCount;
-  final String? categoryId;
-  final Map<String, dynamic>? filters;
-
-  const ReportSearchAnalyticsEvent({
-    required this.query,
-    required this.resultCount,
-    this.categoryId,
-    this.filters,
-  });
-
-  @override
-  List<Object?> get props => [query, resultCount, categoryId, filters];
-}
+// Removed ReportSearchAnalyticsEvent
 
 /// Event to clear cached suggestions
 class ClearCachedSuggestionsEvent extends SearchEvent {

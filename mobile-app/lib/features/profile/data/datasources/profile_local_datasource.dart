@@ -1,7 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/user_profile_model.dart';
-import '../models/user_stats_model.dart';
-import '../models/subscription_info_model.dart';
+// Removed unused imports: user_stats_model.dart, subscription_info_model.dart
 
 abstract class ProfileLocalDataSource {
   /// Get cached user profile
@@ -13,41 +12,11 @@ abstract class ProfileLocalDataSource {
   /// Clear cached user profile
   Future<void> clearCachedUserProfile(String userId);
 
-  /// Get cached user stats
-  Future<UserStatsModel?> getCachedUserStats(String userId);
-
-  /// Cache user stats
-  Future<void> cacheUserStats(UserStatsModel stats);
-
-  /// Clear cached user stats
-  Future<void> clearCachedUserStats(String userId);
-
-  /// Get cached subscription info
-  Future<SubscriptionInfoModel?> getCachedSubscriptionInfo(String userId);
-
-  /// Cache subscription info
-  Future<void> cacheSubscriptionInfo(SubscriptionInfoModel subscription);
-
-  /// Clear cached subscription info
-  Future<void> clearCachedSubscriptionInfo(String userId);
-
-  /// Get cached user achievements
-  Future<List<Map<String, dynamic>>?> getCachedUserAchievements(String userId);
-
-  /// Cache user achievements
-  Future<void> cacheUserAchievements(String userId, List<Map<String, dynamic>> achievements);
-
-  /// Clear cached user achievements
-  Future<void> clearCachedUserAchievements(String userId);
-
-  /// Get cached user activity
-  Future<List<Map<String, dynamic>>?> getCachedUserActivity(String userId);
-
-  /// Cache user activity
-  Future<void> cacheUserActivity(String userId, List<Map<String, dynamic>> activities);
-
-  /// Clear cached user activity
-  Future<void> clearCachedUserActivity(String userId);
+  // Removed unused cache methods:
+  // - getUserStats, cacheUserStats, clearCachedUserStats (user statistics)
+  // - getSubscriptionInfo, cacheSubscriptionInfo, clearCachedSubscriptionInfo (subscription)
+  // - getUserAchievements, cacheUserAchievements, clearCachedUserAchievements (achievements)
+  // - getUserActivity, cacheUserActivity, clearCachedUserActivity (activity)
 
   /// Get cached search results
   Future<List<UserProfileModel>?> getCachedSearchResults(String query);
@@ -83,11 +52,8 @@ abstract class ProfileLocalDataSource {
   /// Check if profile data is cached and fresh
   Future<bool> isProfileDataFresh(String userId, {Duration maxAge = const Duration(minutes: 30)});
 
-  /// Check if stats data is cached and fresh
-  Future<bool> isStatsDataFresh(String userId, {Duration maxAge = const Duration(minutes: 15)});
-
-  /// Check if subscription data is cached and fresh
-  Future<bool> isSubscriptionDataFresh(String userId, {Duration maxAge = const Duration(hours: 1)});
+  // Removed unused freshness check methods:
+  // - isStatsDataFresh, isSubscriptionDataFresh
 }
 
 class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
@@ -143,144 +109,13 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
     }
   }
 
-  @override
-  Future<UserStatsModel?> getCachedUserStats(String userId) async {
-    try {
-      final key = '$_statsPrefix$userId';
-      return _hiveBox.get(key) as UserStatsModel?;
-    } catch (e) {
-      return null;
-    }
-  }
+  // Removed stats cache implementation methods
 
-  @override
-  Future<void> cacheUserStats(UserStatsModel stats) async {
-    try {
-      final key = '$_statsPrefix${stats.userId}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, stats);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
+  // Removed subscription cache implementation methods
 
-  @override
-  Future<void> clearCachedUserStats(String userId) async {
-    try {
-      final key = '$_statsPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
+  // Removed achievements cache implementation methods
 
-  @override
-  Future<SubscriptionInfoModel?> getCachedSubscriptionInfo(String userId) async {
-    try {
-      final key = '$_subscriptionPrefix$userId';
-      return _hiveBox.get(key) as SubscriptionInfoModel?;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  Future<void> cacheSubscriptionInfo(SubscriptionInfoModel subscription) async {
-    try {
-      final key = '$_subscriptionPrefix${subscription.userId}';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, subscription);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
-
-  @override
-  Future<void> clearCachedSubscriptionInfo(String userId) async {
-    try {
-      final key = '$_subscriptionPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>?> getCachedUserAchievements(String userId) async {
-    try {
-      final key = '$_achievementsPrefix$userId';
-      final cached = _hiveBox.get(key);
-      if (cached is List) {
-        return List<Map<String, dynamic>>.from(cached);
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  Future<void> cacheUserAchievements(String userId, List<Map<String, dynamic>> achievements) async {
-    try {
-      final key = '$_achievementsPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, achievements);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
-
-  @override
-  Future<void> clearCachedUserAchievements(String userId) async {
-    try {
-      final key = '$_achievementsPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.delete(key);
-      await _hiveBox.delete(timestampKey);
-    } catch (e) {
-      // Silently fail
-    }
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>?> getCachedUserActivity(String userId) async {
-    try {
-      final key = '$_activityPrefix$userId';
-      final cached = _hiveBox.get(key);
-      if (cached is List) {
-        return List<Map<String, dynamic>>.from(cached);
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  @override
-  Future<void> cacheUserActivity(String userId, List<Map<String, dynamic>> activities) async {
-    try {
-      final key = '$_activityPrefix$userId';
-      final timestampKey = '$key$_timestampSuffix';
-      
-      await _hiveBox.put(key, activities);
-      await _hiveBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
-    } catch (e) {
-      // Silently fail - caching is not critical
-    }
-  }
+  // Removed activity cache implementation methods
 
   @override
   Future<void> clearCachedUserActivity(String userId) async {

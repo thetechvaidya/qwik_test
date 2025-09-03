@@ -17,19 +17,31 @@ class UserSettingsModelAdapter extends TypeAdapter<UserSettingsModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return UserSettingsModel(
+      userId: fields[0] as String,
       notifications: fields[1] as NotificationSettingsModel,
       preferences: fields[2] as AppPreferencesModel,
+      privacy: (fields[3] as Map).cast<String, dynamic>(),
+      security: (fields[4] as Map).cast<String, dynamic>(),
+      updatedAt: fields[5] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserSettingsModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(6)
+      ..writeByte(0)
+      ..write(obj.userId)
       ..writeByte(1)
       ..write(obj.notifications)
       ..writeByte(2)
-      ..write(obj.preferences);
+      ..write(obj.preferences)
+      ..writeByte(3)
+      ..write(obj.privacy)
+      ..writeByte(4)
+      ..write(obj.security)
+      ..writeByte(5)
+      ..write(obj.updatedAt);
   }
 
   @override
@@ -68,9 +80,9 @@ UserSettingsModel _$UserSettingsModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$UserSettingsModelToJson(UserSettingsModel instance) =>
     <String, dynamic>{
       'userId': instance.userId,
+      'notifications': instance.notifications.toJson(),
+      'preferences': instance.preferences.toJson(),
       'privacy': instance.privacy,
       'security': instance.security,
       'updatedAt': instance.updatedAt?.toIso8601String(),
-      'notifications': instance.notifications.toJson(),
-      'preferences': instance.preferences.toJson(),
     };

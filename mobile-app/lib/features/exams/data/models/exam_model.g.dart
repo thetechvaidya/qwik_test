@@ -39,16 +39,14 @@ class ExamModelAdapter extends TypeAdapter<ExamModel> {
       currency: fields[19] as String?,
       status: fields[20] as String,
       type: fields[21] as String,
-      settings: fields[22] as ExamSettingsModel,
-      stats: fields[23] as ExamStatsModel?,
-      userProgress: fields[24] as UserExamProgressModel?,
+      stats: fields[22] as ExamStatsModel?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ExamModel obj) {
     writer
-      ..writeByte(25)
+      ..writeByte(23)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -94,11 +92,7 @@ class ExamModelAdapter extends TypeAdapter<ExamModel> {
       ..writeByte(21)
       ..write(obj.type)
       ..writeByte(22)
-      ..write(obj.settings)
-      ..writeByte(23)
-      ..write(obj.stats)
-      ..writeByte(24)
-      ..write(obj.userProgress);
+      ..write(obj.stats);
   }
 
   @override
@@ -108,76 +102,6 @@ class ExamModelAdapter extends TypeAdapter<ExamModel> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is ExamModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
-class ExamSettingsModelAdapter extends TypeAdapter<ExamSettingsModel> {
-  @override
-  final int typeId = 11;
-
-  @override
-  ExamSettingsModel read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return ExamSettingsModel(
-      allowReview: fields[0] as bool,
-      showResults: fields[1] as bool,
-      shuffleQuestions: fields[2] as bool,
-      shuffleOptions: fields[3] as bool,
-      allowBackNavigation: fields[4] as bool,
-      showTimer: fields[5] as bool,
-      autoSubmit: fields[6] as bool,
-      maxAttempts: fields[7] as int?,
-      requireCamera: fields[8] as bool,
-      requireMicrophone: fields[9] as bool,
-      preventCopyPaste: fields[10] as bool,
-      fullScreenMode: fields[11] as bool,
-      allowedDevices: (fields[12] as List).cast<String>(),
-    );
-  }
-
-  @override
-  void write(BinaryWriter writer, ExamSettingsModel obj) {
-    writer
-      ..writeByte(13)
-      ..writeByte(0)
-      ..write(obj.allowReview)
-      ..writeByte(1)
-      ..write(obj.showResults)
-      ..writeByte(2)
-      ..write(obj.shuffleQuestions)
-      ..writeByte(3)
-      ..write(obj.shuffleOptions)
-      ..writeByte(4)
-      ..write(obj.allowBackNavigation)
-      ..writeByte(5)
-      ..write(obj.showTimer)
-      ..writeByte(6)
-      ..write(obj.autoSubmit)
-      ..writeByte(7)
-      ..write(obj.maxAttempts)
-      ..writeByte(8)
-      ..write(obj.requireCamera)
-      ..writeByte(9)
-      ..write(obj.requireMicrophone)
-      ..writeByte(10)
-      ..write(obj.preventCopyPaste)
-      ..writeByte(11)
-      ..write(obj.fullScreenMode)
-      ..writeByte(12)
-      ..write(obj.allowedDevices);
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ExamSettingsModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
@@ -237,79 +161,6 @@ class ExamStatsModelAdapter extends TypeAdapter<ExamStatsModel> {
           typeId == other.typeId;
 }
 
-class UserExamProgressModelAdapter extends TypeAdapter<UserExamProgressModel> {
-  @override
-  final int typeId = 13;
-
-  @override
-  UserExamProgressModel read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return UserExamProgressModel(
-      examId: fields[0] as String,
-      userId: fields[1] as String,
-      attemptCount: fields[2] as int,
-      bestScore: fields[3] as double?,
-      bestScorePercentage: fields[4] as double?,
-      lastScore: fields[5] as double?,
-      lastScorePercentage: fields[6] as double?,
-      lastAttemptAt: fields[7] as DateTime?,
-      firstAttemptAt: fields[8] as DateTime?,
-      isStarted: fields[9] as bool,
-      isCompleted: fields[10] as bool,
-      isPassed: fields[11] as bool,
-      bestCompletionTimeMinutes: fields[12] as int?,
-      lastCompletionTimeMinutes: fields[13] as int?,
-    );
-  }
-
-  @override
-  void write(BinaryWriter writer, UserExamProgressModel obj) {
-    writer
-      ..writeByte(14)
-      ..writeByte(0)
-      ..write(obj.examId)
-      ..writeByte(1)
-      ..write(obj.userId)
-      ..writeByte(2)
-      ..write(obj.attemptCount)
-      ..writeByte(3)
-      ..write(obj.bestScore)
-      ..writeByte(4)
-      ..write(obj.bestScorePercentage)
-      ..writeByte(5)
-      ..write(obj.lastScore)
-      ..writeByte(6)
-      ..write(obj.lastScorePercentage)
-      ..writeByte(7)
-      ..write(obj.lastAttemptAt)
-      ..writeByte(8)
-      ..write(obj.firstAttemptAt)
-      ..writeByte(9)
-      ..write(obj.isStarted)
-      ..writeByte(10)
-      ..write(obj.isCompleted)
-      ..writeByte(11)
-      ..write(obj.isPassed)
-      ..writeByte(12)
-      ..write(obj.bestCompletionTimeMinutes)
-      ..writeByte(13)
-      ..write(obj.lastCompletionTimeMinutes);
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UserExamProgressModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
@@ -343,15 +194,9 @@ ExamModel _$ExamModelFromJson(Map<String, dynamic> json) => ExamModel(
       currency: json['currency'] as String?,
       status: json['status'] as String? ?? 'draft',
       type: json['type'] as String? ?? 'practice',
-      settings:
-          ExamSettingsModel.fromJson(json['settings'] as Map<String, dynamic>),
       stats: json['stats'] == null
           ? null
           : ExamStatsModel.fromJson(json['stats'] as Map<String, dynamic>),
-      userProgress: json['user_progress'] == null
-          ? null
-          : UserExamProgressModel.fromJson(
-              json['user_progress'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ExamModelToJson(ExamModel instance) => <String, dynamic>{
@@ -377,46 +222,7 @@ Map<String, dynamic> _$ExamModelToJson(ExamModel instance) => <String, dynamic>{
       'currency': instance.currency,
       'status': instance.status,
       'type': instance.type,
-      'settings': instance.settings,
       'stats': instance.stats,
-      'user_progress': instance.userProgress,
-    };
-
-ExamSettingsModel _$ExamSettingsModelFromJson(Map<String, dynamic> json) =>
-    ExamSettingsModel(
-      allowReview: json['allow_review'] as bool? ?? true,
-      showResults: json['show_results'] as bool? ?? true,
-      shuffleQuestions: json['shuffle_questions'] as bool? ?? false,
-      shuffleOptions: json['shuffle_options'] as bool? ?? false,
-      allowBackNavigation: json['allow_back_navigation'] as bool? ?? true,
-      showTimer: json['show_timer'] as bool? ?? true,
-      autoSubmit: json['auto_submit'] as bool? ?? true,
-      maxAttempts: (json['max_attempts'] as num?)?.toInt(),
-      requireCamera: json['require_camera'] as bool? ?? false,
-      requireMicrophone: json['require_microphone'] as bool? ?? false,
-      preventCopyPaste: json['prevent_copy_paste'] as bool? ?? false,
-      fullScreenMode: json['full_screen_mode'] as bool? ?? false,
-      allowedDevices: (json['allowed_devices'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-    );
-
-Map<String, dynamic> _$ExamSettingsModelToJson(ExamSettingsModel instance) =>
-    <String, dynamic>{
-      'allow_review': instance.allowReview,
-      'show_results': instance.showResults,
-      'shuffle_questions': instance.shuffleQuestions,
-      'shuffle_options': instance.shuffleOptions,
-      'allow_back_navigation': instance.allowBackNavigation,
-      'show_timer': instance.showTimer,
-      'auto_submit': instance.autoSubmit,
-      'max_attempts': instance.maxAttempts,
-      'require_camera': instance.requireCamera,
-      'require_microphone': instance.requireMicrophone,
-      'prevent_copy_paste': instance.preventCopyPaste,
-      'full_screen_mode': instance.fullScreenMode,
-      'allowed_devices': instance.allowedDevices,
     };
 
 ExamStatsModel _$ExamStatsModelFromJson(Map<String, dynamic> json) =>
@@ -442,48 +248,4 @@ Map<String, dynamic> _$ExamStatsModelToJson(ExamStatsModel instance) =>
       'fail_count': instance.failCount,
       'pass_rate': instance.passRate,
       'average_completion_time_minutes': instance.averageCompletionTimeMinutes,
-    };
-
-UserExamProgressModel _$UserExamProgressModelFromJson(
-        Map<String, dynamic> json) =>
-    UserExamProgressModel(
-      examId: json['exam_id'] as String,
-      userId: json['user_id'] as String,
-      attemptCount: (json['attempt_count'] as num?)?.toInt() ?? 0,
-      bestScore: (json['best_score'] as num?)?.toDouble(),
-      bestScorePercentage: (json['best_score_percentage'] as num?)?.toDouble(),
-      lastScore: (json['last_score'] as num?)?.toDouble(),
-      lastScorePercentage: (json['last_score_percentage'] as num?)?.toDouble(),
-      lastAttemptAt: json['last_attempt_at'] == null
-          ? null
-          : DateTime.parse(json['last_attempt_at'] as String),
-      firstAttemptAt: json['first_attempt_at'] == null
-          ? null
-          : DateTime.parse(json['first_attempt_at'] as String),
-      isStarted: json['is_started'] as bool? ?? false,
-      isCompleted: json['is_completed'] as bool? ?? false,
-      isPassed: json['is_passed'] as bool? ?? false,
-      bestCompletionTimeMinutes:
-          (json['best_completion_time_minutes'] as num?)?.toInt(),
-      lastCompletionTimeMinutes:
-          (json['last_completion_time_minutes'] as num?)?.toInt(),
-    );
-
-Map<String, dynamic> _$UserExamProgressModelToJson(
-        UserExamProgressModel instance) =>
-    <String, dynamic>{
-      'exam_id': instance.examId,
-      'user_id': instance.userId,
-      'attempt_count': instance.attemptCount,
-      'best_score': instance.bestScore,
-      'best_score_percentage': instance.bestScorePercentage,
-      'last_score': instance.lastScore,
-      'last_score_percentage': instance.lastScorePercentage,
-      'last_attempt_at': instance.lastAttemptAt?.toIso8601String(),
-      'first_attempt_at': instance.firstAttemptAt?.toIso8601String(),
-      'is_started': instance.isStarted,
-      'is_completed': instance.isCompleted,
-      'is_passed': instance.isPassed,
-      'best_completion_time_minutes': instance.bestCompletionTimeMinutes,
-      'last_completion_time_minutes': instance.lastCompletionTimeMinutes,
     };

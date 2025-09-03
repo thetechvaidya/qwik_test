@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'user_stats.dart';
-import 'subscription_info.dart';
+// Removed subscription_info import - not needed in simplified profile
 
 class UserProfile extends Equatable {
   const UserProfile({
@@ -13,7 +13,7 @@ class UserProfile extends Equatable {
     this.website,
     this.socialLinks = const {},
     this.stats,
-    this.subscription,
+    // Removed subscription parameter - not needed in simplified profile
     this.preferences = const {},
     this.createdAt,
     this.updatedAt,
@@ -28,7 +28,7 @@ class UserProfile extends Equatable {
   final String? website;
   final Map<String, String> socialLinks;
   final UserStats? stats;
-  final SubscriptionInfo? subscription;
+  // Removed subscription field - not needed in simplified profile
   final Map<String, dynamic> preferences;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -44,7 +44,7 @@ class UserProfile extends Equatable {
         website,
         socialLinks,
         stats,
-        subscription,
+        // Removed subscription from props - not needed in simplified profile
         preferences,
         createdAt,
         updatedAt,
@@ -70,10 +70,7 @@ class UserProfile extends Equatable {
     return socialLinks[platform.toLowerCase()];
   }
 
-  /// Checks if user has premium subscription
-  bool isPremiumUser() {
-    return subscription?.isPremium() ?? false;
-  }
+  // Removed isPremiumUser method - not needed in simplified profile
 
   UserProfile copyWith({
     String? id,
@@ -85,7 +82,7 @@ class UserProfile extends Equatable {
     String? website,
     Map<String, String>? socialLinks,
     UserStats? stats,
-    SubscriptionInfo? subscription,
+    // Removed subscription parameter - not needed in simplified profile
     Map<String, dynamic>? preferences,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -100,7 +97,7 @@ class UserProfile extends Equatable {
       website: website ?? this.website,
       socialLinks: socialLinks ?? this.socialLinks,
       stats: stats ?? this.stats,
-      subscription: subscription ?? this.subscription,
+      // Removed subscription assignment - not needed in simplified profile
       preferences: preferences ?? this.preferences,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -109,6 +106,6 @@ class UserProfile extends Equatable {
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, name: $name, email: $email, avatar: $avatar, bio: $bio, location: $location, website: $website, socialLinks: $socialLinks, stats: $stats, subscription: $subscription, preferences: $preferences, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserProfile(id: $id, name: $name, email: $email, avatar: $avatar, bio: $bio, location: $location, website: $website, socialLinks: $socialLinks, stats: $stats, preferences: $preferences, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

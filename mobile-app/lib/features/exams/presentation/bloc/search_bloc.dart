@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../search/domain/usecases/get_search_suggestions_usecase.dart';
 import '../../../search/domain/usecases/manage_search_history_usecase.dart';
-import '../../../search/domain/usecases/report_search_analytics_usecase.dart';
+// Removed ReportSearchAnalyticsUseCase import
 import '../../../../core/error/failures.dart';
 import 'search_event.dart';
 import 'search_state.dart';
@@ -10,16 +10,16 @@ import 'search_state.dart';
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final GetSearchSuggestionsUseCase _getSearchSuggestionsUseCase;
   final ManageSearchHistoryUseCase _manageSearchHistoryUseCase;
-  final ReportSearchAnalyticsUseCase _reportSearchAnalyticsUseCase;
+  // Removed ReportSearchAnalyticsUseCase field
 
   SearchBloc({
     required GetSearchSuggestionsUseCase getSearchSuggestionsUseCase,
     required ManageSearchHistoryUseCase manageSearchHistoryUseCase,
-    required ReportSearchAnalyticsUseCase reportSearchAnalyticsUseCase,
+    // Removed ReportSearchAnalyticsUseCase parameter
   })
       : _getSearchSuggestionsUseCase = getSearchSuggestionsUseCase,
         _manageSearchHistoryUseCase = manageSearchHistoryUseCase,
-        _reportSearchAnalyticsUseCase = reportSearchAnalyticsUseCase,
+        // Removed ReportSearchAnalyticsUseCase initialization
         super(const SearchInitial()) {
     on<GetSearchSuggestionsEvent>(_onGetSearchSuggestions);
     on<LoadSearchHistoryEvent>(_onLoadSearchHistory);
@@ -28,7 +28,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     on<ClearSearchHistoryEvent>(_onClearSearchHistory);
     on<GetTrendingSearchesEvent>(_onGetTrendingSearches);
     on<GetPopularQueriesEvent>(_onGetPopularQueries);
-    on<ReportSearchAnalyticsEvent>(_onReportSearchAnalytics);
+    // Removed ReportSearchAnalyticsEvent handler
     on<ClearCachedSuggestionsEvent>(_onClearCachedSuggestions);
   }
 
@@ -165,7 +165,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     }
 
     final result = await _manageSearchHistoryUseCase.removeHistoryItem(
-      RemoveSearchHistoryParams(historyId: event.historyId),
+      event.historyId,
     );
 
     result.fold(
@@ -288,20 +288,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     );
   }
 
-  Future<void> _onReportSearchAnalytics(
-    ReportSearchAnalyticsEvent event,
-    Emitter<SearchState> emit,
-  ) async {
-    // Report analytics in the background without affecting UI state
-    await _reportSearchAnalyticsUseCase(
-      ReportSearchAnalyticsParams(
-        query: event.query,
-        resultCount: event.resultCount,
-        categoryId: event.categoryId,
-        hasResults: event.resultCount > 0,
-      ),
-    );
-  }
+  // Removed _onReportSearchAnalytics method
 
   Future<void> _onClearCachedSuggestions(
     ClearCachedSuggestionsEvent event,

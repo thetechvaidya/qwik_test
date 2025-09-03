@@ -149,13 +149,6 @@ class FirebaseService {
     });
   }
   
-  /// Track dashboard view event
-  Future<void> trackDashboardView() async {
-    await trackEvent('dashboard_viewed', parameters: {
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    });
-  }
-  
   /// Track result view event
   Future<void> trackResultView(String examId, double score) async {
     await trackEvent('result_viewed', parameters: {

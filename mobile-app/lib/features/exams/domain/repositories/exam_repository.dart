@@ -39,22 +39,4 @@ abstract class ExamRepository {
     String? difficulty,
     String? type,
   });
-
-  /// Get featured exams
-  Future<Either<Failure, List<Exam>>> getFeaturedExams({int limit = 10});
-
-  /// Get recent exams
-  Future<Either<Failure, List<Exam>>> getRecentExams({int limit = 10});
-
-  /// Get popular exams
-  Future<Either<Failure, List<Exam>>> getPopularExams({int limit = 10});
-
-  /// Get user's progress for a specific exam
-  Future<Either<Failure, UserExamProgress?>> getUserExamProgress(String examId);
-
-  /// Update user's progress for a specific exam
-  Future<Either<Failure, UserExamProgress>> updateUserExamProgress(
-    String examId,
-    Map<String, dynamic> progressData,
-  );
 }

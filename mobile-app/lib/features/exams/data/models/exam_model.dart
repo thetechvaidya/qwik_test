@@ -96,16 +96,8 @@ class ExamModel extends HiveObject {
   final String type;
 
   @HiveField(22)
-  @JsonKey(name: 'settings')
-  final ExamSettingsModel settings;
-
-  @HiveField(23)
   @JsonKey(name: 'stats')
   final ExamStatsModel? stats;
-
-  @HiveField(24)
-  @JsonKey(name: 'user_progress')
-  final UserExamProgressModel? userProgress;
 
   ExamModel({
     required this.id,
@@ -130,9 +122,7 @@ class ExamModel extends HiveObject {
     this.currency,
     this.status = 'draft',
     this.type = 'practice',
-    required this.settings,
     this.stats,
-    this.userProgress,
   });
 
   /// Convert from JSON
@@ -166,9 +156,7 @@ class ExamModel extends HiveObject {
       currency: exam.currency,
       status: exam.status.name,
       type: exam.type.name,
-      settings: ExamSettingsModel.fromEntity(exam.settings),
       stats: exam.stats != null ? ExamStatsModel.fromEntity(exam.stats!) : null,
-      userProgress: exam.userProgress != null ? UserExamProgressModel.fromEntity(exam.userProgress!) : null,
     );
   }
 
@@ -197,9 +185,7 @@ class ExamModel extends HiveObject {
       currency: currency,
       status: _parseExamStatus(status),
       type: _parseExamType(type),
-      settings: settings.toEntity(),
       stats: stats?.toEntity(),
-      userProgress: userProgress?.toEntity(),
     );
   }
 
@@ -236,116 +222,7 @@ class ExamModel extends HiveObject {
   }
 }
 
-@HiveType(typeId: 11)
-@JsonSerializable()
-class ExamSettingsModel extends HiveObject {
-  @HiveField(0)
-  @JsonKey(name: 'allow_review')
-  final bool allowReview;
 
-  @HiveField(1)
-  @JsonKey(name: 'show_results')
-  final bool showResults;
-
-  @HiveField(2)
-  @JsonKey(name: 'shuffle_questions')
-  final bool shuffleQuestions;
-
-  @HiveField(3)
-  @JsonKey(name: 'shuffle_options')
-  final bool shuffleOptions;
-
-  @HiveField(4)
-  @JsonKey(name: 'allow_back_navigation')
-  final bool allowBackNavigation;
-
-  @HiveField(5)
-  @JsonKey(name: 'show_timer')
-  final bool showTimer;
-
-  @HiveField(6)
-  @JsonKey(name: 'auto_submit')
-  final bool autoSubmit;
-
-  @HiveField(7)
-  @JsonKey(name: 'max_attempts')
-  final int? maxAttempts;
-
-  @HiveField(8)
-  @JsonKey(name: 'require_camera')
-  final bool requireCamera;
-
-  @HiveField(9)
-  @JsonKey(name: 'require_microphone')
-  final bool requireMicrophone;
-
-  @HiveField(10)
-  @JsonKey(name: 'prevent_copy_paste')
-  final bool preventCopyPaste;
-
-  @HiveField(11)
-  @JsonKey(name: 'full_screen_mode')
-  final bool fullScreenMode;
-
-  @HiveField(12)
-  @JsonKey(name: 'allowed_devices')
-  final List<String> allowedDevices;
-
-  ExamSettingsModel({
-    this.allowReview = true,
-    this.showResults = true,
-    this.shuffleQuestions = false,
-    this.shuffleOptions = false,
-    this.allowBackNavigation = true,
-    this.showTimer = true,
-    this.autoSubmit = true,
-    this.maxAttempts,
-    this.requireCamera = false,
-    this.requireMicrophone = false,
-    this.preventCopyPaste = false,
-    this.fullScreenMode = false,
-    this.allowedDevices = const [],
-  });
-
-  factory ExamSettingsModel.fromJson(Map<String, dynamic> json) => _$ExamSettingsModelFromJson(json);
-  Map<String, dynamic> toJson() => _$ExamSettingsModelToJson(this);
-
-  factory ExamSettingsModel.fromEntity(ExamSettings settings) {
-    return ExamSettingsModel(
-      allowReview: settings.allowReview,
-      showResults: settings.showResults,
-      shuffleQuestions: settings.shuffleQuestions,
-      shuffleOptions: settings.shuffleOptions,
-      allowBackNavigation: settings.allowBackNavigation,
-      showTimer: settings.showTimer,
-      autoSubmit: settings.autoSubmit,
-      maxAttempts: settings.maxAttempts,
-      requireCamera: settings.requireCamera,
-      requireMicrophone: settings.requireMicrophone,
-      preventCopyPaste: settings.preventCopyPaste,
-      fullScreenMode: settings.fullScreenMode,
-      allowedDevices: settings.allowedDevices,
-    );
-  }
-
-  ExamSettings toEntity() {
-    return ExamSettings(
-      allowReview: allowReview,
-      showResults: showResults,
-      shuffleQuestions: shuffleQuestions,
-      shuffleOptions: shuffleOptions,
-      allowBackNavigation: allowBackNavigation,
-      showTimer: showTimer,
-      autoSubmit: autoSubmit,
-      maxAttempts: maxAttempts,
-      requireCamera: requireCamera,
-      requireMicrophone: requireMicrophone,
-      preventCopyPaste: preventCopyPaste,
-      fullScreenMode: fullScreenMode,
-      allowedDevices: allowedDevices,
-    );
-  }
-}
 
 @HiveType(typeId: 12)
 @JsonSerializable()
@@ -419,124 +296,6 @@ class ExamStatsModel extends HiveObject {
       failCount: failCount,
       passRate: passRate,
       averageCompletionTime: Duration(minutes: averageCompletionTimeMinutes),
-    );
-  }
-}
-
-@HiveType(typeId: 13)
-@JsonSerializable()
-class UserExamProgressModel extends HiveObject {
-  @HiveField(0)
-  @JsonKey(name: 'exam_id')
-  final String examId;
-
-  @HiveField(1)
-  @JsonKey(name: 'user_id')
-  final String userId;
-
-  @HiveField(2)
-  @JsonKey(name: 'attempt_count')
-  final int attemptCount;
-
-  @HiveField(3)
-  @JsonKey(name: 'best_score')
-  final double? bestScore;
-
-  @HiveField(4)
-  @JsonKey(name: 'best_score_percentage')
-  final double? bestScorePercentage;
-
-  @HiveField(5)
-  @JsonKey(name: 'last_score')
-  final double? lastScore;
-
-  @HiveField(6)
-  @JsonKey(name: 'last_score_percentage')
-  final double? lastScorePercentage;
-
-  @HiveField(7)
-  @JsonKey(name: 'last_attempt_at')
-  final DateTime? lastAttemptAt;
-
-  @HiveField(8)
-  @JsonKey(name: 'first_attempt_at')
-  final DateTime? firstAttemptAt;
-
-  @HiveField(9)
-  @JsonKey(name: 'is_started')
-  final bool isStarted;
-
-  @HiveField(10)
-  @JsonKey(name: 'is_completed')
-  final bool isCompleted;
-
-  @HiveField(11)
-  @JsonKey(name: 'is_passed')
-  final bool isPassed;
-
-  @HiveField(12)
-  @JsonKey(name: 'best_completion_time_minutes')
-  final int? bestCompletionTimeMinutes;
-
-  @HiveField(13)
-  @JsonKey(name: 'last_completion_time_minutes')
-  final int? lastCompletionTimeMinutes;
-
-  UserExamProgressModel({
-    required this.examId,
-    required this.userId,
-    this.attemptCount = 0,
-    this.bestScore,
-    this.bestScorePercentage,
-    this.lastScore,
-    this.lastScorePercentage,
-    this.lastAttemptAt,
-    this.firstAttemptAt,
-    this.isStarted = false,
-    this.isCompleted = false,
-    this.isPassed = false,
-    this.bestCompletionTimeMinutes,
-    this.lastCompletionTimeMinutes,
-  });
-
-  factory UserExamProgressModel.fromJson(Map<String, dynamic> json) => _$UserExamProgressModelFromJson(json);
-  Map<String, dynamic> toJson() => _$UserExamProgressModelToJson(this);
-
-  factory UserExamProgressModel.fromEntity(UserExamProgress progress) {
-    return UserExamProgressModel(
-      examId: progress.examId,
-      userId: progress.userId,
-      attemptCount: progress.attemptCount,
-      bestScore: progress.bestScore,
-      bestScorePercentage: progress.bestScorePercentage,
-      lastScore: progress.lastScore,
-      lastScorePercentage: progress.lastScorePercentage,
-      lastAttemptAt: progress.lastAttemptAt,
-      firstAttemptAt: progress.firstAttemptAt,
-      isStarted: progress.isStarted,
-      isCompleted: progress.isCompleted,
-      isPassed: progress.isPassed,
-      bestCompletionTimeMinutes: progress.bestCompletionTime?.inMinutes,
-      lastCompletionTimeMinutes: progress.lastCompletionTime?.inMinutes,
-    );
-  }
-
-  UserExamProgress toEntity() {
-    return UserExamProgress(
-      examId: examId,
-      userId: userId,
-      attemptCount: attemptCount,
-      bestScore: bestScore,
-      bestScorePercentage: bestScorePercentage,
-      lastScore: lastScore,
-      lastScorePercentage: lastScorePercentage,
-      lastAttemptAt: lastAttemptAt,
-      firstAttemptAt: firstAttemptAt,
-      isStarted: isStarted,
-      isCompleted: isCompleted,
-      isPassed: isPassed,
-      bestCompletionTime: bestCompletionTimeMinutes != null ? Duration(minutes: bestCompletionTimeMinutes!) : null,
-      lastCompletionTime: lastCompletionTimeMinutes != null ? Duration(minutes: lastCompletionTimeMinutes!) : null,
     );
   }
 }

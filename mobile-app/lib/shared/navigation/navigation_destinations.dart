@@ -5,15 +5,6 @@ import 'navigation_item.dart';
 class NavigationDestinations {
   NavigationDestinations._();
 
-  /// Home/Dashboard destination
-  static const NavigationItem home = NavigationItem(
-    icon: Icons.home_outlined,
-    selectedIcon: Icons.home,
-    label: 'Home',
-    route: '/home',
-    tooltip: 'Go to Home',
-  );
-
   /// Exams destination
   static const NavigationItem exams = NavigationItem(
     icon: Icons.quiz_outlined,
@@ -47,7 +38,6 @@ class NavigationDestinations {
 
   /// Main navigation destinations (primary navigation)
   static const List<NavigationItem> mainDestinations = [
-    home,
     exams,
     profile,
   ];

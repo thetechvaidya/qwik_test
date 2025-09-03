@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/shimmer_widget.dart';
 
 /// Widget for displaying loading states in exam-related screens
 class ExamLoadingWidget extends StatelessWidget {
@@ -118,24 +117,20 @@ class ExamLoadingWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              ShimmerWidget(
-                child: Container(
-                  width: 140,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+              Container(
+                width: 140,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              ShimmerWidget(
-                child: Container(
-                  width: 60,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
+              Container(
+                width: 60,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ],
@@ -155,7 +150,7 @@ class ExamLoadingWidget extends StatelessWidget {
               margin: EdgeInsets.only(
                 right: index < itemCount - 1 ? spacing : 0,
               ),
-              child: const _FeaturedExamSkeleton(),
+              child: const _ExamCardSkeleton(),
             ),
           ),
         ),
@@ -205,24 +200,20 @@ class _ExamCardSkeleton extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 80,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                Container(
+                  width: 80,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                ShimmerWidget(
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    shape: BoxShape.circle,
                   ),
                 ),
               ],
@@ -230,27 +221,23 @@ class _ExamCardSkeleton extends StatelessWidget {
             const SizedBox(height: 12),
             
             // Title
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            Container(
+              width: double.infinity,
+              height: 20,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(height: 8),
             
             // Description
-            ShimmerWidget(
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.7,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.7,
+              height: 16,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(height: 16),
@@ -258,36 +245,30 @@ class _ExamCardSkeleton extends StatelessWidget {
             // Metadata row
             Row(
               children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 60,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                Container(
+                  width: 60,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
                 const SizedBox(width: 16),
-                ShimmerWidget(
-                  child: Container(
-                    width: 50,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                Container(
+                  width: 50,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
                 const Spacer(),
-                ShimmerWidget(
-                  child: Container(
-                    width: 40,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                Container(
+                  width: 40,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ],
@@ -295,27 +276,23 @@ class _ExamCardSkeleton extends StatelessWidget {
             const SizedBox(height: 16),
             
             // Progress bar
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+            Container(
+              width: double.infinity,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 12),
             
             // Action button
-            ShimmerWidget(
-              child: Container(
-                width: 100,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            Container(
+              width: 100,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
           ],
@@ -342,24 +319,20 @@ class _ExamGridItemSkeleton extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 60,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                Container(
+                  width: 60,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                ShimmerWidget(
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      shape: BoxShape.circle,
-                    ),
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    shape: BoxShape.circle,
                   ),
                 ),
               ],
@@ -367,26 +340,22 @@ class _ExamGridItemSkeleton extends StatelessWidget {
             const SizedBox(height: 12),
             
             // Title
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            Container(
+              width: double.infinity,
+              height: 18,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(height: 8),
             
-            ShimmerWidget(
-              child: Container(
-                width: 120,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            Container(
+              width: 120,
+              height: 18,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
             const Spacer(),
@@ -394,25 +363,21 @@ class _ExamGridItemSkeleton extends StatelessWidget {
             // Metadata
             Row(
               children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 40,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                Container(
+                  width: 40,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
                 const Spacer(),
-                ShimmerWidget(
-                  child: Container(
-                    width: 30,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                Container(
+                  width: 30,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ],
@@ -420,14 +385,12 @@ class _ExamGridItemSkeleton extends StatelessWidget {
             const SizedBox(height: 8),
             
             // Progress
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+            Container(
+              width: double.infinity,
+              height: 3,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ],
@@ -437,166 +400,6 @@ class _ExamGridItemSkeleton extends StatelessWidget {
   }
 }
 
-/// Skeleton widget for featured exam card
-class _FeaturedExamSkeleton extends StatelessWidget {
-  const _FeaturedExamSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 80,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                ShimmerWidget(
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            
-            // Title
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            ShimmerWidget(
-              child: Container(
-                width: 160,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Description
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            
-            ShimmerWidget(
-              child: Container(
-                width: 180,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-            const Spacer(),
-            
-            // Metadata
-            Row(
-              children: [
-                ShimmerWidget(
-                  child: Container(
-                    width: 50,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ShimmerWidget(
-                  child: Container(
-                    width: 40,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                ShimmerWidget(
-                  child: Container(
-                    width: 30,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            
-            // Progress
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            
-            // Button
-            ShimmerWidget(
-              child: Container(
-                width: double.infinity,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Skeleton widget for exam detail
 class _ExamDetailSkeleton extends StatelessWidget {
@@ -608,14 +411,12 @@ class _ExamDetailSkeleton extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Title section
-        ShimmerWidget(
-          child: Container(
-            width: double.infinity,
-            height: 28,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(4),
-            ),
+        Container(
+          width: double.infinity,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
           ),
         ),
         const SizedBox(height: 16),
@@ -624,25 +425,21 @@ class _ExamDetailSkeleton extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: ShimmerWidget(
-                child: Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              child: Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: ShimmerWidget(
-                child: Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              child: Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -651,14 +448,12 @@ class _ExamDetailSkeleton extends StatelessWidget {
         const SizedBox(height: 24),
         
         // Description section
-        ShimmerWidget(
-          child: Container(
-            width: 120,
-            height: 20,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(4),
-            ),
+        Container(
+          width: 120,
+          height: 20,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(4),
           ),
         ),
         const SizedBox(height: 12),
@@ -667,14 +462,12 @@ class _ExamDetailSkeleton extends StatelessWidget {
           4,
           (index) => Container(
             margin: const EdgeInsets.only(bottom: 8),
-            child: ShimmerWidget(
-              child: Container(
-                width: index == 3 ? 200 : double.infinity,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+            child: Container(
+              width: index == 3 ? 200 : double.infinity,
+              height: 16,
+              decoration: BoxDecoration(
+                color: AppColors.surface.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
             ),
           ),
@@ -682,14 +475,12 @@ class _ExamDetailSkeleton extends StatelessWidget {
         const SizedBox(height: 24),
         
         // Action button
-        ShimmerWidget(
-          child: Container(
-            width: double.infinity,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-            ),
+        Container(
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ],
@@ -705,37 +496,31 @@ class _SearchSuggestionSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ShimmerWidget(
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-            ),
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.3),
+            shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: ShimmerWidget(
-            child: Container(
-              height: 16,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(4),
-              ),
+          child: Container(
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppColors.surface.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(4),
             ),
           ),
         ),
         const SizedBox(width: 12),
-        ShimmerWidget(
-          child: Container(
-            width: 16,
-            height: 16,
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              shape: BoxShape.circle,
-            ),
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppColors.surface.withOpacity(0.3),
+            shape: BoxShape.circle,
           ),
         ),
       ],

@@ -65,7 +65,7 @@ dependencies:
   jwt_decoder: ^2.0.1
   
   # Image Handling
-  image_picker: ^1.1.2
+  # image_picker: ^1.1.2  # Removed - not currently used
   
   # URL Launcher
   url_launcher: ^6.3.1

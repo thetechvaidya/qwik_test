@@ -9,9 +9,7 @@ import '../../domain/entities/category.dart';
 import '../../domain/usecases/get_exams_usecase.dart';
 import '../../domain/usecases/get_exam_detail_usecase.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
-import '../../domain/usecases/get_featured_exams_usecase.dart';
-import '../../domain/usecases/get_recent_exams_usecase.dart';
-import '../../domain/usecases/get_popular_exams_usecase.dart';
+
 import '../../../search/domain/usecases/search_exams_usecase.dart';
 import 'exam_event.dart';
 import 'exam_state.dart';
@@ -21,9 +19,7 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
   final GetExamsUseCase _getExamsUseCase;
   final GetExamDetailUseCase _getExamDetailUseCase;
   final GetCategoriesUseCase _getCategoriesUseCase;
-  final GetFeaturedExamsUseCase _getFeaturedExamsUseCase;
-  final GetRecentExamsUseCase _getRecentExamsUseCase;
-  final GetPopularExamsUseCase _getPopularExamsUseCase;
+
   final SearchExamsUseCase _searchExamsUseCase;
 
   // Pagination controller
@@ -39,17 +35,11 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
     required GetExamsUseCase getExamsUseCase,
     required GetExamDetailUseCase getExamDetailUseCase,
     required GetCategoriesUseCase getCategoriesUseCase,
-    required GetFeaturedExamsUseCase getFeaturedExamsUseCase,
-    required GetRecentExamsUseCase getRecentExamsUseCase,
-    required GetPopularExamsUseCase getPopularExamsUseCase,
     required SearchExamsUseCase searchExamsUseCase,
   })
       : _getExamsUseCase = getExamsUseCase,
         _getExamDetailUseCase = getExamDetailUseCase,
         _getCategoriesUseCase = getCategoriesUseCase,
-        _getFeaturedExamsUseCase = getFeaturedExamsUseCase,
-        _getRecentExamsUseCase = getRecentExamsUseCase,
-        _getPopularExamsUseCase = getPopularExamsUseCase,
         _searchExamsUseCase = searchExamsUseCase,
         super(const ExamInitial()) {
     _paginationController = PaginationController(
@@ -63,9 +53,7 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
     on<RefreshExamsEvent>(_onRefreshExams);
     on<LoadExamDetailEvent>(_onLoadExamDetail);
     on<LoadCategoriesEvent>(_onLoadCategories);
-    on<LoadFeaturedExamsEvent>(_onLoadFeaturedExams);
-    on<LoadRecentExamsEvent>(_onLoadRecentExams);
-    on<LoadPopularExamsEvent>(_onLoadPopularExams);
+
     on<SearchExamsEvent>(_onSearchExams);
     on<ClearSearchEvent>(_onClearSearch);
     on<ApplyFiltersEvent>(_onApplyFilters);
@@ -87,6 +75,11 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
 
   /// Handle loading exams
   Future<void> _onLoadExams(LoadExamsEvent event, Emitter<ExamState> emit) async {
+    // Prevent duplicate calls - skip if already loading (unless it's a refresh)
+    if (state is ExamLoading && !event.refresh) {
+      return;
+    }
+    
     try {
       // Update filters if provided
       if (event.categoryId != null ||
@@ -159,9 +152,6 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
           emit(ExamLoaded(
             exams: allExams,
             categories: currentState?.categories ?? [],
-            featuredExams: currentState?.featuredExams ?? [],
-            recentExams: currentState?.recentExams ?? [],
-            popularExams: currentState?.popularExams ?? [],
             searchResults: currentState?.searchResults ?? [],
             paginationState: _paginationController.state,
             filters: _currentFilters,
@@ -190,6 +180,11 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
     
     // Check if we can load more
     if (currentState.hasReachedMax || currentState.isSearching) return;
+    
+    // Prevent duplicate load more calls - check if already loading more
+    if (state is ExamLoading && (state as ExamLoading).isLoadingMore) {
+      return;
+    }
 
     try {
       // Show loading more state
@@ -262,6 +257,13 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
 
   /// Handle loading exam detail
   Future<void> _onLoadExamDetail(LoadExamDetailEvent event, Emitter<ExamState> emit) async {
+    // Prevent duplicate calls - skip if already loading the same exam (unless force refresh)
+    if (state is ExamDetailLoading && 
+        (state as ExamDetailLoading).examId == event.examId && 
+        !event.forceRefresh) {
+      return;
+    }
+    
     try {
       emit(ExamDetailLoading(examId: event.examId));
 
@@ -317,89 +319,18 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
     }
   }
 
-  /// Handle loading featured exams
-  Future<void> _onLoadFeaturedExams(LoadFeaturedExamsEvent event, Emitter<ExamState> emit) async {
-    try {
-      final result = await _getFeaturedExamsUseCase(GetFeaturedExamsParams(
-        limit: event.limit,
-        forceRefresh: event.refresh,
-      ));
 
-      result.fold(
-        (failure) {
-          print('Failed to load featured exams: ${_getFailureMessage(failure)}');
-        },
-        (exams) {
-          if (state is ExamLoaded) {
-            final currentState = state as ExamLoaded;
-            emit(currentState.copyWith(
-              featuredExams: exams,
-              lastUpdated: DateTime.now(),
-            ));
-          }
-        },
-      );
-    } catch (e) {
-      print('Failed to load featured exams: ${e.toString()}');
-    }
-  }
-
-  /// Handle loading recent exams
-  Future<void> _onLoadRecentExams(LoadRecentExamsEvent event, Emitter<ExamState> emit) async {
-    try {
-      final result = await _getRecentExamsUseCase(GetRecentExamsParams(
-        limit: event.limit,
-        forceRefresh: event.refresh,
-      ));
-
-      result.fold(
-        (failure) {
-          print('Failed to load recent exams: ${_getFailureMessage(failure)}');
-        },
-        (exams) {
-          if (state is ExamLoaded) {
-            final currentState = state as ExamLoaded;
-            emit(currentState.copyWith(
-              recentExams: exams,
-              lastUpdated: DateTime.now(),
-            ));
-          }
-        },
-      );
-    } catch (e) {
-      print('Failed to load recent exams: ${e.toString()}');
-    }
-  }
-
-  /// Handle loading popular exams
-  Future<void> _onLoadPopularExams(LoadPopularExamsEvent event, Emitter<ExamState> emit) async {
-    try {
-      final result = await _getPopularExamsUseCase(GetPopularExamsParams(
-        limit: event.limit,
-        forceRefresh: event.refresh,
-      ));
-
-      result.fold(
-        (failure) {
-          print('Failed to load popular exams: ${_getFailureMessage(failure)}');
-        },
-        (exams) {
-          if (state is ExamLoaded) {
-            final currentState = state as ExamLoaded;
-            emit(currentState.copyWith(
-              popularExams: exams,
-              lastUpdated: DateTime.now(),
-            ));
-          }
-        },
-      );
-    } catch (e) {
-      print('Failed to load popular exams: ${e.toString()}');
-    }
-  }
 
   /// Handle searching exams
   Future<void> _onSearchExams(SearchExamsEvent event, Emitter<ExamState> emit) async {
+    // Prevent duplicate search calls - skip if already searching with same query
+    if (state is ExamLoaded) {
+      final currentState = state as ExamLoaded;
+      if (currentState.isSearching && currentState.searchQuery == event.query) {
+        return;
+      }
+    }
+    
     try {
       _currentSearchQuery = event.query;
       
@@ -436,7 +367,8 @@ class ExamBloc extends Bloc<ExamEvent, ExamState> {
           errorCode: failure.runtimeType.toString(),
           previousState: state is ExamLoaded ? state as ExamLoaded : null,
         )),
-        (searchResults) {
+        (paginatedResponse) {
+          final searchResults = paginatedResponse.data;
           if (state is ExamLoaded) {
             final currentState = state as ExamLoaded;
             emit(currentState.copyWith(

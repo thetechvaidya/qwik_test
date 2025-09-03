@@ -59,45 +59,7 @@ class ProfileAvatarDeleteRequested extends ProfileEvent {
   List<Object?> get props => [userId];
 }
 
-/// Event to load user stats
-class ProfileStatsLoadRequested extends ProfileEvent {
-  const ProfileStatsLoadRequested({
-    required this.userId,
-  });
-
-  final String userId;
-
-  @override
-  List<Object?> get props => [userId];
-}
-
-/// Event to load subscription info
-class ProfileSubscriptionLoadRequested extends ProfileEvent {
-  const ProfileSubscriptionLoadRequested({
-    required this.userId,
-  });
-
-  final String userId;
-
-  @override
-  List<Object?> get props => [userId];
-}
-
-/// Event to search users
-class ProfileSearchRequested extends ProfileEvent {
-  const ProfileSearchRequested({
-    required this.query,
-    this.page = 1,
-    this.limit = 20,
-  });
-
-  final String query;
-  final int page;
-  final int limit;
-
-  @override
-  List<Object?> get props => [query, page, limit];
-}
+// Removed ProfileStatsLoadRequested, ProfileSubscriptionLoadRequested, and ProfileSearchRequested events
 
 /// Event to clear profile error
 class ProfileErrorCleared extends ProfileEvent {

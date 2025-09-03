@@ -52,8 +52,12 @@ class ExamSessionModel extends HiveObject {
   final String status;
 
   @HiveField(10)
-  @JsonKey(name: 'settings')
-  final ExamSettingsModel settings;
+  @JsonKey(name: 'allow_back_navigation')
+  final bool allowBackNavigation;
+
+  @HiveField(15)
+  @JsonKey(name: 'is_timed')
+  final bool isTimed;
 
   @HiveField(11)
   @JsonKey(name: 'metadata')
@@ -82,7 +86,8 @@ class ExamSessionModel extends HiveObject {
     required this.expiresAt,
     required this.remainingTimeSeconds,
     this.status = 'active',
-    required this.settings,
+    this.allowBackNavigation = true,
+    this.isTimed = true,
     this.metadata,
     this.pausedAt,
     this.totalPauseDuration = 0,
@@ -108,7 +113,8 @@ class ExamSessionModel extends HiveObject {
       expiresAt: session.expiresAt,
       remainingTimeSeconds: session.remainingTimeSeconds,
       status: session.status.name,
-      settings: ExamSettingsModel.fromEntity(session.settings),
+      allowBackNavigation: session.allowBackNavigation,
+      isTimed: session.isTimed,
       metadata: session.metadata,
       pausedAt: session.pausedAt,
       totalPauseDuration: session.totalPauseDuration,
@@ -129,7 +135,8 @@ class ExamSessionModel extends HiveObject {
       expiresAt: expiresAt,
       remainingTimeSeconds: remainingTimeSeconds,
       status: _parseExamSessionStatus(status),
-      settings: settings.toEntity(),
+      allowBackNavigation: allowBackNavigation,
+      isTimed: isTimed,
       metadata: metadata,
       pausedAt: pausedAt,
       totalPauseDuration: totalPauseDuration,

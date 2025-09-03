@@ -73,111 +73,44 @@ class CompactLoadingWidget extends StatelessWidget {
   }
 }
 
-/// A shimmer loading effect for list items
-class ShimmerLoadingWidget extends StatefulWidget {
+/// A simple loading widget that shows content or a loading indicator
+class SimpleLoadingWidget extends StatelessWidget {
   final Widget child;
   final bool isLoading;
-  final Color? baseColor;
-  final Color? highlightColor;
+  final Widget? loadingWidget;
 
-  const ShimmerLoadingWidget({
+  const SimpleLoadingWidget({
     super.key,
     required this.child,
     required this.isLoading,
-    this.baseColor,
-    this.highlightColor,
+    this.loadingWidget,
   });
 
   @override
-  State<ShimmerLoadingWidget> createState() => _ShimmerLoadingWidgetState();
-}
-
-class _ShimmerLoadingWidgetState extends State<ShimmerLoadingWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _animation = Tween<double>(
-      begin: -1.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOutSine,
-    ));
-    
-    if (widget.isLoading) {
-      _animationController.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(ShimmerLoadingWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isLoading != oldWidget.isLoading) {
-      if (widget.isLoading) {
-        _animationController.repeat();
-      } else {
-        _animationController.stop();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (!widget.isLoading) {
-      return widget.child;
+    if (!isLoading) {
+      return child;
     }
 
-    final baseColor = widget.baseColor ?? Colors.grey[300]!;
-    final highlightColor = widget.highlightColor ?? Colors.grey[100]!;
-
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return ShaderMask(
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [baseColor, highlightColor, baseColor],
-              stops: [
-                (_animation.value - 1).clamp(0.0, 1.0),
-                _animation.value.clamp(0.0, 1.0),
-                (_animation.value + 1).clamp(0.0, 1.0),
-              ],
-            ).createShader(bounds);
-          },
-          child: widget.child,
-        );
-      },
+    return loadingWidget ?? const Center(
+      child: CompactLoadingWidget(),
     );
   }
 }
 
-/// Predefined shimmer placeholders
-class ShimmerPlaceholder extends StatelessWidget {
+/// Simple placeholder widget for loading states
+class SimplePlaceholder extends StatelessWidget {
   final double width;
   final double height;
   final BorderRadius? borderRadius;
+  final Color? color;
 
-  const ShimmerPlaceholder({
+  const SimplePlaceholder({
     super.key,
     required this.width,
     required this.height,
     this.borderRadius,
+    this.color,
   });
 
   @override
@@ -186,7 +119,7 @@ class ShimmerPlaceholder extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: color ?? Colors.grey[300]?.withOpacity(0.3),
         borderRadius: borderRadius ?? BorderRadius.circular(4),
       ),
     );

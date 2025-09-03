@@ -35,9 +35,7 @@ class ExamLoading extends ExamState {
 class ExamLoaded extends ExamState {
   final List<Exam> exams;
   final List<Category> categories;
-  final List<Exam> featuredExams;
-  final List<Exam> recentExams;
-  final List<Exam> popularExams;
+
   final List<Exam> searchResults;
   final PaginationState paginationState;
   final ExamFilters filters;
@@ -51,9 +49,6 @@ class ExamLoaded extends ExamState {
   const ExamLoaded({
     this.exams = const [],
     this.categories = const [],
-    this.featuredExams = const [],
-    this.recentExams = const [],
-    this.popularExams = const [],
     this.searchResults = const [],
     this.paginationState = const PaginationState(),
     this.filters = const ExamFilters(),
@@ -69,9 +64,6 @@ class ExamLoaded extends ExamState {
   ExamLoaded copyWith({
     List<Exam>? exams,
     List<Category>? categories,
-    List<Exam>? featuredExams,
-    List<Exam>? recentExams,
-    List<Exam>? popularExams,
     List<Exam>? searchResults,
     PaginationState? paginationState,
     ExamFilters? filters,
@@ -85,9 +77,6 @@ class ExamLoaded extends ExamState {
     return ExamLoaded(
       exams: exams ?? this.exams,
       categories: categories ?? this.categories,
-      featuredExams: featuredExams ?? this.featuredExams,
-      recentExams: recentExams ?? this.recentExams,
-      popularExams: popularExams ?? this.popularExams,
       searchResults: searchResults ?? this.searchResults,
       paginationState: paginationState ?? this.paginationState,
       filters: filters ?? this.filters,
@@ -132,9 +121,6 @@ class ExamLoaded extends ExamState {
   List<Object?> get props => [
         exams,
         categories,
-        featuredExams,
-        recentExams,
-        popularExams,
         searchResults,
         paginationState,
         filters,

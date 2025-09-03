@@ -1,13 +1,9 @@
 import 'package:dartz/dartz.dart';
 import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/user_stats.dart';
-import '../../domain/entities/subscription_info.dart';
+// Removed unused imports: user_stats.dart, subscription_info.dart
 import '../../domain/repositories/profile_repository.dart';
 import '../datasources/profile_local_datasource.dart';
 import '../datasources/profile_remote_datasource.dart';
-import '../models/user_profile_model.dart';
-import '../models/user_stats_model.dart';
-import '../models/subscription_info_model.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
@@ -92,175 +88,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, UserStats>> getUserStats(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteStats = await remoteDataSource.getUserStats(userId);
-        await localDataSource.cacheUserStats(remoteStats);
-        return Right(remoteStats);
-      } on ServerException {
-        try {
-          final localStats = await localDataSource.getCachedUserStats(userId);
-          return Right(localStats);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
-      }
-    } else {
-      try {
-        final localStats = await localDataSource.getCachedUserStats(userId);
-        return Right(localStats);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
+  // Removed getUserStats implementation
 
-  @override
-  Future<Either<Failure, UserStats>> updateUserStats(
-    String userId,
-    Map<String, dynamic> updates,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final updatedStats = await remoteDataSource.updateUserStats(userId, updates);
-        await localDataSource.cacheUserStats(updatedStats);
-        return Right(updatedStats);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
+  // Removed getSubscriptionInfo implementation
 
-  @override
-  Future<Either<Failure, SubscriptionInfo>> getSubscriptionInfo(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteSubscription = await remoteDataSource.getSubscriptionInfo(userId);
-        await localDataSource.cacheSubscriptionInfo(remoteSubscription);
-        return Right(remoteSubscription);
-      } on ServerException {
-        try {
-          final localSubscription = await localDataSource.getCachedSubscriptionInfo(userId);
-          return Right(localSubscription);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
-      }
-    } else {
-      try {
-        final localSubscription = await localDataSource.getCachedSubscriptionInfo(userId);
-        return Right(localSubscription);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
+  // Removed getAchievements implementation
 
-  @override
-  Future<Either<Failure, SubscriptionInfo>> updateSubscription(
-    String userId,
-    String planId,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final updatedSubscription = await remoteDataSource.updateSubscription(userId, planId);
-        await localDataSource.cacheSubscriptionInfo(updatedSubscription);
-        return Right(updatedSubscription);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> cancelSubscription(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.cancelSubscription(userId);
-        await localDataSource.clearSubscriptionCache(userId);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> reactivateSubscription(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.reactivateSubscription(userId);
-        await localDataSource.clearSubscriptionCache(userId);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAchievements(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteAchievements = await remoteDataSource.getAchievements(userId);
-        await localDataSource.cacheAchievements(userId, remoteAchievements);
-        return Right(remoteAchievements);
-      } on ServerException {
-        try {
-          final localAchievements = await localDataSource.getCachedAchievements(userId);
-          return Right(localAchievements);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
-      }
-    } else {
-      try {
-        final localAchievements = await localDataSource.getCachedAchievements(userId);
-        return Right(localAchievements);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getActivityFeed(
-    String userId,
-    int page,
-    int limit,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteActivity = await remoteDataSource.getActivityFeed(userId, page, limit);
-        await localDataSource.cacheActivityFeed(userId, page, remoteActivity);
-        return Right(remoteActivity);
-      } on ServerException {
-        try {
-          final localActivity = await localDataSource.getCachedActivityFeed(userId, page);
-          return Right(localActivity);
-        } on CacheException {
-          return Left(ServerFailure());
-        }
-      }
-    } else {
-      try {
-        final localActivity = await localDataSource.getCachedActivityFeed(userId, page);
-        return Right(localActivity);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
+  // Removed getActivityFeed implementation
 
   @override
   Future<Either<Failure, void>> followUser(String userId, String targetUserId) async {

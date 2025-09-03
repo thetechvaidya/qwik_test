@@ -12,8 +12,7 @@ abstract class SettingsRepository {
   Future<Either<Failure, void>> updateNotificationSettings(NotificationSettings settings);
   Future<Either<Failure, AppPreferences>> getAppPreferences();
   Future<Either<Failure, void>> updateAppPreferences(AppPreferences preferences);
-  Future<Either<Failure, OfflinePreferences>> getOfflinePreferences(String userId);
-  Future<Either<Failure, void>> updateOfflinePreferences(OfflinePreferences preferences);
+  // Removed offline preferences methods - not needed in simplified settings
   Future<Either<Failure, List<String>>> getAvailableLanguages();
   Future<Either<Failure, List<String>>> getAvailableThemes();
 }

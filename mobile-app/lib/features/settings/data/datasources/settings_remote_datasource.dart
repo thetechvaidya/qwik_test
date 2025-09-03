@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../models/user_settings_model.dart';
 import '../models/notification_settings_model.dart';
 import '../models/app_preferences_model.dart';
-import '../models/offline_preferences_model.dart';
+// Removed offline preferences model import - not needed in simplified settings
 
 abstract class SettingsRemoteDataSource {
   /// Get user settings
@@ -23,11 +23,7 @@ abstract class SettingsRemoteDataSource {
   /// Update app preferences
   Future<AppPreferencesModel> updateAppPreferences(AppPreferencesModel preferences);
 
-  /// Get offline preferences
-  Future<OfflinePreferencesModel> getOfflinePreferences(String userId);
-
-  /// Update offline preferences
-  Future<OfflinePreferencesModel> updateOfflinePreferences(OfflinePreferencesModel preferences);
+  // Removed offline preferences methods - not needed in simplified settings
 
   /// Reset settings to default
   Future<UserSettingsModel> resetSettingsToDefault(String userId);
@@ -82,7 +78,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   @override
   Future<UserSettingsModel> getUserSettings(String userId) async {
     try {
-      final response = await _dio.get('/api/v1/users/$userId/settings');
+      final response = await _dio.get('${ApiEndpoints.settings}');
       
       if (response.statusCode == 200) {
         return UserSettingsModel.fromJson(response.data['data']);
@@ -107,7 +103,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   Future<UserSettingsModel> updateUserSettings(UserSettingsModel settings) async {
     try {
       final response = await _dio.put(
-        '/api/v1/users/${settings.userId}/settings',
+        '${ApiEndpoints.updateSettings}',
         data: settings.toJson(),
       );
       
@@ -133,7 +129,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   @override
   Future<NotificationSettingsModel> getNotificationSettings(String userId) async {
     try {
-      final response = await _dio.get('/api/v1/users/$userId/settings/notifications');
+      final response = await _dio.get('${ApiEndpoints.notificationSettings}');
       
       if (response.statusCode == 200) {
         return NotificationSettingsModel.fromJson(response.data['data']);
@@ -158,7 +154,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   Future<NotificationSettingsModel> updateNotificationSettings(NotificationSettingsModel settings) async {
     try {
       final response = await _dio.put(
-        '/api/v1/users/${settings.userId}/settings/notifications',
+        '${ApiEndpoints.notificationSettings}',
         data: settings.toJson(),
       );
       
@@ -184,7 +180,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   @override
   Future<AppPreferencesModel> getAppPreferences(String userId) async {
     try {
-      final response = await _dio.get('/api/v1/users/$userId/settings/preferences');
+      final response = await _dio.get('${ApiEndpoints.settings}/preferences');
       
       if (response.statusCode == 200) {
         return AppPreferencesModel.fromJson(response.data['data']);
@@ -209,7 +205,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   Future<AppPreferencesModel> updateAppPreferences(AppPreferencesModel preferences) async {
     try {
       final response = await _dio.put(
-        '/api/v1/users/${preferences.userId}/settings/preferences',
+        '${ApiEndpoints.settings}/preferences',
         data: preferences.toJson(),
       );
       
@@ -232,61 +228,12 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     }
   }
 
-  @override
-  Future<OfflinePreferencesModel> getOfflinePreferences(String userId) async {
-    try {
-      final response = await _dio.get('/api/v1/users/$userId/settings/offline');
-      
-      if (response.statusCode == 200) {
-        return OfflinePreferencesModel.fromJson(response.data['data']);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to get offline preferences',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/api/v1/users/$userId/settings/offline'),
-        message: 'Unexpected error: $e',
-      );
-    }
-  }
-
-  @override
-  Future<OfflinePreferencesModel> updateOfflinePreferences(OfflinePreferencesModel preferences) async {
-    try {
-      final response = await _dio.put(
-        '/api/v1/users/${preferences.userId}/settings/offline',
-        data: preferences.toJson(),
-      );
-      
-      if (response.statusCode == 200) {
-        return OfflinePreferencesModel.fromJson(response.data['data']);
-      } else {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to update offline preferences',
-        );
-      }
-    } on DioException {
-      rethrow;
-    } catch (e) {
-      throw DioException(
-        requestOptions: RequestOptions(path: '/api/v1/users/${preferences.userId}/settings/offline'),
-        message: 'Unexpected error: $e',
-      );
-    }
-  }
+  // Removed offline preferences implementation methods - not needed in simplified settings
 
   @override
   Future<UserSettingsModel> resetSettingsToDefault(String userId) async {
     try {
-      final response = await _dio.post('/api/v1/users/$userId/settings/reset');
+      final response = await _dio.post('${ApiEndpoints.settings}/reset');
       
       if (response.statusCode == 200) {
         return UserSettingsModel.fromJson(response.data['data']);

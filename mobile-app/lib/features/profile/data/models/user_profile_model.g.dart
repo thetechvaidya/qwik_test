@@ -18,18 +18,15 @@ class UserProfileModelAdapter extends TypeAdapter<UserProfileModel> {
     };
     return UserProfileModel(
       stats: fields[8] as UserStatsModel?,
-      subscription: fields[9] as SubscriptionInfoModel?,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfileModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(1)
       ..writeByte(8)
-      ..write(obj.stats)
-      ..writeByte(9)
-      ..write(obj.subscription);
+      ..write(obj.stats);
   }
 
   @override
@@ -63,10 +60,6 @@ UserProfileModel _$UserProfileModelFromJson(Map<String, dynamic> json) =>
       stats: json['stats'] == null
           ? null
           : UserStatsModel.fromJson(json['stats'] as Map<String, dynamic>),
-      subscription: json['subscription'] == null
-          ? null
-          : SubscriptionInfoModel.fromJson(
-              json['subscription'] as Map<String, dynamic>),
       preferences: json['preferences'] as Map<String, dynamic>? ?? const {},
       createdAt: json['createdAt'] == null
           ? null
@@ -90,5 +83,4 @@ Map<String, dynamic> _$UserProfileModelToJson(UserProfileModel instance) =>
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'stats': instance.stats?.toJson(),
-      'subscription': instance.subscription?.toJson(),
     };

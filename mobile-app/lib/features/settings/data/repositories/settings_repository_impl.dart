@@ -6,10 +6,6 @@ import '../../domain/entities/offline_preferences.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../datasources/settings_local_datasource.dart';
 import '../datasources/settings_remote_datasource.dart';
-import '../models/user_settings_model.dart';
-import '../models/notification_settings_model.dart';
-import '../models/app_preferences_model.dart';
-import '../models/offline_preferences_model.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
@@ -56,17 +52,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final settingsModel = UserSettingsModel.fromEntity(settings);
-        await remoteDataSource.updateUserSettings(settingsModel.userId, settingsModel.toJson());
-        await localDataSource.cacheUserSettings(settingsModel);
+        await remoteDataSource.updateUserSettings(settings.userId, settings.toJson());
+        await localDataSource.cacheUserSettings(settings);
         return const Right(null);
       } on ServerException {
         return Left(ServerFailure('Failed to update user settings'));
       }
     } else {
        try {
-        final settingsModel = UserSettingsModel.fromEntity(settings);
-        await localDataSource.cacheUserSettings(settingsModel);
+        await localDataSource.cacheUserSettings(settings);
         return const Right(null);
       } on CacheException {
         return Left(CacheFailure('Failed to cache user settings'));
@@ -105,17 +99,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
   ) async {
     if (await networkInfo.isConnected) {
       try {
-        final settingsModel = NotificationSettingsModel.fromEntity(settings);
-        await remoteDataSource.updateNotificationSettings(settingsModel.userId, settingsModel.toJson());
-        await localDataSource.cacheNotificationSettings(settingsModel);
+        await remoteDataSource.updateNotificationSettings(settings.userId, settings.toJson());
+        await localDataSource.cacheNotificationSettings(settings);
         return const Right(null);
       } on ServerException {
         return Left(ServerFailure('Failed to update notification settings'));
       }
     } else {
       try {
-        final settingsModel = NotificationSettingsModel.fromEntity(settings);
-        await localDataSource.cacheNotificationSettings(settingsModel);
+        await localDataSource.cacheNotificationSettings(settings);
         return const Right(null);
       } on CacheException {
         return Left(CacheFailure('Failed to cache notification settings'));
@@ -138,55 +130,14 @@ class SettingsRepositoryImpl implements SettingsRepository {
     AppPreferences preferences,
   ) async {
      try {
-      final preferencesModel = AppPreferencesModel.fromEntity(preferences);
-      await localDataSource.cacheAppPreferences(preferencesModel);
+      await localDataSource.cacheAppPreferences(preferences);
       return const Right(null);
     } on CacheException {
       return Left(CacheFailure('Failed to cache app preferences'));
     }
   }
 
-  @override
-  Future<Either<Failure, OfflinePreferences>> getOfflinePreferences(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteOfflinePrefs = await remoteDataSource.getOfflinePreferences(userId);
-        await localDataSource.cacheOfflinePreferences(remoteOfflinePrefs);
-        return Right(remoteOfflinePrefs);
-      } on ServerException {
-        try {
-          final localOfflinePrefs = await localDataSource.getCachedOfflinePreferences(userId);
-          return Right(localOfflinePrefs);
-        } on CacheException {
-          return Left(ServerFailure('Failed to load offline preferences from server and cache'));
-        }
-      }
-    } else {
-      try {
-        final localOfflinePrefs = await localDataSource.getCachedOfflinePreferences(userId);
-        return Right(localOfflinePrefs);
-      } on CacheException {
-        return Left(CacheFailure('Failed to load offline preferences from cache'));
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> updateOfflinePreferences(
-    OfflinePreferences preferences,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.updateOfflinePreferences(preferences);
-        await localDataSource.cacheOfflinePreferences(preferences);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure('Failed to update offline preferences'));
-      }
-    } else {
-      return Left(ServerFailure('No internet connection'));
-    }
-  }
+  // Removed offline preferences methods - not needed in simplified settings
 
   @override
   Future<Either<Failure, void>> resetToDefault(String userId) async {
@@ -407,84 +358,22 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> syncSettingsAcrossDevices(String userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.syncSettingsAcrossDevices(userId);
-        await localDataSource.clearAllCache();
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure('Failed to sync settings across devices'));
-      }
-    } else {
-      return Left(ServerFailure('No internet connection'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Map<String, dynamic>>> getDeviceSpecificSettings(
-    String userId,
-    String deviceId,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final deviceSettings = await remoteDataSource.getDeviceSpecificSettings(userId, deviceId);
-        await localDataSource.cacheDeviceSpecificSettings(userId, deviceId, deviceSettings);
-        return Right(deviceSettings);
-      } on ServerException {
-        try {
-          final cachedSettings = await localDataSource.getCachedDeviceSpecificSettings(userId, deviceId);
-          return Right(cachedSettings);
-        } on CacheException {
-          return Left(ServerFailure('Failed to load device specific settings from server and cache'));
-        }
-      }
-    } else {
-      try {
-        final cachedSettings = await localDataSource.getCachedDeviceSpecificSettings(userId, deviceId);
-        return Right(cachedSettings);
-      } on CacheException {
-        return Left(CacheFailure('Failed to load device specific settings from cache'));
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> updateDeviceSpecificSettings(
-    String userId,
-    String deviceId,
-    Map<String, dynamic> settings,
-  ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.updateDeviceSpecificSettings(userId, deviceId, settings);
-        await localDataSource.cacheDeviceSpecificSettings(userId, deviceId, settings);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure('Failed to update device specific settings'));
-      }
-    } else {
-      return Left(ServerFailure('No internet connection'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> clearSettingsCache(String userId) async {
+  Future<Either<Failure, List<String>>> getAvailableLanguages() async {
     try {
-      await localDataSource.clearSettingsCache(userId);
-      return const Right(null);
-    } on CacheException {
-      return Left(CacheFailure('Failed to clear settings cache'));
+      final languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'];
+      return Right(languages);
+    } catch (e) {
+      return Left(CacheFailure('Failed to load available languages'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> clearAllCache() async {
+  Future<Either<Failure, List<String>>> getAvailableThemes() async {
     try {
-      await localDataSource.clearAllCache();
-      return const Right(null);
-    } on CacheException {
-      return Left(CacheFailure('Failed to clear all cache'));
+      final themes = ['light', 'dark', 'system'];
+      return Right(themes);
+    } catch (e) {
+      return Left(CacheFailure('Failed to load available themes'));
     }
   }
 }

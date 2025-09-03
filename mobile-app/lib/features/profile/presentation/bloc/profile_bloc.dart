@@ -5,9 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/usecases/get_user_profile_usecase.dart';
 import '../../domain/usecases/update_user_profile_usecase.dart';
 import '../../domain/usecases/upload_avatar_usecase.dart';
-import '../../domain/usecases/get_user_stats_usecase.dart';
-import '../../domain/usecases/get_subscription_info_usecase.dart';
-import '../../domain/usecases/search_users_usecase.dart';
+// Removed advanced profile use case imports
 import 'profile_event.dart';
 import 'profile_state.dart';
 
@@ -16,23 +14,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     required GetUserProfileUseCase getUserProfileUseCase,
     required UpdateUserProfileUseCase updateUserProfileUseCase,
     required UploadAvatarUseCase uploadAvatarUseCase,
-    required GetUserStatsUseCase getUserStatsUseCase,
-    required GetSubscriptionInfoUseCase getSubscriptionInfoUseCase,
-    required SearchUsersUseCase searchUsersUseCase,
   })  : _getUserProfileUseCase = getUserProfileUseCase,
         _updateUserProfileUseCase = updateUserProfileUseCase,
         _uploadAvatarUseCase = uploadAvatarUseCase,
-        _getUserStatsUseCase = getUserStatsUseCase,
-        _getSubscriptionInfoUseCase = getSubscriptionInfoUseCase,
-        _searchUsersUseCase = searchUsersUseCase,
         super(const ProfileInitial()) {
     on<ProfileLoadRequested>(_onProfileLoadRequested);
     on<ProfileUpdateRequested>(_onProfileUpdateRequested);
     on<ProfileAvatarUploadRequested>(_onProfileAvatarUploadRequested);
     on<ProfileAvatarDeleteRequested>(_onProfileAvatarDeleteRequested);
-    on<ProfileStatsLoadRequested>(_onProfileStatsLoadRequested);
-    on<ProfileSubscriptionLoadRequested>(_onProfileSubscriptionLoadRequested);
-    on<ProfileSearchRequested>(_onProfileSearchRequested);
     on<ProfileErrorCleared>(_onProfileErrorCleared);
     on<ProfileRefreshRequested>(_onProfileRefreshRequested);
   }
@@ -40,9 +29,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetUserProfileUseCase _getUserProfileUseCase;
   final UpdateUserProfileUseCase _updateUserProfileUseCase;
   final UploadAvatarUseCase _uploadAvatarUseCase;
-  final GetUserStatsUseCase _getUserStatsUseCase;
-  final GetSubscriptionInfoUseCase _getSubscriptionInfoUseCase;
-  final SearchUsersUseCase _searchUsersUseCase;
 
   Future<void> _onProfileLoadRequested(
     ProfileLoadRequested event,
@@ -136,85 +122,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
-  Future<void> _onProfileStatsLoadRequested(
-    ProfileStatsLoadRequested event,
-    Emitter<ProfileState> emit,
-  ) async {
-    final currentState = state;
-    
-    final result = await _getUserStatsUseCase(
-      GetUserStatsParams(userId: event.userId),
-    );
+  // Removed _onProfileStatsLoadRequested method
 
-    result.fold(
-      (failure) => emit(ProfileError(
-        message: _mapFailureToMessage(failure),
-        currentProfile: currentState is ProfileLoaded ? currentState.profile : null,
-      )),
-      (stats) {
-        if (currentState is ProfileLoaded) {
-          emit(currentState.copyWith(stats: stats));
-        } else {
-          emit(ProfileError(
-            message: 'Profile not loaded',
-            currentProfile: currentState is ProfileLoaded ? currentState.profile : null,
-          ));
-        }
-      },
-    );
-  }
+  // Removed _onProfileSubscriptionLoadRequested method
 
-  Future<void> _onProfileSubscriptionLoadRequested(
-    ProfileSubscriptionLoadRequested event,
-    Emitter<ProfileState> emit,
-  ) async {
-    final currentState = state;
-    
-    final result = await _getSubscriptionInfoUseCase(
-      GetSubscriptionInfoParams(userId: event.userId),
-    );
-
-    result.fold(
-      (failure) => emit(ProfileError(
-        message: _mapFailureToMessage(failure),
-        currentProfile: currentState is ProfileLoaded ? currentState.profile : null,
-      )),
-      (subscriptionInfo) {
-        if (currentState is ProfileLoaded) {
-          emit(currentState.copyWith(subscriptionInfo: subscriptionInfo));
-        } else {
-          emit(ProfileError(
-            message: 'Profile not loaded',
-            currentProfile: currentState is ProfileLoaded ? currentState.profile : null,
-          ));
-        }
-      },
-    );
-  }
-
-  Future<void> _onProfileSearchRequested(
-    ProfileSearchRequested event,
-    Emitter<ProfileState> emit,
-  ) async {
-    emit(const ProfileSearchLoading());
-
-    final result = await _searchUsersUseCase(
-      SearchUsersParams(
-        query: event.query,
-        page: event.page,
-        limit: event.limit,
-      ),
-    );
-
-    result.fold(
-      (failure) => emit(ProfileError(message: _mapFailureToMessage(failure))),
-      (users) => emit(ProfileSearchLoaded(
-        users: users,
-        query: event.query,
-        hasMore: users.length >= event.limit,
-      )),
-    );
-  }
+  // Removed _onProfileSearchRequested method
 
   Future<void> _onProfileErrorCleared(
     ProfileErrorCleared event,

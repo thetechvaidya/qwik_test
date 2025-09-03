@@ -17,7 +17,6 @@ class RouteGuard {
 
   /// List of routes that require authentication
   static const List<String> _protectedRoutes = [
-    AppRouter.home,
     AppRouter.exams,
     AppRouter.profile,
     AppRouter.settings,
@@ -75,9 +74,17 @@ class RouteGuard {
       return '/login';
     }
     
-    // Redirect authenticated users from auth routes to home
+    // Additional validation for profile routes - check for valid userId
+    if (isAuthenticated && currentPath.startsWith(AppRouter.profile)) {
+      final authenticatedState = authState as states.AuthAuthenticated;
+      if (authenticatedState.user.id.isEmpty) {
+        return '/login';
+      }
+    }
+    
+    // Redirect authenticated users from auth routes to exams
     if (isAuthenticated && isPublicRoute && currentPath != '/splash') {
-      return AppRouter.home;
+      return AppRouter.exams;
     }
     
     return null;
@@ -108,13 +115,13 @@ class RouteGuard {
       AppRouter.register: 'Register',
       AppRouter.forgotPassword: 'Forgot Password',
       AppRouter.sessionExpired: 'Session Expired',
-      AppRouter.home: 'Home',
+
       AppRouter.exams: 'Exams',
       AppRouter.profile: 'Profile',
       AppRouter.settings: 'Settings',
       AppRouter.examDetail: 'Exam Detail',
       AppRouter.examTaking: 'Taking Exam',
-      AppRouter.examResult: 'Exam Result',
+  
       AppRouter.editProfile: 'Edit Profile',
     };
     
@@ -146,7 +153,6 @@ class RouteGuard {
   /// Check if route supports deep linking
   static bool supportsDeepLinking(String path) {
     const deepLinkableRoutes = [
-      AppRouter.home,
       AppRouter.exams,
       AppRouter.profile,
     ];

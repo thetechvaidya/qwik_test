@@ -30,7 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    // Profile data is loaded by router, no need to load again
     _nameController.addListener(_onFieldChanged);
     _emailController.addListener(_onFieldChanged);
     _bioController.addListener(_onFieldChanged);

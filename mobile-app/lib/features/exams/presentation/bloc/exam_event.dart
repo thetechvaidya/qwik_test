@@ -79,47 +79,7 @@ class LoadCategoriesEvent extends ExamEvent {
   List<Object?> get props => [rootOnly, refresh];
 }
 
-/// Event to load featured exams
-class LoadFeaturedExamsEvent extends ExamEvent {
-  final int limit;
-  final bool refresh;
 
-  const LoadFeaturedExamsEvent({
-    this.limit = 10,
-    this.refresh = false,
-  });
-
-  @override
-  List<Object?> get props => [limit, refresh];
-}
-
-/// Event to load recent exams
-class LoadRecentExamsEvent extends ExamEvent {
-  final int limit;
-  final bool refresh;
-
-  const LoadRecentExamsEvent({
-    this.limit = 10,
-    this.refresh = false,
-  });
-
-  @override
-  List<Object?> get props => [limit, refresh];
-}
-
-/// Event to load popular exams
-class LoadPopularExamsEvent extends ExamEvent {
-  final int limit;
-  final bool refresh;
-
-  const LoadPopularExamsEvent({
-    this.limit = 10,
-    this.refresh = false,
-  });
-
-  @override
-  List<Object?> get props => [limit, refresh];
-}
 
 /// Event to search exams
 class SearchExamsEvent extends ExamEvent {
