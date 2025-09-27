@@ -155,3 +155,11 @@ Route::prefix('mobile')->group(function () {
         Route::post('/settings/delete-account', [\App\Http\Controllers\Api\Mobile\SettingsController::class, 'deleteAccount']);
     });
 });
+
+// Debug routes for development and troubleshooting
+Route::middleware(['auth:sanctum', 'role:admin|instructor'])->group(function () {
+    Route::prefix('debug')->group(function () {
+        Route::get('/question-types', [\App\Http\Controllers\Api\DebugController::class, 'checkQuestionTypes']);
+        Route::post('/create-default-question-types', [\App\Http\Controllers\Api\DebugController::class, 'createDefaultQuestionTypes']);
+    });
+});

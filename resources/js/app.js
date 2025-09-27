@@ -39,6 +39,23 @@ const logOnce = (level, message, ...args) => {
 const isDev = import.meta.env.DEV
 const isProd = import.meta.env.PROD
 
+const devLogOnce = (() => {
+    const seen = new Set()
+    return (level, message, ...args) => {
+        if (!isDev) return
+        const key = `${level}:${message}`
+        if (seen.has(key)) return
+        seen.add(key)
+
+        if (typeof logger?.[level] === 'function') {
+            logger[level](message, { args, source: 'app.js', once: true })
+        } else {
+            // Fallback to console in case logger is unavailable
+            console[level] ? console[level](message, ...args) : console.log(message, ...args)
+        }
+    }
+})()
+
 // Global filter function for Vue 3
 const convertToCharacter = value => {
     let characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']

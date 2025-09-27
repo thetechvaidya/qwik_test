@@ -1,12 +1,12 @@
 <template>
     <nav :class="{ 'flex-1 bg-primary': !isMobile }" class="relative px-4 space-y-3">
         <div class="bg-gray-100 bg-opacity-10 rounded-md py-3 px-4">
-            <h4 class="text-white text-base font-semibold">{{
-                $page.props.currentCategory ? $page.props.currentCategory.name : __('No Syllabus Selected')
-            }}</h4>
-            <Link :href="route('change_syllabus')" class="text-secondary underline text-sm">
-                {{ $page.props.currentCategory ? __('Change Syllabus') : __('Choose Syllabus') }}
-            </Link>
+            <h4 class="text-white text-base font-semibold">
+                {{ __('Welcome') }}, {{ $page.props.user?.first_name }}
+            </h4>
+            <p class="text-white/70 text-xs mt-1">
+                {{ __('Explore your dashboard using the shortcuts below.') }}
+            </p>
         </div>
         <Link
             :href="route('user_dashboard')"

@@ -1,0 +1,20 @@
+<!-- Apple Touch Icon - 180x180 -->
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="url(#appleTouchGradient)"/>
+  
+  <!-- Q Letter -->
+  <circle cx="90" cy="90" r="35" stroke="white" stroke-width="6" fill="none"/>
+  <line x1="115" y1="115" x2="135" y2="135" stroke="white" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Lightning -->
+  <path d="M70 70 L80 80 L75 80 L85 95 L78 88 L80 88 Z" fill="#FCD34D"/>
+  
+  <defs>
+    <linearGradient id="appleTouchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="50%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+  </defs>
+</svg>

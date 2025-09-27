@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => {
         build: {
             outDir: 'public/build',
             assetsDir: 'assets',
-            manifest: true,
+            manifest: 'manifest.json',
             // Modern build target for better performance
             target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari13'],
             // Improved rollup options

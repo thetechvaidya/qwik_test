@@ -1,23 +1,158 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
     <Head title="Login" />
+    
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-indigo-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+      <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-br from-cyan-400/10 to-blue-600/10 rounded-full blur-2xl animate-bounce" style="animation-duration: 6s;"></div>
+    </div>
     
     <!-- Modern Header -->
     <ModernHeader :showSearch="false" />
     
-    <!-- Login Content -->
-    <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    
-    <div class="max-w-md w-full space-y-8">
-      <!-- Enhanced Header -->
-      <div class="text-center">
-        <div class="mx-auto h-16 w-auto flex items-center justify-center mb-6">
-          <div class="relative">
-            <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
-              <i class="pi pi-user text-white text-2xl"></i>
+    <!-- Main Content - Two Column Layout -->
+    <div class="relative flex min-h-screen pt-16">
+      <!-- Left Column - Hero Section -->
+      <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 relative overflow-hidden">
+        <!-- Hero Background Pattern -->
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+        </div>
+        
+        <!-- Hero Content -->
+        <div class="relative z-10 flex flex-col justify-center items-center text-center p-12 text-white">
+          <!-- Large Hero Illustration -->
+          <div class="mb-8">
+            <svg class="w-80 h-80" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background Elements -->
+              <circle cx="200" cy="200" r="180" fill="url(#heroGradient)" opacity="0.1"/>
+              <circle cx="200" cy="200" r="140" fill="url(#heroGradient)" opacity="0.15"/>
+              <circle cx="200" cy="200" r="100" fill="url(#heroGradient)" opacity="0.2"/>
+              
+              <!-- Main Learning Platform Icon -->
+              <rect x="120" y="120" width="160" height="120" rx="20" fill="white" opacity="0.9"/>
+              <rect x="130" y="140" width="140" height="8" rx="4" fill="url(#heroGradient)" opacity="0.6"/>
+              <rect x="130" y="160" width="100" height="8" rx="4" fill="url(#heroGradient)" opacity="0.4"/>
+              <rect x="130" y="180" width="120" height="8" rx="4" fill="url(#heroGradient)" opacity="0.5"/>
+              
+              <!-- Books Stack -->
+              <rect x="140" y="200" width="40" height="6" rx="3" fill="#4F46E5"/>
+              <rect x="142" y="194" width="36" height="6" rx="3" fill="#7C3AED"/>
+              <rect x="144" y="188" width="32" height="6" rx="3" fill="#EC4899"/>
+              
+              <!-- Trophy Icon -->
+              <circle cx="220" cy="200" r="15" fill="#FCD34D"/>
+              <rect x="213" y="210" width="14" height="8" rx="2" fill="#F59E0B"/>
+              <rect x="210" y="218" width="20" height="4" rx="2" fill="#D97706"/>
+              
+              <!-- Floating Elements -->
+              <circle cx="100" cy="100" r="8" fill="white" opacity="0.8">
+                <animate attributeName="cy" values="100;90;100" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <polygon points="320,80 330,90 340,80 330,70" fill="white" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" values="0 330 80; 360 330 80" dur="8s" repeatCount="indefinite"/>
+              </polygon>
+              <rect x="80" y="280" width="12" height="12" rx="2" fill="white" opacity="0.6">
+                <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+              </rect>
+              
+              <!-- Success Checkmarks -->
+              <circle cx="300" cy="150" r="12" fill="white" opacity="0.8"/>
+              <path d="M295 150 L299 154 L305 146" stroke="#10B981" stroke-width="2" fill="none" stroke-linecap="round"/>
+              
+              <defs>
+                <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgb(255, 255, 255);stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:rgb(240, 249, 255);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(219, 234, 254);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          
+          <!-- Hero Text -->
+          <div class="max-w-md">
+            <h1 class="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+              Welcome to Your
+              <span class="block text-yellow-300">Learning Journey</span>
+            </h1>
+            <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+              Join thousands of learners advancing their skills through our comprehensive exam platform
+            </p>
+            
+            <!-- Feature Points -->
+            <div class="space-y-4 text-left">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+                  <i class="pi pi-check text-xs text-white"></i>
+                </div>
+                <span class="text-blue-100">Interactive quizzes and exams</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <i class="pi pi-chart-line text-xs text-white"></i>
+                </div>
+                <span class="text-blue-100">Track your progress in real-time</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0 w-6 h-6 bg-pink-400 rounded-full flex items-center justify-center">
+                  <i class="pi pi-users text-xs text-white"></i>
+                </div>
+                <span class="text-blue-100">Join a community of learners</span>
+              </div>
             </div>
-            <!-- Glow effect -->
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl blur-lg opacity-30 -z-10"></div>
+          </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="absolute top-10 right-10 w-20 h-20 border-2 border-white/20 rounded-full animate-spin" style="animation-duration: 20s;"></div>
+        <div class="absolute bottom-10 left-10 w-16 h-16 border border-white/20 rounded-full animate-ping" style="animation-duration: 4s;"></div>
+      </div>
+      
+      <!-- Right Column - Login Form -->
+      <div class="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
+        <div class="max-w-md w-full space-y-8">
+          <!-- Enhanced Header with SVG -->
+      <div class="text-center">
+        <div class="mx-auto h-24 w-auto flex items-center justify-center mb-6">
+          <div class="relative">
+            <!-- SVG Login Icon -->
+            <svg class="w-24 h-24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background Circle -->
+              <circle cx="50" cy="50" r="45" fill="url(#loginGradient)" opacity="0.1"/>
+              <circle cx="50" cy="50" r="40" fill="url(#loginGradient)" opacity="0.2"/>
+              
+              <!-- Login Door/Portal -->
+              <rect x="35" y="25" width="30" height="40" rx="5" fill="url(#loginGradient)" stroke="white" stroke-width="1.5"/>
+              
+              <!-- Door Handle -->
+              <circle cx="58" cy="45" r="2" fill="white"/>
+              
+              <!-- User Icon -->
+              <circle cx="50" cy="35" r="4" fill="white"/>
+              <path d="M42 55 C42 50, 46 48, 50 48 C54 48, 58 50, 58 55" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+              
+              <!-- Welcome Sparkles -->
+              <circle cx="25" cy="30" r="1.5" fill="#FCD34D">
+                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="75" cy="35" r="1" fill="#F59E0B">
+                <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
+              </circle>
+              <circle cx="30" cy="70" r="1.2" fill="#EF4444">
+                <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" begin="1.2s"/>
+              </circle>
+              
+              <defs>
+                <linearGradient id="loginGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgb(99, 102, 241);stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:rgb(139, 92, 246);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgb(236, 72, 153);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
         </div>
         <h2 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
@@ -193,16 +328,17 @@
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="text-center">
-        <p class="text-xs text-gray-500">
-          {{ __('By signing in, you agree to our') }}
-          <Link href="/terms" class="underline hover:text-gray-700">{{ __('Terms of Service') }}</Link>
-          {{ __('and') }}
-          <Link href="/privacy" class="underline hover:text-gray-700">{{ __('Privacy Policy') }}</Link>
-        </p>
+          <!-- Footer -->
+          <div class="text-center">
+            <p class="text-xs text-gray-500">
+              {{ __('By signing in, you agree to our') }}
+              <Link href="/terms" class="underline hover:text-gray-700">{{ __('Terms of Service') }}</Link>
+              {{ __('and') }}
+              <Link href="/privacy" class="underline hover:text-gray-700">{{ __('Privacy Policy') }}</Link>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
     
     <!-- Modern Footer -->
@@ -215,7 +351,7 @@ import { ref, reactive } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import ModernHeader from '@/Components/Layout/ModernHeader.vue'
 import ModernFooter from '@/Components/Layout/ModernFooter.vue'
-import { usePage, useForm } from '@inertiajs/vue3'
+import { usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -230,11 +366,13 @@ const props = defineProps({
 // Composables
 const { __ } = useTranslate()
 
-// Inertia form
-const form = useForm({
+// Form data
+const form = reactive({
   email: '',
   password: '',
-  remember: false
+  remember: false,
+  processing: false,
+  errors: {}
 })
 
 // UI state
@@ -249,8 +387,24 @@ const demoRoles = [
 
 // Methods
 const handleLogin = () => {
-  form.post(route('login'), {
-    onFinish: () => form.reset('password'),
+  form.processing = true
+  form.errors = {}
+  
+  router.post(route('login'), {
+    email: form.email,
+    password: form.password,
+    remember: form.remember
+  }, {
+    onSuccess: () => {
+      // Login successful - redirect will be handled by server
+    },
+    onError: (errors) => {
+      form.errors = errors
+      form.password = '' // Clear password on error
+    },
+    onFinish: () => {
+      form.processing = false
+    }
   })
 }
 
@@ -266,7 +420,7 @@ const fillCredentials = (role) => {
     form.password = credentials[role].password
     
     // Clear validation errors when filling demo credentials
-    form.clearErrors()
+    form.errors = {}
   }
 }
 </script>

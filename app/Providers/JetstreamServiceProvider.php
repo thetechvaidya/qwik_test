@@ -55,7 +55,8 @@ class JetstreamServiceProvider extends ServiceProvider
             Inertia::share('footerSettings', app(FooterSettings::class)->toArray());
             return Inertia::render('Auth/Login', [
                 'canResetPassword' => Route::has('password.request'),
-                'status' => session('status')
+                'status' => session('status'),
+                'isDemo' => config('qwiktest.demo_mode', true)
             ]);
         });
 

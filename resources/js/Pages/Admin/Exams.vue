@@ -10,26 +10,35 @@
 
         <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div class="card">
-                <div class="card-body">
-                    <DataTable
-                        :value="data"
-                        :lazy="true"
-                        :paginator="true"
-                        :rows="10"
-                        :totalRecords="totalRecords"
-                        :rowsPerPageOptions="[10, 20, 50, 100]"
-                        paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                        currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                        sortMode="single"
-                        filterDisplay="row"
-                        v-model:filters="filters"
-                        :globalFilterFields="['code', 'title']"
-                        :loading="tableLoading"
-                        dataKey="id"
-                        @page="onPage"
-                        @sort="onSort"
-                        @filter="onFilter"
-                    >
+                <div class="card-body p-6">
+                    <div ref="tableRoot" class="overflow-x-auto">
+                        <DataTable
+                            :value="data"
+                            dataKey="id"
+                            :lazy="tableParams.lazy"
+                            :paginator="tableParams.paginator"
+                            :rows="tableParams.rows"
+                            :totalRecords="totalRecords"
+                            :rowsPerPageOptions="tableParams.rowsPerPageOptions"
+                            :paginatorTemplate="tableParams.paginatorTemplate"
+                            :currentPageReportTemplate="tableParams.currentPageReportTemplate"
+                            :sortMode="tableParams.sortMode"
+                            :filterDisplay="tableParams.filterDisplay"
+                            v-model:filters="filters"
+                            :globalFilterFields="tableParams.globalFilterFields"
+                            :loading="tableLoading"
+                            responsiveLayout="scroll"
+                            :scrollable="true"
+                            :scrollHeight="scrollHeight"
+                            :class="{ 'rtl': $page.props.rtl }"
+                            class="p-datatable-sm shadow-sm border-0"
+                            :rowHover="true"
+                            stripedRows
+                            @page="onPage"
+                            @sort="onSort"
+                            @filter="onFilter"
+                            :style="datatableStyle"
+                        >
                         <Column field="code" :header="__('Code')" :sortable="false">
                             <template #body="{ data, index }">
                                 <Tag
@@ -91,7 +100,8 @@
                                 </template>
                             </NoDataTable>
                         </template>
-                    </DataTable>
+                        </DataTable>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,7 +109,7 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, onBeforeUnmount } from 'vue'
+import { computed, ref, onBeforeUnmount, onMounted } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
 import { useServerTable } from '@/composables/useServerTable'
@@ -115,11 +125,17 @@ import Tag from 'primevue/tag'
 import { useConfirmToast } from '@/composables/useConfirmToast'
 import NoDataTable from '@/Components/NoDataTable.vue'
 import { codeColumn, textFilterColumn, dropdownFilterColumn, statusColumn } from '@/tables/columns'
+import { useResponsiveDatatable } from '@/composables/useResponsiveDatatable'
 
 const { __ } = useTranslate()
 const { props: pageProps } = usePage()
 const { copyCode } = useCopy()
 const { confirm, toast } = useConfirmToast()
+const { tableRoot, scrollHeight, recompute } = useResponsiveDatatable({
+    viewportOffset: 340,
+    minHeight: 420,
+})
+const datatableStyle = computed(() => ({ minWidth: '1100px' }));
 
 // Filters
 const filters = ref({
@@ -131,14 +147,13 @@ const filters = ref({
 // Server table configuration
 const {
     data,
-    columns: tableColumns,
     totalRecords,
     tableLoading,
+    tableParams,
     onPage,
     onSort,
     onFilter,
     loadItems,
-    deleteExam: deleteServerExam,
 } = useServerTable({
     routeName: 'exams.index',
     columns: [
@@ -194,6 +209,9 @@ const {
             },
         },
     ],
+    onSuccess: () => {
+        recompute()
+    },
 })
 
 const title = computed(() => {
@@ -245,6 +263,10 @@ const deleteExam = async id => {
         },
     })
 }
+
+onMounted(() => {
+    recompute()
+})
 
 // Cleanup on component unmount to prevent DOM manipulation errors
 onBeforeUnmount(() => {

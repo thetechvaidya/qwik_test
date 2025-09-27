@@ -1,27 +1,165 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
+    <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-blue-100 relative overflow-hidden">
         <Head title="Register" />
+        
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-600/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-gradient-to-tr from-cyan-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 3s;"></div>
+            <div class="absolute top-1/3 right-1/4 w-64 h-64 bg-gradient-to-br from-teal-400/10 to-indigo-600/10 rounded-full blur-2xl animate-bounce" style="animation-duration: 8s;"></div>
+        </div>
         
         <!-- Modern Header -->
         <ModernHeader :showSearch="false" />
         
-        <!-- Register Content -->
-        <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-
-        <div class="max-w-lg w-full space-y-8">
-            <!-- Enhanced Header -->
-            <div class="text-center">
-                <div class="mx-auto h-16 w-auto flex items-center justify-center mb-6">
-                    <div class="relative">
-                        <div class="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
-                            <i class="pi pi-user-plus text-white text-2xl"></i>
+        <!-- Main Content - Two Column Layout -->
+        <div class="relative flex min-h-screen pt-16">
+            <!-- Left Column - Hero Section -->
+            <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 relative overflow-hidden">
+                <!-- Hero Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <div class="absolute inset-0" style="background-image: linear-gradient(45deg, transparent 40%, white 41%, white 59%, transparent 60%), linear-gradient(-45deg, transparent 40%, white 41%, white 59%, transparent 60%); background-size: 30px 30px;"></div>
+                </div>
+                
+                <!-- Hero Content -->
+                <div class="relative z-10 flex flex-col justify-center items-center text-center p-12 text-white">
+                    <!-- Large Hero Illustration -->
+                    <div class="mb-8">
+                        <svg class="w-80 h-80" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Elements -->
+                            <circle cx="200" cy="200" r="180" fill="url(#registerHeroGradient)" opacity="0.1"/>
+                            <circle cx="200" cy="200" r="140" fill="url(#registerHeroGradient)" opacity="0.15"/>
+                            <circle cx="200" cy="200" r="100" fill="url(#registerHeroGradient)" opacity="0.2"/>
+                            
+                            <!-- Main Rocket/Growth Icon -->
+                            <path d="M200 80 L220 160 L280 180 L220 200 L200 280 L180 200 L120 180 L180 160 Z" fill="white" opacity="0.9"/>
+                            <circle cx="200" cy="140" r="15" fill="#10B981"/>
+                            <path d="M190 140 L195 145 L210 130" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            
+                            <!-- Achievement Stars -->
+                            <polygon points="150,120 155,130 165,130 157,137 160,147 150,140 140,147 143,137 135,130 145,130" fill="#FCD34D">
+                                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                            </polygon>
+                            <polygon points="250,120 255,130 265,130 257,137 260,147 250,140 240,147 243,137 235,130 245,130" fill="#F472B6">
+                                <animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+                            </polygon>
+                            
+                            <!-- Progress Circles -->
+                            <circle cx="120" cy="220" r="20" fill="white" opacity="0.8"/>
+                            <circle cx="120" cy="220" r="15" fill="none" stroke="#10B981" stroke-width="3" stroke-dasharray="15 85" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" values="0 120 220; 360 120 220" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <text x="120" y="225" text-anchor="middle" fill="#10B981" font-size="10" font-weight="bold">75%</text>
+                            
+                            <circle cx="280" cy="220" r="20" fill="white" opacity="0.8"/>
+                            <circle cx="280" cy="220" r="15" fill="none" stroke="#3B82F6" stroke-width="3" stroke-dasharray="25 75" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" values="0 280 220; 360 280 220" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <text x="280" y="225" text-anchor="middle" fill="#3B82F6" font-size="10" font-weight="bold">90%</text>
+                            
+                            <!-- Floating Books -->
+                            <rect x="100" y="300" width="30" height="4" rx="2" fill="white" opacity="0.7">
+                                <animate attributeName="y" values="300;290;300" dur="4s" repeatCount="indefinite"/>
+                            </rect>
+                            <rect x="270" y="320" width="25" height="4" rx="2" fill="white" opacity="0.6">
+                                <animate attributeName="y" values="320;310;320" dur="3s" repeatCount="indefinite" begin="1s"/>
+                            </rect>
+                            
+                            <defs>
+                                <linearGradient id="registerHeroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgb(255, 255, 255);stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:rgb(240, 253, 244);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:rgb(209, 250, 229);stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    
+                    <!-- Hero Text -->
+                    <div class="max-w-md">
+                        <h1 class="text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+                            Start Your Success
+                            <span class="block text-green-300">Story Today</span>
+                        </h1>
+                        <p class="text-xl text-emerald-100 mb-8 leading-relaxed">
+                            Create your account and unlock a world of knowledge, skills, and endless learning opportunities
+                        </p>
+                        
+                        <!-- Feature Points -->
+                        <div class="space-y-4 text-left">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+                                    <i class="pi pi-star text-xs text-white"></i>
+                                </div>
+                                <span class="text-emerald-100">Access to premium content</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-6 h-6 bg-cyan-400 rounded-full flex items-center justify-center">
+                                    <i class="pi pi-trophy text-xs text-white"></i>
+                                </div>
+                                <span class="text-emerald-100">Earn certificates and badges</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0 w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center">
+                                    <i class="pi pi-heart text-xs text-white"></i>
+                                </div>
+                                <span class="text-emerald-100">Join a supportive community</span>
+                            </div>
                         </div>
-                        <!-- Glow effect -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl blur-lg opacity-30 -z-10"></div>
                     </div>
                 </div>
-                <h2 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
-                    {{ __('Create Your Account') }}
+                
+                <!-- Decorative Elements -->
+                <div class="absolute top-10 left-10 w-20 h-20 border-2 border-white/20 rounded-full animate-pulse"></div>
+                <div class="absolute bottom-20 right-20 w-16 h-16 border border-white/20 rounded-lg animate-bounce" style="animation-duration: 3s;"></div>
+                <div class="absolute top-1/2 left-5 w-8 h-8 bg-white/10 rounded-full animate-ping" style="animation-duration: 5s;"></div>
+            </div>
+            
+            <!-- Right Column - Register Form -->
+            <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+                <div class="max-w-lg w-full space-y-8">
+            <!-- Enhanced Header -->
+                        <!-- Enhanced Header with SVG -->
+            <div class="text-center">
+                <div class="mx-auto h-24 w-auto flex items-center justify-center mb-6">
+                    <div class="relative">
+                        <!-- SVG Register Icon -->
+                        <svg class="w-24 h-24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Elements -->
+                            <circle cx="50" cy="50" r="45" fill="url(#registerGradient)" opacity="0.1"/>
+                            <circle cx="50" cy="50" r="35" fill="url(#registerGradient)" opacity="0.15"/>
+                            
+                            <!-- Main User Icon -->
+                            <circle cx="50" cy="35" r="8" fill="url(#registerGradient)"/>
+                            <path d="M35 70 C35 60, 41 55, 50 55 C59 55, 65 60, 65 70" stroke="url(#registerGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            
+                            <!-- Add/Plus Icon -->
+                            <circle cx="70" cy="30" r="8" fill="white" stroke="url(#registerGradient)" stroke-width="2"/>
+                            <path d="M66 30 L74 30 M70 26 L70 34" stroke="url(#registerGradient)" stroke-width="2" stroke-linecap="round"/>
+                            
+                            <!-- Success Indicators -->
+                            <circle cx="25" cy="25" r="2" fill="#10B981">
+                                <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="80" cy="75" r="1.5" fill="#F59E0B">
+                                <animate attributeName="opacity" values="0.5;1;0.5" dur="2.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <polygon points="20,75 25,80 30,70" fill="#EF4444">
+                                <animateTransform attributeName="transform" type="rotate" values="0 25 75; 10 25 75; 0 25 75" dur="3s" repeatCount="indefinite"/>
+                            </polygon>
+                            
+                            <defs>
+                                <linearGradient id="registerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:rgb(16, 185, 129);stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:rgb(59, 130, 246);stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:rgb(139, 92, 246);stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                    {{ __('Create Account') }}
                 </h2>
                 <p class="text-lg text-gray-600 max-w-md mx-auto">
                     {{ __('Join thousands of learners and start your journey today') }}
@@ -309,37 +447,39 @@
                             {{ __('Create Account') }}
                         </Button>
                     </div>
-                </form></div>
+                </form>
+                </div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300" />
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">{{ __('or') }}</span>
+                    </div>
                 </div>
 
-                <!-- Login Link -->
-                <div class="mt-8">
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300" />
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white text-gray-500">{{ __('or') }}</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 text-center">
-                        <span class="text-sm text-gray-600">{{ __('Already have an account?') }} </span>
-                        <Link :href="route('login')" class="font-medium text-indigo-600 hover:text-indigo-500">
-                            {{ __('Sign in here') }}
-                        </Link>
-                    </div>
+                <div class="mt-6 text-center">
+                    <span class="text-sm text-gray-600">{{ __('Already have an account?') }} </span>
+                    <Link :href="route('login')" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        {{ __('Sign in here') }}
+                    </Link>
                 </div>
             </div>
 
             <!-- Security Badge -->
-            <div class="text-center">
+            <div class="text-center mt-8">
                 <div class="inline-flex items-center gap-2 text-xs text-gray-500">
                     <i class="pi pi-shield text-green-500"></i>
                     <span>{{ __('Your information is secure and encrypted') }}</span>
                 </div>
             </div>
         </div>
+    </div>
+</div>
         
         <!-- Modern Footer -->
         <ModernFooter />

@@ -26,7 +26,16 @@
         <div class="flex items-center">
           <Link :href="route('welcome')" class="flex items-center group">
             <div class="relative">
+              <!-- Use QwikTest Logo Component with fallback -->
+              <QwikTestLogo 
+                v-if="!$page.props.general.logo_path || useDefaultLogo"
+                :width="120" 
+                :height="40" 
+                class="h-8 lg:h-10 w-auto transition-all duration-300 group-hover:scale-105"
+                :variant="isDark ? 'dark' : 'light'"
+              />
               <img
+                v-else
                 class="h-8 lg:h-10 w-auto transition-all duration-300 group-hover:scale-105"
                 :src="$page.props.assetUrl + $page.props.general.logo_path"
                 :alt="$page.props.general.app_name"
@@ -35,46 +44,50 @@
               <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
             </div>
             <span class="ml-3 text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent hidden sm:block">
-              {{ $page.props.general.app_name }}
+              {{ $page.props.general.app_name || 'QwikTest' }}
             </span>
           </Link>
         </div>
 
         <!-- Desktop Navigation -->
-        <nav class="hidden lg:flex items-center space-x-1">
-          <Link
-            :href="route('welcome')"
-            class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
-            :class="{ 'text-indigo-600 dark:text-indigo-400': $page.url === '/' }"
-          >
-            <span class="relative z-10">{{ __('Home') }}</span>
-            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
-          
-          <a
-            href="#explore"
-            class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
-          >
-            <span class="relative z-10">{{ __('Explore') }}</span>
-            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </a>
-          
-          <Link
-            :href="route('pricing')"
-            class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
-          >
-            <span class="relative z-10">{{ __('Pricing') }}</span>
-            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
-          
-          <a
-            href="#features"
-            class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
-          >
-            <span class="relative z-10">{{ __('Features') }}</span>
-            <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </a>
-        </nav>
+                <nav class="hidden lg:flex items-center space-x-1">
+                  <Link
+                    :href="route('welcome')"
+                    class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
+                    :class="{ 'text-indigo-600 dark:text-indigo-400': $page.url === '/' }"
+                    @click="handleHomeClick($event)"
+                  >
+                    <span class="relative z-10">{{ __('Home') }}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </Link>
+
+                  <button
+                    type="button"
+                    class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
+                    @click="handleSectionClick('quicklinks')"
+                  >
+                    <span class="relative z-10">{{ __('Explore') }}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
+                    @click="handleSectionClick('pricing')"
+                  >
+                    <span class="relative z-10">{{ __('Pricing') }}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="nav-link group relative px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-all duration-300 rounded-lg"
+                    @click="handleSectionClick('features')"
+                  >
+                    <span class="relative z-10">{{ __('Features') }}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </button>
+                </nav>
 
         <!-- Right Side Actions -->
         <div class="flex items-center space-x-4">
@@ -155,38 +168,38 @@
             <Link
               :href="route('welcome')"
               class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
-              @click="closeMobileMenu"
+              @click="handleHomeClick($event, true)"
             >
               <i class="pi pi-home mr-3 text-sm"></i>
               {{ __('Home') }}
             </Link>
             
-            <a
-              href="#explore"
-              class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
-              @click="closeMobileMenu"
+            <button
+              type="button"
+              class="w-full text-left px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
+              @click="handleSectionClick('quicklinks')"
             >
               <i class="pi pi-compass mr-3 text-sm"></i>
               {{ __('Explore') }}
-            </a>
+            </button>
             
-            <Link
-              :href="route('pricing')"
-              class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
-              @click="closeMobileMenu"
+            <button
+              type="button"
+              class="w-full text-left px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
+              @click="handleSectionClick('pricing')"
             >
               <i class="pi pi-credit-card mr-3 text-sm"></i>
               {{ __('Pricing') }}
-            </Link>
+            </button>
             
-            <a
-              href="#features"
-              class="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
-              @click="closeMobileMenu"
+            <button
+              type="button"
+              class="w-full text-left px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 rounded-xl font-medium transition-all duration-200"
+              @click="handleSectionClick('features')"
             >
               <i class="pi pi-star mr-3 text-sm"></i>
               {{ __('Features') }}
-            </a>
+            </button>
 
             <!-- Mobile Auth Links -->
             <div v-if="!$page.props.auth.user" class="pt-4 border-t border-gray-200/50 dark:border-gray-700/50 space-y-2">
@@ -216,9 +229,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { Link, usePage, router } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
+import QwikTestLogo from '@/Components/Icons/QwikTestLogo.vue'
+
+// Props
+defineProps({
+  useDefaultLogo: {
+    type: Boolean,
+    default: true
+  }
+})
 
 // Composables
 const { __ } = useTranslate()
@@ -244,6 +266,63 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
+const scrollToSection = async sectionId => {
+  await nextTick()
+
+  const element = document.getElementById(sectionId)
+
+  if (element) {
+    const headerOffset = 80
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY
+    const offsetPosition = elementPosition - headerOffset
+
+    window.scrollTo({
+      top: offsetPosition < 0 ? 0 : offsetPosition,
+      behavior: 'smooth'
+    })
+  }
+}
+
+const focusSection = sectionId => {
+  closeMobileMenu()
+
+  if (page.url !== '/') {
+    router.visit(route('welcome'), {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        requestAnimationFrame(() => scrollToSection(sectionId))
+      }
+    })
+  } else {
+    scrollToSection(sectionId)
+  }
+}
+
+const handleSectionClick = sectionId => {
+  focusSection(sectionId)
+}
+
+const handleHomeClick = (event, fromMobile = false) => {
+  if (event?.preventDefault) {
+    event.preventDefault()
+  }
+
+  if (fromMobile) {
+    closeMobileMenu()
+  }
+
+  if (page.url !== '/') {
+    router.visit(route('welcome'), {
+      onSuccess: () => {
+        requestAnimationFrame(() => scrollToSection('hero'))
+      }
+    })
+  } else {
+    scrollToSection('hero')
+  }
+}
+
 const toggleTheme = () => {
   isDark.value = !isDark.value
   document.documentElement.classList.toggle('dark', isDark.value)
@@ -265,6 +344,13 @@ onMounted(() => {
   // Add scroll listener
   window.addEventListener('scroll', handleScroll)
   handleScroll() // Check initial scroll position
+
+  if (window.location.hash) {
+    const hash = window.location.hash.replace('#', '')
+    if (hash) {
+      requestAnimationFrame(() => scrollToSection(hash))
+    }
+  }
 })
 
 onUnmounted(() => {

@@ -16,17 +16,18 @@
           <!-- Logo and Brand -->
           <div class="flex items-center space-x-4 group">
             <div class="relative">
-              <img
+              <QwikTestLogo 
+                :width="200" 
+                :height="60" 
                 class="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
-                :src="$page.props.assetUrl + $page.props.general.white_logo_path"
-                :alt="$page.props.general.app_name"
+                variant="dark"
               />
               <!-- Logo glow effect -->
               <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
             </div>
             <div>
               <h3 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                {{ $page.props.general.app_name }}
+                {{ $page.props.general.app_name || 'QwikTest' }}
               </h3>
               <p class="text-gray-300 text-sm mt-1">
                 {{ $page.props.general.tag_line }}
@@ -91,7 +92,18 @@
           </h4>
           <ul class="space-y-3">
             <li v-for="link in quickLinks" :key="link.name">
+              <button
+                v-if="link.section"
+                type="button"
+                class="footer-link group flex w-full items-center text-left text-gray-300 hover:text-white transition-all duration-200"
+                @click="handleQuickLink(link.section)"
+              >
+                <i :class="link.icon" class="mr-3 text-sm text-indigo-400 group-hover:text-indigo-300 transition-colors duration-200"></i>
+                <span>{{ link.name }}</span>
+                <i class="pi pi-arrow-right ml-auto text-xs opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-200"></i>
+              </button>
               <Link
+                v-else
                 :href="link.url"
                 class="footer-link group flex items-center text-gray-300 hover:text-white transition-all duration-200"
               >
@@ -179,8 +191,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { Link, usePage, router } from '@inertiajs/vue3'
 import { useTranslate } from '@/composables/useTranslate'
+import QwikTestLogo from '@/Components/Icons/QwikTestLogo.vue'
 
 // Composables
 const { __ } = useTranslate()
@@ -202,11 +215,12 @@ const socialLinks = [
 ]
 
 const quickLinks = [
-  { name: __('Home'), icon: 'pi pi-home', url: '/' },
-  { name: __('Explore'), icon: 'pi pi-compass', url: '/explore' },
-  { name: __('Pricing'), icon: 'pi pi-credit-card', url: '/pricing' },
-  { name: __('Features'), icon: 'pi pi-star', url: '#features' },
-  { name: __('About Us'), icon: 'pi pi-info-circle', url: '/about' }
+  { name: __('Home'), icon: 'pi pi-home', section: 'hero' },
+  { name: __('Quick Links'), icon: 'pi pi-compass', section: 'quicklinks' },
+  { name: __('Features'), icon: 'pi pi-star', section: 'features' },
+  { name: __('Pricing'), icon: 'pi pi-credit-card', section: 'pricing' },
+  { name: __('Sign In'), icon: 'pi pi-sign-in', url: route('login') },
+  { name: __('Create Account'), icon: 'pi pi-user-plus', url: route('register') }
 ]
 
 const supportLinks = [
@@ -228,6 +242,36 @@ const stats = [
   { value: '95%', label: __('Success Rate') },
   { value: '24/7', label: __('Support Available') }
 ]
+
+const scrollToSection = sectionId => {
+  const element = document.getElementById(sectionId)
+  if (element) {
+    const headerOffset = 80
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY
+    const offsetPosition = elementPosition - headerOffset
+
+    window.scrollTo({
+      top: offsetPosition < 0 ? 0 : offsetPosition,
+      behavior: 'smooth'
+    })
+  }
+}
+
+const handleQuickLink = sectionId => {
+  if (sectionId) {
+    if (window.location.pathname !== '/') {
+      router.visit(route('welcome'), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+          requestAnimationFrame(() => scrollToSection(sectionId))
+        }
+      })
+    } else {
+      scrollToSection(sectionId)
+    }
+  }
+}
 
 // Methods
 const subscribeNewsletter = async () => {

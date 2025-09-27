@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Actions\ReferenceData\SyncReferenceData;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,5 +32,10 @@ class AppServiceProvider extends ServiceProvider
         if(config('app.env') === 'production') {
             URL::forceScheme('https');
         }
+
+        App::booted(function () {
+            // Ensure reference data like question types exist for dashboard actions.
+            app(SyncReferenceData::class)->handle();
+        });
     }
 }

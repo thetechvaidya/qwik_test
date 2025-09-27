@@ -20,10 +20,27 @@ trait SyllabusTrait
      */
     public function selectedSyllabus()
     {
-        try {
-            return SubCategory::findOrFail(Cookie::get('category_id'));
-        } catch (ModelNotFoundException $exception) {
-            return redirect()->route('change_syllabus')->send();
+        $categoryId = Cookie::get('category_id');
+
+        if ($categoryId) {
+            $category = SubCategory::find($categoryId);
+            if ($category) {
+                return $category;
+            }
         }
+
+        $defaultCategory = SubCategory::active()
+            ->has('sections')
+            ->orderBy('name')
+            ->first();
+
+        if ($defaultCategory) {
+            Cookie::queue('category_id', $defaultCategory->id, 60 * 24 * 30);
+            Cookie::queue('category_name', $defaultCategory->name, 60 * 24 * 30);
+
+            return $defaultCategory;
+        }
+
+        throw new ModelNotFoundException('No active syllabus available.');
     }
 }

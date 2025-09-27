@@ -1,19 +1,23 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
-        <!-- Modern Navigation -->
+    <div class="min-h-screen bg-white font-inter pt-20 md:pt-24">
+        <Head :title="pageTitle" />
+        <!-- Professional Navigation -->
         <ModernHeader :showSearch="false" />
 
         <!-- Hero Section -->
         <ModernHero
+            id="hero"
             v-if="sections.hero.enabled"
             :title="sections.hero.title"
             :subtitle="sections.hero.subtitle"
             :cta-text="sections.hero.cta_text"
             :cta-link="sections.hero.cta_link"
+            :hero-image="sections.hero.image_path"
         />
 
         <!-- Stats Section -->
         <StatsSection
+            id="quicklinks"
             v-if="sections.stats.enabled"
             :students-count="sections.stats.students_count"
             :success-rate="sections.stats.success_rate"
@@ -21,78 +25,104 @@
         />
 
         <!-- Features Section -->
-        <FeaturesGrid v-if="sections.features.enabled" :features="sections.features.list" />
+        <FeaturesGrid
+            id="features"
+            v-if="sections.features.enabled"
+            :features="sections.features.list"
+        />
 
         <!-- Pricing Section -->
-        <PricingSection v-if="sections.pricing.enabled" :plans="sections.pricing.plans" />
+        <PricingSection
+            id="pricing"
+            v-if="sections.pricing.enabled"
+            :plans="sections.pricing.plans"
+        />
 
         <!-- Testimonials Section -->
-        <TestimonialsCarousel v-if="sections.testimonials.enabled" :testimonials="sections.testimonials.list" />
+        <TestimonialsCarousel
+            id="testimonials"
+            v-if="sections.testimonials.enabled"
+            :testimonials="sections.testimonials.list"
+        />
 
-        <!-- Enhanced CTA Section -->
+        <!-- Conversion-Focused CTA Section -->
         <section
+            id="cta"
             v-if="sections.cta.enabled"
-            class="relative py-20 lg:py-24 overflow-hidden"
+            class="relative py-24 bg-slate-900 overflow-hidden scroll-mt-24 sm:scroll-mt-32"
         >
-            <!-- Background Effects -->
-            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"></div>
-            <div class="absolute inset-0 bg-black/20"></div>
-            <div class="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl"></div>
-            <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-transparent rounded-full blur-3xl"></div>
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-5">
+                <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0); background-size: 20px 20px;"></div>
+            </div>
             
-            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Main CTA Content -->
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                        Ready to <span class="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">Transform</span> Your Learning Journey?
+                <div class="text-center">
+                    <h2 class="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                        Start Your <span class="text-blue-400">Learning Journey</span> Today
                     </h2>
-                    <p class="text-xl lg:text-2xl text-indigo-100 mb-8 leading-relaxed">
-                        Join over <strong class="text-yellow-300">50,000+</strong> learners who are already mastering new skills with our interactive quiz platform.
+                    <p class="text-xl lg:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+                        Join thousands of professionals who trust our platform to accelerate their career growth and skill development.
                     </p>
                     
-                    <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-12">
+                    <!-- Primary CTA -->
+                    <div class="mb-8">
                         <Link
                             href="/register"
-                            class="group relative inline-flex items-center px-8 py-4 text-lg font-semibold text-indigo-600 bg-white rounded-2xl hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/30"
+                            class="inline-flex items-center px-10 py-5 text-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
                         >
-                            <i class="pi pi-rocket mr-3 text-indigo-600 group-hover:animate-bounce"></i>
+                            <i class="pi pi-rocket mr-3"></i>
                             Get Started Free
-                            <i class="pi pi-arrow-right ml-3 text-indigo-600 transform group-hover:translate-x-1 transition-transform duration-200"></i>
+                            <i class="pi pi-arrow-right ml-3"></i>
                         </Link>
+                    </div>
+                    
+                    <!-- Secondary CTA -->
+                    <div class="mb-12">
+                        <p class="text-slate-400 mb-4">Already have an account?</p>
                         <Link
                             href="/login"
-                            class="group inline-flex items-center px-8 py-4 text-lg font-semibold text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-white/30"
+                            class="inline-flex items-center px-8 py-3 text-lg font-medium text-blue-400 hover:text-blue-300 border border-blue-400/30 hover:border-blue-400/50 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
                         >
-                            <i class="pi pi-sign-in mr-3 group-hover:animate-pulse"></i>
-                            Sign In
+                            <i class="pi pi-sign-in mr-2"></i>
+                            Sign In to Continue
                         </Link>
                     </div>
                     
                     <!-- Trust Indicators -->
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-8 text-indigo-100">
-                        <div class="flex items-center">
-                            <div class="flex -space-x-2 mr-3">
-                                <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-2 border-white"></div>
-                                <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full border-2 border-white"></div>
-                                <div class="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full border-2 border-white"></div>
-                                <div class="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold text-white">+</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-slate-300">
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-3">
+                                <i class="pi pi-users text-white text-xl"></i>
                             </div>
-                            <span class="text-sm font-medium">50K+ Active Learners</span>
+                            <div class="text-2xl font-bold text-white mb-1">{{ sections.stats.students_count.toLocaleString() }}+</div>
+                            <div class="text-sm">Active Learners</div>
                         </div>
-                        <div class="flex items-center">
-                            <div class="flex text-yellow-300 mr-2">
-                                <i class="pi pi-star-fill"></i>
-                                <i class="pi pi-star-fill"></i>
-                                <i class="pi pi-star-fill"></i>
-                                <i class="pi pi-star-fill"></i>
-                                <i class="pi pi-star-fill"></i>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-3">
+                                <i class="pi pi-chart-line text-white text-xl"></i>
                             </div>
-                            <span class="text-sm font-medium">4.9/5 Rating</span>
+                            <div class="text-2xl font-bold text-white mb-1">{{ sections.stats.success_rate }}%</div>
+                            <div class="text-sm">Success Rate</div>
                         </div>
-                        <div class="flex items-center">
-                            <i class="pi pi-shield-check mr-2 text-green-300"></i>
-                            <span class="text-sm font-medium">100% Free to Start</span>
+                        <div class="flex flex-col items-center">
+                            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mb-3">
+                                <i class="pi pi-check-circle text-white text-xl"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white mb-1">{{ sections.stats.tests_count }}+</div>
+                            <div class="text-sm">Tests Available</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Proof -->
+                    <div class="mt-16 pt-12 border-t border-slate-700">
+                        <p class="text-slate-400 text-sm mb-6">Trusted by leading companies and educational institutions</p>
+                        <div class="flex flex-wrap justify-center items-center gap-8 opacity-60">
+                            <div class="text-slate-500 font-semibold">Company A</div>
+                            <div class="text-slate-500 font-semibold">University B</div>
+                            <div class="text-slate-500 font-semibold">Tech Corp C</div>
+                            <div class="text-slate-500 font-semibold">Academy D</div>
                         </div>
                     </div>
                 </div>
@@ -135,6 +165,14 @@ const pageTitle = `${props.site.name} - Transform Your Learning Journey`
 </script>
 
 <style scoped>
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+.font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Professional styling */
 .landing-page {
     min-height: 100vh;
 }
@@ -142,11 +180,6 @@ const pageTitle = `${props.site.name} - Transform Your Learning Journey`
 /* Smooth scroll behavior */
 html {
     scroll-behavior: smooth;
-}
-
-/* Add some global modern styling */
-.container {
-    max-width: 1200px;
 }
 
 /* Enhanced button hover effects */
@@ -157,14 +190,6 @@ html {
 .btn-hover:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Gradient text effects */
-.gradient-text {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 /* Loading animations */
@@ -193,11 +218,11 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #3b82f6;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    background: #2563eb;
 }
 </style>

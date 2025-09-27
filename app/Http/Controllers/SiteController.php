@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Feature;
 use App\Models\SubCategory;
+use App\Settings\HeroSettings;
 use App\Settings\HomePageSettings;
 use App\Settings\PaymentSettings;
 use App\Settings\SiteSettings;
@@ -27,10 +28,10 @@ class SiteController extends Controller
      * @param SiteSettings $siteSettings
      * @return \Inertia\Response
      */
-    public function index(HomePageSettings $homePageSettings, SiteSettings $siteSettings)
+    public function index(HomePageSettings $homePageSettings, SiteSettings $siteSettings, HeroSettings $heroSettings)
     {
         // Cache homepage data for better performance
-        $homepageData = Cache::remember('homepage_data', 3600, function () use ($homePageSettings, $siteSettings) {
+        $homepageData = Cache::remember('homepage_data', 3600, function () use ($homePageSettings, $siteSettings, $heroSettings) {
             return [
                 'site' => [
                     'name' => $siteSettings->app_name,
@@ -44,6 +45,7 @@ class SiteController extends Controller
                         'subtitle' => $homePageSettings->hero_subtitle ?? 'Master new skills with our comprehensive quiz platform designed for modern learners',
                         'cta_text' => $homePageSettings->hero_cta_text ?? 'Start Learning Today',
                         'cta_link' => $homePageSettings->hero_cta_link ?? '/register',
+                        'image_path' => $heroSettings->image_path ?? 'site/hero-illustration.svg',
                     ],
                     'stats' => [
                         'enabled' => $homePageSettings->show_stats_section ?? $homePageSettings->enable_stats,

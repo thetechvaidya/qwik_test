@@ -149,8 +149,8 @@ class SettingController extends Controller
             'tag_line' => ['required', 'string', 'max:160'],
             'seo_description' => ['required', 'string', 'max:255'],
             'can_register' => ['required'],
-            'logo_path' => ['nullable', 'image', 'mimes:jpg,png', 'max:512'],
-            'favicon_path' => ['nullable', 'image', 'mimes:png', 'max:512']
+            'logo_path' => ['nullable', 'file', 'mimes:svg,svg+xml,png,jpg,jpeg', 'max:1024'],
+            'favicon_path' => ['nullable', 'file', 'mimes:svg,svg+xml,png,ico', 'max:512']
         ])->validateWithBag('updateSiteSettings');
 
         $settings->app_name = $request->get('app_name');
@@ -180,7 +180,7 @@ class SettingController extends Controller
         }
 
         Validator::make($request->all(), [
-            'logo_path' => ['nullable', 'image', 'mimes:jpg,png', 'max:512'],
+            'logo_path' => ['nullable', 'file', 'mimes:svg,svg+xml,png,jpg,jpeg', 'max:1024'],
         ])->validateWithBag('updateLogo');
 
         if (isset($request['logo_path'])) {
@@ -204,7 +204,7 @@ class SettingController extends Controller
         }
 
         Validator::make($request->all(), [
-            'white_logo_path' => ['nullable', 'image', 'mimes:jpg,png', 'max:512'],
+            'white_logo_path' => ['nullable', 'file', 'mimes:svg,svg+xml,png,jpg,jpeg', 'max:1024'],
         ])->validateWithBag('updateWhiteLogo');
 
         if (isset($request['white_logo_path'])) {
@@ -228,7 +228,7 @@ class SettingController extends Controller
         }
 
         Validator::make($request->all(), [
-            'favicon_path' => ['nullable', 'image', 'mimes:jpg,png', 'max:512'],
+            'favicon_path' => ['nullable', 'file', 'mimes:svg,svg+xml,png,ico', 'max:512'],
         ])->validateWithBag('updateFavicon');
 
         if (isset($request['favicon_path'])) {

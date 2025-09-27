@@ -9,13 +9,13 @@ class CreateGeneralSettings extends SettingsMigration
         $this->migrator->add('site.app_name', 'QwikTest');
         $this->migrator->add('site.tag_line', 'Everything You Need For Your Exam Preparation.');
         $this->migrator->add('site.seo_description', 'Qwiktest Pro is an online test examination software and assessment tool that assists educational institutions,corporate companies to create and conduct web and mobile based exams.');
-        $this->migrator->add('site.logo_path', 'site/logo.png');
+    $this->migrator->add('site.logo_path', 'site/logo.svg');
         $this->migrator->add('site.can_register', true);
         $this->migrator->add('site.favicon_path', 'site/favicon.png');
         $this->migrator->add('home_page.hero_title', 'Learn & Upgrade Your Skills on Your Schedule');
         $this->migrator->add('home_page.hero_subtitle', 'Anywhere, anytime. Everything You Need For Your Exam Preparation');
         $this->migrator->add('home_page.hero_cta_text', 'Get Started');
-        $this->migrator->add('home_page.hero_image_path', 'site/hero_image_bg.png');
+    $this->migrator->add('home_page.hero_image_path', 'site/hero-illustration.svg');
         $this->migrator->add('localization.default_locale', 'en');
         $this->migrator->add('localization.default_timezone', 'UTC');
         $this->migrator->add('email.host', 'smtp.mailtrap.io');

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class AddMobilePerformanceIndexesToExams extends Migration
@@ -42,10 +43,18 @@ class AddMobilePerformanceIndexesToExams extends Migration
     public function down()
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->dropIndex(['is_active', 'sub_category_id']);
-            $table->dropIndex(['title']);
-            $table->dropIndex(['sub_category_id']);
-            $table->dropIndex(['is_active']);
+            if ($this->indexExists('exams', 'exams_mobile_filter_index')) {
+                $table->dropIndex('exams_mobile_filter_index');
+            }
+            if ($this->indexExists('exams', 'exams_title_index')) {
+                $table->dropIndex('exams_title_index');
+            }
+            if ($this->indexExists('exams', 'exams_sub_category_id_index')) {
+                $table->dropIndex('exams_sub_category_id_index');
+            }
+            if ($this->indexExists('exams', 'exams_is_active_index')) {
+                $table->dropIndex('exams_is_active_index');
+            }
         });
     }
     
@@ -54,10 +63,13 @@ class AddMobilePerformanceIndexesToExams extends Migration
      */
     private function indexExists($table, $index)
     {
-        $connection = Schema::getConnection();
-        $doctrineSchemaManager = $connection->getDoctrineSchemaManager();
-        $doctrineTable = $doctrineSchemaManager->listTableDetails($table);
-        
-        return $doctrineTable->hasIndex($index);
+        $database = Schema::getConnection()->getDatabaseName();
+
+        $result = DB::select(
+            'SHOW INDEX FROM `'.$table.'` WHERE `Key_name` = ? AND `Key_name` IS NOT NULL',
+            [$index]
+        );
+
+        return !empty($result);
     }
 }

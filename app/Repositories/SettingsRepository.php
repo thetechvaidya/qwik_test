@@ -10,9 +10,9 @@ namespace App\Repositories;
 
 
 use App\Settings\HeroSettings;
-use App\Settings\HomePageSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsRepository
 {
@@ -30,6 +30,8 @@ class SettingsRepository
             );
             $settings->save();
         });
+
+        Cache::forget('homepage_data');
     }
 
     /**
@@ -42,10 +44,12 @@ class SettingsRepository
         $settings = app(SiteSettings::class);
         tap($settings->white_logo_path, function ($previous) use ($logo, $settings) {
             $settings->white_logo_path = $logo->storePubliclyAs(
-                'site', 'logo_white.'.$logo->clientExtension(), ['disk' => 'public']
+                'site', 'logo-white.'.$logo->clientExtension(), ['disk' => 'public']
             );
             $settings->save();
         });
+
+        Cache::forget('homepage_data');
     }
 
     /**
@@ -62,6 +66,8 @@ class SettingsRepository
             );
             $settings->save();
         });
+
+        Cache::forget('homepage_data');
     }
 
     /**
@@ -74,10 +80,12 @@ class SettingsRepository
         $settings = app(HeroSettings::class);
         tap($settings->image_path, function ($previous) use ($image, $settings) {
             $settings->image_path = $image->storePubliclyAs(
-                'site', 'hero_image.'.$image->clientExtension(),  ['disk' => 'public']
+                'site', 'hero-illustration.'.$image->clientExtension(),  ['disk' => 'public']
             );
             $settings->save();
         });
+
+        Cache::forget('homepage_data');
     }
 
 }

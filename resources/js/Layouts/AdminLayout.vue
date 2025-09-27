@@ -10,10 +10,12 @@
                 @click="sideBar = false"
             >
                 <Link class="flex items-center px-4 py-5" :href="route('home')">
-                    <img
-                        :src="$page.props.assetUrl + $page.props.general.logo_path"
-                        :alt="$page.props.general.app_name"
+                    <!-- Use QwikTest Logo Component for dark sidebar -->
+                    <QwikTestLogo 
+                        :width="150" 
+                        :height="40" 
                         class="h-8 w-auto"
+                        variant="dark"
                     />
                 </Link>
                 <div ref="scroll" class="h-full overflow-y-auto overflow-x-hidden">
@@ -208,6 +210,7 @@ import Message from 'primevue/message'
 import ToggleSwitch from 'primevue/toggleswitch'
 import SidebarDropdown from '@/Components/SidebarDropdown.vue'
 import SidebarLink from '@/Components/SidebarLink.vue'
+import QwikTestLogo from '@/Components/Icons/QwikTestLogo.vue'
 import translate from '@/Mixins/translate.js'
 export default {
     components: {

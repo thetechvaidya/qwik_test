@@ -1,5 +1,5 @@
 <template>
-    <section class="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
+    <section class="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden scroll-mt-24 sm:scroll-mt-32">
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-30">
             <div class="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full blur-3xl"></div>
@@ -23,7 +23,10 @@
                 <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
                     <div class="stat-icon mb-6">
                         <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
-                            <i class="pi pi-users text-white text-3xl"></i>
+                            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A3.014 3.014 0 0 0 16.68 6c-.8 0-1.54.37-2.01.99l-.7 1.06c-.56.85-.35 2 .47 2.58L16 11.5V22h4zM12.5 11.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5-.5.22-.5.5.22.5.5.5z"/>
+                                <path d="M6 6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1 16h-2v-4.5l-2.5-1.5v-3c0-.8.7-1.5 1.5-1.5h4c.8 0 1.5.7 1.5 1.5v3L7 17.5V22z"/>
+                            </svg>
                         </div>
                     </div>
                     <div class="stats-number text-5xl font-bold mb-3 text-gradient">
@@ -37,7 +40,9 @@
                 <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
                     <div class="stat-icon mb-6">
                         <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
-                            <i class="pi pi-check-circle text-white text-3xl"></i>
+                            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
                         </div>
                     </div>
                     <div class="stats-number text-5xl font-bold mb-3 text-gradient">
@@ -51,7 +56,9 @@
                 <div class="card-modern hover-lift group text-center p-8 bg-white/80 backdrop-blur-sm border border-white/20 shadow-modern">
                     <div class="stat-icon mb-6">
                         <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300 shadow-glow">
-                            <i class="pi pi-book text-white text-3xl"></i>
+                            <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                            </svg>
                         </div>
                     </div>
                     <div class="stats-number text-5xl font-bold mb-3 text-gradient">
@@ -86,15 +93,21 @@
             <div class="mt-16 text-center">
                 <div class="inline-flex items-center gap-8 p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-white/30 shadow-modern">
                     <div class="flex items-center gap-2">
-                        <i class="pi pi-shield text-green-600 text-xl"></i>
+                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+                        </svg>
                         <span class="text-gray-700 font-medium">Secure & Trusted</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="pi pi-verified text-blue-600 text-xl"></i>
+                        <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+                        </svg>
                         <span class="text-gray-700 font-medium">Verified Platform</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="pi pi-heart text-red-500 text-xl"></i>
+                        <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+                        </svg>
                         <span class="text-gray-700 font-medium">Loved by Users</span>
                     </div>
                 </div>

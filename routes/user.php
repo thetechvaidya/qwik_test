@@ -14,7 +14,6 @@ use App\Http\Controllers\User\PracticeController;
 use App\Http\Controllers\User\QuizController;
 use App\Http\Controllers\User\ProgressController;
 use App\Http\Controllers\User\QuizScheduleController;
-use App\Http\Controllers\User\SyllabusController;
 use App\Http\Controllers\User\PracticeLessonController;
 use App\Http\Controllers\User\PracticeVideoController;
 use App\Http\Controllers\User\CheckoutController;
@@ -24,14 +23,6 @@ use App\Http\Controllers\User\ExamController;
 use App\Http\Controllers\User\ExamScheduleController;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Syllabus Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/change-syllabus', [SyllabusController::class, 'changeSyllabus'])->name('change_syllabus');
-    Route::post('/update-syllabus', [SyllabusController::class, 'updateSyllabus'])->name('update_syllabus');
 
     /*
     |--------------------------------------------------------------------------

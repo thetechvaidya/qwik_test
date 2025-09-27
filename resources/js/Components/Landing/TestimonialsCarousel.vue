@@ -1,5 +1,5 @@
 <template>
-    <section class="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden">
+    <section class="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden scroll-mt-24 sm:scroll-mt-32">
         <!-- Background Effects -->
         <div class="absolute inset-0 opacity-40">
             <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-full blur-3xl animate-float"></div>

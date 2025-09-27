@@ -1,188 +1,166 @@
 <template>
-    <div class="h-screen overflow-hidden flex bg-gray-100" @keydown.window.escape="sidebar = false">
-        <arc-banner />
-        <!--Static sidebar for mobile-->
-        <div v-show="sidebar" ref="dialog" class="fixed inset-0 z-40 flex md:hidden" aria-modal="true">
-            <transition
-                enter-class="transition-opacity ease-linear duration-300"
-                enter-active-class="opacity-0"
-                enter-to-class="opacity-100"
-                leave-class="transition-opacity ease-linear duration-300"
-                leave-active-class="opacity-100"
-                leave-to-class="opacity-0"
+    <div>
+        <div class="ltr:ml-0 rtl:mr-0 transition md:ltr:ml-60 md:rtl:mr-60">
+            <arc-banner />
+        </div>
+        <div class="min-h-screen">
+            <!-- Modern Sidebar Navigation -->
+            <nav
+                class="fixed top-0 ltr:left-0 rtl:right-0 z-20 h-full pb-10 overflow-hidden transition origin-left transform bg-gray-900 w-60 md:ltr:translate-x-0 md:rtl:-translate-x-0"
+                :class="{ 'ltr:-translate-x-full rtl:translate-x-full': !sidebar, 'translate-x-0': sidebar }"
+                @click="sidebar = false"
             >
-                <div
-                    v-show="sidebar"
-                    class="fixed inset-0 bg-gray-600 bg-opacity-75"
-                    aria-hidden="true"
-                    @click="sidebar = false"
-                >
-                </div>
-            </transition>
-            <transition
-                enter-class="transition ease-in-out duration-300 transform"
-                enter-active-class="-translate-x-full"
-                enter-to-class="translate-x-0"
-                leave-class="transition ease-in-out duration-300 transform"
-                leave-active-class="translate-x-0"
-                leave-to-class="-translate-x-full"
-            >
-                <div v-show="sidebar" class="relative max-w-xs w-full bg-primary pt-5 pb-4 flex-1 flex flex-col">
-                    <transition
-                        enter-class="ease-in-out duration-300"
-                        enter-active-class="opacity-0"
-                        enter-to-class="opacity-100"
-                        leave-class="ease-in-out duration-300"
-                        leave-active-class="opacity-100"
-                        leave-to-class="opacity-0"
-                    >
-                        <div v-show="sidebar" class="absolute top-0 right-0 -mr-12 pt-2">
-                            <button
-                                type="button"
-                                class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                                @click="sidebar = false"
-                            >
-                                <span class="sr-only">{{ __('Close sidebar') }}</span>
-                                <svg
-                                    class="h-6 w-6 text-white"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    ></path>
-                                </svg>
-                            </button>
+                <!-- Logo Section -->
+                <Link class="flex items-center px-4 py-5" :href="route('welcome')">
+                    <QwikTestLogo 
+                        :width="150" 
+                        :height="40" 
+                        class="h-8 w-auto"
+                        variant="dark"
+                    />
+                </Link>
+                
+                <!-- Navigation Items -->
+                <div ref="scroll" class="h-full overflow-y-auto overflow-x-hidden">
+                    <nav class="text-sm font-medium pb-16 text-gray-400" aria-label="Main Navigation">
+                        <!-- Welcome Section -->
+                        <div class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs">
+                            {{ __('Student Portal') }}
                         </div>
-                    </transition>
-                    <div class="flex-shrink-0 px-4 pb-4 border-b border-gray-100 border-opacity-10 flex items-center">
-                        <Link :href="route('welcome')">
-                            <img
-                                :src="$page.props.assetUrl + $page.props.general.white_logo_path"
-                                :alt="$page.props.general.app_name"
-                                class="h-8 w-auto"
-                            />
-                        </Link>
-                    </div>
-                    <div class="mt-4 flex-1 h-0 overflow-y-auto">
-                        <side-bar-nav :is-mobile="true"></side-bar-nav>
-                    </div>
-                </div>
-            </transition>
-            <div class="flex-shrink-0 w-14"></div>
-        </div>
-        <!-- Static sidebar for desktop -->
-        <div class="hidden bg-primary md:flex md:flex-shrink-0">
-            <div class="w-72 flex flex-col">
-                <div class="border-r border-gray-200 pb-4 flex flex-col flex-grow overflow-y-auto">
-                    <div class="flex-shrink-0 h-16 px-6 border-b border-gray-100 border-opacity-10 flex items-center">
-                        <Link :href="route('welcome')">
-                            <img
-                                :src="$page.props.assetUrl + $page.props.general.white_logo_path"
-                                :alt="$page.props.general.app_name"
-                                class="h-8 w-auto"
-                            />
-                        </Link>
-                    </div>
-                    <div class="flex-grow mt-4 flex flex-col">
-                        <side-bar-nav :is-mobile="false"></side-bar-nav>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="flex-1 w-full mx-auto flex flex-col md:px-0">
-            <div class="relative z-20 flex-shrink-0 flex h-16 bg-white sm:border-b border-gray-200 lg:border-none">
-                <button
-                    type="button"
-                    class="border-b border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
-                    @click="sidebar = true"
-                >
-                    <span class="sr-only">{{ __('Open sidebar') }}</span>
-                    <svg
-                        class="h-6 w-6"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h7"
-                        ></path>
-                    </svg>
-                </button>
-                <div class="flex-1 max-w-5xl mx-auto border-b border-gray-200 flex justify-between px-4 md:px-0">
-                    <div class="flex-1 flex">
-                        <form class="w-full flex md:ml-0" action="#" method="GET">
-                            <label for="search-field" class="sr-only">{{ __('Search') }}</label>
-                            <div class="relative w-full text-gray-400 focus-within:text-gray-600">
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 ltr:left-0 rtl:right-0 flex items-center"
-                                >
-                                    <svg
-                                        class="h-5 w-5"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                            clip-rule="evenodd"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <input
-                                    id="search-field"
-                                    class="block h-full w-full border-transparent py-2 ltr:pl-8 rtl:pr-8 ltr:pr-3 rtl:pl-3 text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
-                                    placeholder="Search"
-                                    type="search"
-                                    name="search"
-                                />
-                            </div>
-                        </form>
-                    </div>
-                    <div class="ltr:ml-4 rtl:mr-4 flex items-center md:ltr:ml-6 md:rtl:mr-6">
-                        <!--Rewards Badge-->
-                        <rewards-badge
-                            :text-color="'text-primary'"
-                            :points="$page.props.user?.wallet_balance ?? 0"
-                        ></rewards-badge>
+                        
+                        <!-- Dashboard -->
+                        <sidebar-link
+                            :title="__('Dashboard')"
+                            :url="route('user_dashboard')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-th-large mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
 
-                        <!--Notification Button-->
+                        <!-- Learning Section -->
+                        <div class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs">
+                            {{ __('Learning') }}
+                        </div>
+                        
+                        <!-- Learn & Practice -->
+                        <sidebar-link
+                            :title="__('Learn & Practice')"
+                            :url="route('learn_practice')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-book mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- Exams -->
+                        <sidebar-link
+                            :title="__('Exams')"
+                            :url="route('exam_dashboard')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-file-edit mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- Quizzes -->
+                        <sidebar-link
+                            :title="__('Quizzes')"
+                            :url="route('quiz_dashboard')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-question-circle mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- Progress Section -->
+                        <div class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs">
+                            {{ __('Progress') }}
+                        </div>
+                        
+                        <!-- My Progress -->
+                        <sidebar-link
+                            :title="__('My Progress')"
+                            :url="route('my_progress')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-chart-line mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- Account Section -->
+                        <div class="my-4 mx-4 uppercase font-semibold text-green-500 text-xs">
+                            {{ __('Account') }}
+                        </div>
+
+                        <!-- My Subscriptions -->
+                        <sidebar-link
+                            :title="__('My Subscriptions')"
+                            :url="route('user_subscriptions')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-credit-card mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- My Payments -->
+                        <sidebar-link
+                            :title="__('My Payments')"
+                            :url="route('user_payments')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-wallet mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+
+                        <!-- Profile -->
+                        <sidebar-link
+                            :title="__('Profile Settings')"
+                            :url="route('profile.show')"
+                        >
+                            <template #icon>
+                                <i class="pi pi-user mr-3 text-lg"></i>
+                            </template>
+                        </sidebar-link>
+                    </nav>
+                </div>
+            </nav>
+            <!-- Main Content Area -->
+            <div class="ltr:ml-0 rtl:mr-0 transition md:ltr:ml-60 md:rtl:mr-60">
+                <!-- Top Header Bar -->
+                <header class="bg-white shadow flex items-center justify-between w-full md:mx-auto md:sticky md:z-30 md:top-0 px-4 h-14">
+                    <!-- Mobile Menu Button -->
+                    <button class="block btn btn-light-secondary md:hidden" @click="sidebar = true">
+                        <span class="sr-only">{{ __('Menu') }}</span>
+                        <i class="pi pi-bars text-lg"></i>
+                    </button>
+                    
+                    <!-- Dashboard Title -->
+                    <div class="hidden -ml-3 form-icon md:block w-96">
+                        <Link class="text-sm font-semibold px-4 py-5 capitalize" :href="route('user_dashboard')">
+                            {{ __('Student Dashboard') }}
+                        </Link>
+                    </div>
+                    
+                    <!-- Header Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Rewards Badge -->
+                        <rewards-badge
+                            :text-color="'text-indigo-600'"
+                            :points="$page.props.user?.wallet_balance ?? 0"
+                        />
+
+                        <!-- Notifications -->
                         <button
                             type="button"
-                            class="ltr:ml-3 rtl:mr-3 bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            class="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg transition-colors"
                         >
                             <span class="sr-only">{{ __('View notifications') }}</span>
-                            <svg
-                                class="h-6 w-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                                ></path>
-                            </svg>
+                            <i class="pi pi-bell text-lg"></i>
                         </button>
 
-                        <!--Profile dropdown-->
-                        <div class="ltr:ml-3 rtl:mr-3 relative">
+                        <!-- Profile Dropdown -->
+                        <div class="relative">
                             <arc-dropdown align="right" width="48">
                                 <template #trigger>
                                     <button
@@ -202,27 +180,15 @@
                                             class="inline-flex items-center px-3 py-2 border border-transparent leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                         >
                                             {{ $page.props.user?.first_name }}
-
-                                            <svg
-                                                class="ml-2 -mr-0.5 h-4 w-4"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fill-rule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd"
-                                                />
-                                            </svg>
+                                            <i class="pi pi-chevron-down ml-2 text-sm"></i>
                                         </button>
                                     </span>
                                 </template>
                                 <template #content>
-                                    <!--Account Management-->
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    {{ $page.props.user?.first_name }} {{ $page.props.user?.last_name }}
-                                </div>
+                                    <!-- Account Management -->
+                                    <div class="block px-4 py-2 text-xs text-gray-400">
+                                        {{ __('Manage Account') }}
+                                    </div>
 
                                     <arc-dropdown-link :href="route('profile.show')">
                                         {{ __('Profile') }}
@@ -245,53 +211,68 @@
 
                                     <div class="border-t border-gray-100"></div>
 
-                                    <!--Authentication-->
-                                    <arc-dropdown-link :href="route('logout')" method="post" as="button">
-                                        {{ __('Logout') }}
-                                    </arc-dropdown-link>
+                                    <!-- Authentication -->
+                                    <button
+                                        type="button"
+                                        class="w-full text-sm px-4 py-2 text-gray-700 ltr:text-left rtl:text-right hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex items-center justify-between"
+                                        @click="handleLogout"
+                                        :disabled="loggingOut"
+                                    >
+                                        <span>{{ __('Logout') }}</span>
+                                        <i v-if="loggingOut" class="pi pi-spinner pi-spin text-xs text-gray-500"></i>
+                                    </button>
                                 </template>
                             </arc-dropdown>
                         </div>
                     </div>
-                </div>
-            </div>
-            <!-- Page header -->
-            <div class="bg-white z-10 shadow">
-                <div class="max-w-5xl mx-auto">
-                    <div class="py-4">
-                        <div class="px-4 sm:px-6 md:px-0">
-                            <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
-                                <div>
-                                    <slot name="header"></slot>
-                                </div>
-                                <div v-if="$slots.actions" class="sm:mb-0 sm:mt-0">
-                                    <slot name="actions"></slot>
-                                </div>
+                </header>
+
+                <!-- Page Header Section -->
+                <section>
+                    <div class="container mx-auto pt-4 px-4 sm:px-6 lg:px-8">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+                            <div>
+                                <slot name="header"></slot>
+                            </div>
+                            <div class="mb-6 sm:mb-0 sm:mt-0">
+                                <slot name="actions"></slot>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div ref="scroll" class="flex-1 relative h-full z-0 overflow-y-auto focus:outline-none">
-                <main class="max-w-5xl mx-auto">
-                    <div class="px-4 sm:px-6 md:px-0">
-                        <Message v-show="$page.props.successMessage" severity="success" :closable="false">
+                </section>
+
+                <!-- Main Content -->
+                <main>
+                    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                        <Message v-if="$page.props.successMessage" severity="success" :closable="false">
                             {{ $page.props.successMessage }}
                         </Message>
                         <Message v-if="$page.props.errorMessage" severity="error" :closable="false">
                             {{ $page.props.errorMessage }}
                         </Message>
-                        <slot></slot>
                     </div>
+
+                    <slot></slot>
                 </main>
+
+                <!-- Modal Portal using Vue 3 Teleport -->
+                <teleport to="#modals" :disabled="!modalTargetExists">
+                    <!-- Modals will be rendered here -->
+                </teleport>
+
+                <ConfirmDialog />
+                <Toast :position="$page.props.rtl ? 'bottom-left' : 'bottom-right'" />
+                <Toast :position="$page.props.rtl ? 'top-left' : 'top-right'" group="lm" />
             </div>
-            <Toast position="top-right" />
-            <ConfirmDialog />
-            <!--Modal Portal using Vue 3 Teleport-->
-            <teleport to="#modals" :disabled="!modalTargetExists">
-                <!-- Modals will be rendered here -->
-            </teleport>
+
+            <!-- Sidebar Backdrop -->
+            <div
+                v-show="sidebar"
+                class="fixed inset-0 z-10 w-screen h-screen bg-black bg-opacity-25 md:hidden"
+                @click="sidebar = false"
+            ></div>
         </div>
+    </div>
     </div>
 </template>
 
@@ -304,7 +285,9 @@ import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
 import RewardsBadge from '@/Components/RewardsBadge.vue'
 import Message from 'primevue/message'
-import SideBarNav from '@/Components/SideBarNav.vue'
+import QwikTestLogo from '@/Components/Icons/QwikTestLogo.vue'
+import SidebarLink from '@/Components/SidebarLink.vue'
+import translate from '@/Mixins/translate.js'
 
 export default {
     components: {
@@ -315,8 +298,10 @@ export default {
         ConfirmDialog,
         Message,
         RewardsBadge,
-        SideBarNav,
+        SidebarLink,
     },
+
+    mixins: [translate],
 
     props: {
         canLogin: Boolean,
@@ -325,9 +310,9 @@ export default {
 
     data() {
         return {
-            showingNavigationDropdown: false,
             sidebar: false,
             modalTargetExists: false,
+            loggingOut: false,
         }
     },
 
@@ -351,21 +336,73 @@ export default {
             this.modalTargetExists = !!document.getElementById('modals')
         },
 
-        __(key) {
-            return this.$page.props.translations?.[key] || key
-        },
-        
-        switchToTeam(team) {
-            router.put(
-                route('current-team.update'),
-                {
-                    team_id: team.id,
+
+
+        handleLogout() {
+            if (this.loggingOut) {
+                return
+            }
+
+            this.loggingOut = true
+
+            router.post(route('logout'), {}, {
+                onFinish: () => {
+                    this.loggingOut = false
                 },
-                {
-                    preserveState: false,
-                }
-            )
+            })
         },
     },
 }
 </script>
+
+<style scoped>
+/* Modern styling to match admin layout */
+.btn {
+    @apply inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md transition ease-in-out duration-150;
+}
+
+.btn-light-secondary {
+    @apply text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:border-gray-300 focus:shadow-outline-gray;
+}
+
+.form-icon {
+    @apply relative;
+}
+
+/* Sidebar backdrop transition */
+.sidebar-backdrop-enter-active,
+.sidebar-backdrop-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop-enter-from,
+.sidebar-backdrop-leave-to {
+    opacity: 0;
+}
+
+/* Sidebar slide transition */
+.sidebar-enter-active,
+.sidebar-leave-active {
+    transition: transform 0.3s ease;
+}
+
+.sidebar-enter-from,
+.sidebar-leave-to {
+    transform: translateX(-100%);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .dark .bg-white {
+        @apply bg-gray-800;
+    }
+    
+    .dark .text-gray-700 {
+        @apply text-gray-300;
+    }
+    
+    .dark .border-gray-200 {
+        @apply border-gray-700;
+    }
+}
+</style>

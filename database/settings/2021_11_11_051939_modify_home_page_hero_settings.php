@@ -20,7 +20,7 @@ class ModifyHomePageHeroSettings extends SettingsMigration
         $this->migrator->add('home_page.enable_cta', true);
         $this->migrator->add('home_page.enable_footer', true);
         $this->migrator->add('home_page.enable_search', true);
-        $this->migrator->add('site.white_logo_path', 'site/logo_white.png');
+    $this->migrator->add('site.white_logo_path', 'site/logo-white.svg');
         $this->migrator->add('localization.default_direction', 'ltr');
     }
 }

@@ -12,7 +12,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ExamSchedule;
 use App\Models\PracticeSession;
 use App\Models\QuizSchedule;
-use App\Models\SubCategory;
 use App\Settings\LocalizationSettings;
 use App\Transformers\Platform\ExamScheduleCalendarTransformer;
 use App\Transformers\Platform\PracticeSessionCardTransformer;
@@ -20,7 +19,6 @@ use App\Transformers\Platform\QuizScheduleCalendarTransformer;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Cookie;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -44,26 +42,10 @@ class DashboardController extends Controller
         $minDate = Carbon::today()->timezone($this->localizationSettings->default_timezone);
         $maxDate = Carbon::today()->addMonths(1)->endOfMonth()->timezone($this->localizationSettings->default_timezone);
         
-        // Check if user has selected a syllabus
-        $subCategory = null;
-        $hasSyllabus = false;
-        
         try {
             $subCategory = auth()->user()->selectedSyllabus();
-            $hasSyllabus = true;
         } catch (ModelNotFoundException $e) {
-            // User hasn't selected a syllabus yet - show onboarding dashboard
-            $hasSyllabus = false;
-        }
-
-        if (!$hasSyllabus) {
-            // Return modern onboarding dashboard
             return Inertia::render('User/Dashboard', [
-                'needsSyllabusSelection' => true,
-                'categories' => fractal(SubCategory::active()->has('sections')
-                    ->with(['sections:id,name,code,slug', 'subCategoryType:id,name', 'category:id,name'])
-                    ->orderBy('name')->get(), new \App\Transformers\Platform\SubCategoryCardTransformer())
-                    ->toArray()['data'],
                 'scheduleCalendar' => [],
                 'practiceSessions' => [],
                 'minDate' => $minDate,
@@ -94,7 +76,6 @@ class DashboardController extends Controller
             ->orderBy('updated_at', 'desc')->limit(1)->get();
 
         return Inertia::render('User/Dashboard', [
-            'needsSyllabusSelection' => false,
             'scheduleCalendar' => array_merge(fractal($quizSchedules, new QuizScheduleCalendarTransformer())->toArray()['data'],
                 fractal($examSchedules, new ExamScheduleCalendarTransformer())->toArray()['data']),
             'practiceSessions' => fractal($practiceSessions, new PracticeSessionCardTransformer())->toArray()['data'],
