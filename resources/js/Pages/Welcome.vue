@@ -15,6 +15,9 @@
             :hero-image="sections.hero.image_path"
         />
 
+        <!-- Image Gallery Section -->
+        <ImageGallerySection />
+
         <!-- Stats Section -->
         <StatsSection
             id="quicklinks"
@@ -24,12 +27,18 @@
             :tests-count="sections.stats.tests_count"
         />
 
+        <!-- How It Works Section -->
+        <HowItWorksSection />
+
         <!-- Features Section -->
         <FeaturesGrid
             id="features"
             v-if="sections.features.enabled"
             :features="sections.features.list"
         />
+
+        <!-- Learning Paths Section -->
+        <LearningPathsSection />
 
         <!-- Pricing Section -->
         <PricingSection
@@ -38,12 +47,18 @@
             :plans="sections.pricing.plans"
         />
 
+        <!-- Success Stories Section -->
+        <SuccessStoriesSection />
+
         <!-- Testimonials Section -->
         <TestimonialsCarousel
             id="testimonials"
             v-if="sections.testimonials.enabled"
             :testimonials="sections.testimonials.list"
         />
+
+        <!-- Newsletter Section -->
+        <NewsletterSection />
 
         <!-- Conversion-Focused CTA Section -->
         <section
@@ -143,6 +158,11 @@ import StatsSection from '@/Components/Landing/StatsSection.vue'
 import FeaturesGrid from '@/Components/Landing/FeaturesGrid.vue'
 import PricingSection from '@/Components/Landing/PricingSection.vue'
 import TestimonialsCarousel from '@/Components/Landing/TestimonialsCarousel.vue'
+import ImageGallerySection from '@/Components/Landing/ImageGallerySection.vue'
+import HowItWorksSection from '@/Components/Landing/HowItWorksSection.vue'
+import LearningPathsSection from '@/Components/Landing/LearningPathsSection.vue'
+import SuccessStoriesSection from '@/Components/Landing/SuccessStoriesSection.vue'
+import NewsletterSection from '@/Components/Landing/NewsletterSection.vue'
 
 // Props from the controller
 const props = defineProps({
